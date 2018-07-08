@@ -431,11 +431,9 @@ With that in place, let's process the record with the Kafka Consumer.
                 else continue;
             }
             
-            System.out.println("Consumed " + consumerRecords.count() + " records.... now processing it");
-            
             consumerRecords.forEach(record -> {
-                System.out.printf("Consumer Record:(Key: %d, Value: %s, Partition: %d, Offset: %d)\n",
-                        record.key(), record.value(),
+                System.out.printf("%d - Consumer Record:(Key: %d, Value: %s, Partition: %d, Offset: %d)\n",
+                        consumerRecords.count(), record.key(), record.value(),
                         record.partition(), record.offset());
                 try {
                 	Thread.sleep(waitMsInBetween);
@@ -514,12 +512,10 @@ Replace the `runConsumer()` method with the code below.
                 if (noRecordsCount > giveUp) 
                 	break;
             }
-            
-            System.out.println("Consumed " + consumerRecords.count() + " records.... now processing it");
 
             consumerRecords.forEach(record -> {
-                System.out.printf("Consumer Record:(Key: %d, Value: %s, Partition: %d, Offset: %d)\n",
-                        record.key(), record.value(),
+                System.out.printf("%d - Consumer Record:(Key: %d, Value: %s, Partition: %d, Offset: %d)\n",
+                        consumerRecords.count(), record.key(), record.value(),
                         record.partition(), record.offset());
                 try {
                 	Thread.sleep(waitMsInBetween);
@@ -541,13 +537,149 @@ Make sure to change the Consumer Group (`ConsumerConfig.GROUP_ID_CONFIG`) to `Ka
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
 ```
 
-## Producer and Consumer
+## Try running Producer and Consumer
+Run the consumer from your IDE or Terminal (Maven). Then run the producer from above from your IDE or Terminal (Maven). You should see the consumer get the records that the producer sent.
 
 ### Three Consumers in same group and one Producer sending 25 messages
+
+Start the consumer 3 times by executing the following command in 3 different terminal windows.
+
+```
+mvn exec:java@consumer -Dexec.args="0"
+```
+
+and then start the producer
 
 ```
 mvn exec:java@producer -Dexec.args="25 0 0"
 ```
+
+#### Producer Output
+
+```
+[0] sent record(key=null value=[0] Hello Kafka 0) meta(partition=0, offset=284) time=804
+[0] sent record(key=null value=[0] Hello Kafka 1) meta(partition=2, offset=283) time=27
+[0] sent record(key=null value=[0] Hello Kafka 2) meta(partition=5, offset=284) time=11
+[0] sent record(key=null value=[0] Hello Kafka 3) meta(partition=4, offset=1284) time=65
+[0] sent record(key=null value=[0] Hello Kafka 4) meta(partition=7, offset=284) time=26
+[0] sent record(key=null value=[0] Hello Kafka 5) meta(partition=1, offset=283) time=8
+[0] sent record(key=null value=[0] Hello Kafka 6) meta(partition=3, offset=283) time=18
+[0] sent record(key=null value=[0] Hello Kafka 7) meta(partition=6, offset=283) time=16
+[0] sent record(key=null value=[0] Hello Kafka 8) meta(partition=0, offset=285) time=19
+[0] sent record(key=null value=[0] Hello Kafka 9) meta(partition=2, offset=284) time=17
+[0] sent record(key=null value=[0] Hello Kafka 10) meta(partition=5, offset=285) time=21
+[0] sent record(key=null value=[0] Hello Kafka 11) meta(partition=4, offset=1285) time=11
+[0] sent record(key=null value=[0] Hello Kafka 12) meta(partition=7, offset=285) time=7
+[0] sent record(key=null value=[0] Hello Kafka 13) meta(partition=1, offset=284) time=15
+[0] sent record(key=null value=[0] Hello Kafka 14) meta(partition=3, offset=284) time=21
+[0] sent record(key=null value=[0] Hello Kafka 15) meta(partition=6, offset=284) time=18
+[0] sent record(key=null value=[0] Hello Kafka 16) meta(partition=0, offset=286) time=12
+[0] sent record(key=null value=[0] Hello Kafka 17) meta(partition=2, offset=285) time=18
+[0] sent record(key=null value=[0] Hello Kafka 18) meta(partition=5, offset=286) time=9
+[0] sent record(key=null value=[0] Hello Kafka 19) meta(partition=4, offset=1286) time=4
+[0] sent record(key=null value=[0] Hello Kafka 20) meta(partition=7, offset=286) time=7
+[0] sent record(key=null value=[0] Hello Kafka 21) meta(partition=1, offset=285) time=17
+[0] sent record(key=null value=[0] Hello Kafka 22) meta(partition=3, offset=285) time=14
+[0] sent record(key=null value=[0] Hello Kafka 23) meta(partition=6, offset=285) time=8
+[0] sent record(key=null value=[0] Hello Kafka 24) meta(partition=0, offset=287) time=16
+```
+
+#### Consumer 1 Output (same consumer group)
+```
+1 - Consumer Record:(Key: null, Value: [0] Hello Kafka 0, Partition: 0, Offset: 284)
+1 - Consumer Record:(Key: null, Value: [0] Hello Kafka 1, Partition: 2, Offset: 283)
+1 - Consumer Record:(Key: null, Value: [0] Hello Kafka 5, Partition: 1, Offset: 283)
+1 - Consumer Record:(Key: null, Value: [0] Hello Kafka 8, Partition: 0, Offset: 285)
+1 - Consumer Record:(Key: null, Value: [0] Hello Kafka 9, Partition: 2, Offset: 284)
+1 - Consumer Record:(Key: null, Value: [0] Hello Kafka 13, Partition: 1, Offset: 284)
+1 - Consumer Record:(Key: null, Value: [0] Hello Kafka 16, Partition: 0, Offset: 286)
+1 - Consumer Record:(Key: null, Value: [0] Hello Kafka 17, Partition: 2, Offset: 285)
+1 - Consumer Record:(Key: null, Value: [0] Hello Kafka 21, Partition: 1, Offset: 285)
+1 - Consumer Record:(Key: null, Value: [0] Hello Kafka 24, Partition: 0, Offset: 287)
+```
+#### Consumer 2 Output (same consumer group)
+
+```
+1 - Consumer Record:(Key: null, Value: [0] Hello Kafka 2, Partition: 5, Offset: 284)
+2 - Consumer Record:(Key: null, Value: [0] Hello Kafka 6, Partition: 3, Offset: 283)
+2 - Consumer Record:(Key: null, Value: [0] Hello Kafka 3, Partition: 4, Offset: 1284)
+2 - Consumer Record:(Key: null, Value: [0] Hello Kafka 10, Partition: 5, Offset: 285)
+2 - Consumer Record:(Key: null, Value: [0] Hello Kafka 11, Partition: 4, Offset: 1285)
+1 - Consumer Record:(Key: null, Value: [0] Hello Kafka 14, Partition: 3, Offset: 284)
+1 - Consumer Record:(Key: null, Value: [0] Hello Kafka 18, Partition: 5, Offset: 286)
+1 - Consumer Record:(Key: null, Value: [0] Hello Kafka 19, Partition: 4, Offset: 1286)
+1 - Consumer Record:(Key: null, Value: [0] Hello Kafka 22, Partition: 3, Offset: 285)
+```
+
+#### Consumer 3 Output (same consumer group)
+
+```
+1 - Consumer Record:(Key: null, Value: [0] Hello Kafka 4, Partition: 7, Offset: 284)
+1 - Consumer Record:(Key: null, Value: [0] Hello Kafka 7, Partition: 6, Offset: 283)
+1 - Consumer Record:(Key: null, Value: [0] Hello Kafka 12, Partition: 7, Offset: 285)
+1 - Consumer Record:(Key: null, Value: [0] Hello Kafka 15, Partition: 6, Offset: 284)
+1 - Consumer Record:(Key: null, Value: [0] Hello Kafka 20, Partition: 7, Offset: 286)
+1 - Consumer Record:(Key: null, Value: [0] Hello Kafka 23, Partition: 6, Offset: 285)
+```
+**Questions**
+
+- Which consumer owns partition 10?
+- How many ConsumerRecords objects did Consumer 0 get?
+- What is the next offset from Partition 11 that Consumer 2 should get?
+- Why does each consumer get unique messages?
+
+### Three Consumers in same group and one Producer sending 10 messages using key
+
+Start the consumer 3 times by executing the following command in 3 different terminal windows.
+
+```
+mvn exec:java@consumer -Dexec.args="0"
+```
+
+and then start the producer (using 10 for the ID)
+
+```
+mvn exec:java@producer -Dexec.args="25 0 10"
+```
+
+#### Producer Output
+
+```
+[10] sent record(key=10 value=[10] Hello Kafka 0) meta(partition=3, offset=289) time=326
+[10] sent record(key=10 value=[10] Hello Kafka 1) meta(partition=3, offset=290) time=7
+[10] sent record(key=10 value=[10] Hello Kafka 2) meta(partition=3, offset=291) time=3
+[10] sent record(key=10 value=[10] Hello Kafka 3) meta(partition=3, offset=292) time=3
+[10] sent record(key=10 value=[10] Hello Kafka 4) meta(partition=3, offset=293) time=3
+[10] sent record(key=10 value=[10] Hello Kafka 5) meta(partition=3, offset=294) time=2
+[10] sent record(key=10 value=[10] Hello Kafka 6) meta(partition=3, offset=295) time=2
+[10] sent record(key=10 value=[10] Hello Kafka 7) meta(partition=3, offset=296) time=2
+[10] sent record(key=10 value=[10] Hello Kafka 8) meta(partition=3, offset=297) time=2
+[10] sent record(key=10 value=[10] Hello Kafka 9) meta(partition=3, offset=298) time=3
+```
+
+#### Consumer 1 Output (same consumer group)
+nothing consumed
+
+#### Consumer 2 Output (same consumer group)
+```
+1 - Consumer Record:(Key: 10, Value: [10] Hello Kafka 0, Partition: 3, Offset: 299)
+3 - Consumer Record:(Key: 10, Value: [10] Hello Kafka 1, Partition: 3, Offset: 300)
+3 - Consumer Record:(Key: 10, Value: [10] Hello Kafka 2, Partition: 3, Offset: 301)
+3 - Consumer Record:(Key: 10, Value: [10] Hello Kafka 3, Partition: 3, Offset: 302)
+6 - Consumer Record:(Key: 10, Value: [10] Hello Kafka 4, Partition: 3, Offset: 303)
+6 - Consumer Record:(Key: 10, Value: [10] Hello Kafka 5, Partition: 3, Offset: 304)
+6 - Consumer Record:(Key: 10, Value: [10] Hello Kafka 6, Partition: 3, Offset: 305)
+6 - Consumer Record:(Key: 10, Value: [10] Hello Kafka 7, Partition: 3, Offset: 306)
+6 - Consumer Record:(Key: 10, Value: [10] Hello Kafka 8, Partition: 3, Offset: 307)
+6 - Consumer Record:(Key: 10, Value: [10] Hello Kafka 9, Partition: 3, Offset: 308)
+```
+
+#### Consumer 3 Output (same consumer group)
+nothing consumed
+
+**Questions**
+
+- Why is consumer 2 the only one getting data?
 
 ## Review Consumer
 
