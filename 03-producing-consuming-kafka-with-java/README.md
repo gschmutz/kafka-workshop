@@ -1,0 +1,557 @@
+# Working with Kafka fro Java
+In this workshop we will learn how to produce and consume messages using the [Kafka Java API](https://kafka.apache.org/documentation/#api).
+
+## Create the project in Eclipse IDE
+
+Start the Eclipse IDE if not yet done. 
+
+### Create the project and the project definition (pom.xml)
+
+Create a new [Maven project](../99-misc/97-working-with-eclipse/README.md) and in the last step use `com.trivadis.kafkaws` for the **Group Id** and `java-kafka` for the **Artifact Id**.
+
+Navigate to the **pom.xml** and double-click on it. The POM Editor will be displayed. 
+
+You can either use the GUI to edit your pom.xml or click on the last tab **pom.xml** to switch to the "code view". Let's do that. 
+
+You will see the still rather empty definition.
+
+```
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.trivadis.kafkaws</groupId>
+  <artifactId>java-kafka</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+</project>
+```
+
+Let's add some initial dependencies for our project. We will add some more depencencies to the POM throughout this workshop.. 
+
+Copy the following block right after the <version> tag, before the closing </project> tag.
+
+```
+   <properties>
+       <kafka.version>1.1.0</kafka.version>
+       <java.version>1.8</java.version>
+       <slf4j-version>1.7.5</slf4j-version>
+       
+       <!-- use utf-8 encoding -->
+       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+       <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    </properties>
+
+    <dependencies>
+     	<dependency>
+           <groupId>org.apache.kafka</groupId>
+           <artifactId>kafka-clients</artifactId>
+           <version>${kafka.version}</version>
+       </dependency>    
+
+		<dependency>
+		    <groupId>org.slf4j</groupId>
+		    <artifactId>slf4j-log4j12</artifactId>
+		    <version>${slf4j-version}</version>
+		</dependency>
+    </dependencies>
+    
+	<build>
+		<defaultGoal>install</defaultGoal>
+
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.5</version>
+				<configuration>
+					<source>1.8</source>
+					<target>1.8</target>
+					<maxmem>256M</maxmem>
+					<showDeprecation>true</showDeprecation>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>1.6.0</version>
+				<executions>
+					<execution>
+						<id>producer</id>
+						<goals>
+							<goal>java</goal>
+						</goals>
+						<configuration>
+							<mainClass>com.trivadis.kafkaws.producer.KafkaProducerSync</mainClass>
+						</configuration>						
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+```
+
+In a terminal window, perform the following command to update the Eclipse IDE project settings. 
+
+```
+mvn eclipse:eclipse
+```
+
+Refresh the project in Eclipse to re-read the project settings.
+
+### Create log4j settings
+
+Let's also create the necessary log4j configuration. 
+
+In the code we are using the [Log4J Logging Framework](https://logging.apache.org/log4j/2.x/), which we have to configure using a property file. 
+
+Create a new file `log4j.properties` in the folder **src/main/resources** and add the following configuration properties. 
+
+```
+## ------------------------------------------------------------------------
+## Licensed to the Apache Software Foundation (ASF) under one or more
+## contributor license agreements.  See the NOTICE file distributed with
+## this work for additional information regarding copyright ownership.
+## The ASF licenses this file to You under the Apache License, Version 2.0
+## (the "License"); you may not use this file except in compliance with
+## the License.  You may obtain a copy of the License at
+##
+## http://www.apache.org/licenses/LICENSE-2.0
+##
+## Unless required by applicable law or agreed to in writing, software
+## distributed under the License is distributed on an "AS IS" BASIS,
+## WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+## See the License for the specific language governing permissions and
+## limitations under the License.
+## ------------------------------------------------------------------------
+
+#
+# The logging properties used for eclipse testing, We want to see INFO output on the console.
+#
+log4j.rootLogger=INFO, out
+
+#log4j.logger.org.apache.kafka=INFO
+
+log4j.logger.org.apache.camel.impl.converter=INFO
+log4j.logger.org.apache.camel.util.ResolverUtil=INFO
+
+log4j.logger.org.springframework=WARN
+log4j.logger.org.hibernate=WARN
+
+# CONSOLE appender not used by default
+log4j.appender.out=org.apache.log4j.ConsoleAppender
+log4j.appender.out.layout=org.apache.log4j.PatternLayout
+log4j.appender.out.layout.ConversionPattern=[%30.30t] %-30.30c{1} %-5p %m%n
+#log4j.appender.out.layout.ConversionPattern=%d [%-15.15t] %-5p %-30.30c{1} - %m%n
+
+log4j.throwableRenderer=org.apache.log4j.EnhancedThrowableRenderer
+```
+### Creating the necesary Kafka Topic 
+We will use the topic `test-java-topic` in the Producer and Consumer code below. Due to the fact that `auto.topic.create.enable` is set to `false`, we have to manually create the topic. 
+
+Connect to the broker-1 container
+
+```
+docker exec -ti streamingplatform_broker-1_1 bash
+```
+
+and execute the necessary kafka-topics command. 
+
+```
+kafka-topics --create \
+    --replication-factor 3 \
+    --partitions 8 \
+    --topic test-java-topic \
+    --zookeeper zookeeper:2181
+```
+
+cross check that the topic has been created.
+
+```
+kafka-topics --list \
+    --zookeeper zookeeper:2181
+```
+
+This finishes the setup steps and our new project is ready to be used. Next we will start implementing a Kafka Producer.
+
+## Create a Kafka Producer
+
+Let's first create a producer in synchronous mode.
+
+### Using the Synchronous mode
+
+First create a new Java Package `com.trivadis.kafakws.producer` in the folder **src/main/java**.
+
+Create a new Java Class `KafkaProducerSync` in the package `com.trivadis.kafakws.producer` just created. 
+
+Add the following code to the empty class. 
+
+Now, that we imported the Kafka classes and defined some constants, let’s create a Kafka producer.
+
+```
+package com.trivadis.kafakws.producer;
+
+import java.util.Properties;
+
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.Producer;
+import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.common.serialization.LongSerializer;
+import org.apache.kafka.common.serialization.StringSerializer;
+
+public class KafkaProducerSync {
+
+    private final static String TOPIC = "test-java-topic";
+    private final static String BOOTSTRAP_SERVERS =
+            "localhost:9092,localhost:9093,localhost:9094";
+    
+    private static Producer<Long, String> createProducer() {
+        Properties props = new Properties();
+        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,
+                                            BOOTSTRAP_SERVERS);
+        props.put(ProducerConfig.CLIENT_ID_CONFIG, "KafkaExampleProducer");
+        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
+                                        LongSerializer.class.getName());
+        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
+                                    StringSerializer.class.getName());
+        return new KafkaProducer<>(props);
+    }	
+}
+```
+
+Kafka provides a synchronous send method to send a record to a topic. Let’s use this method to send some message ids and messages to the Kafka topic we created earlier.
+
+```
+    static void runProducer(final int sendMessageCount, final int waitMsInBetween, final long id) throws Exception {
+        final Producer<Long, String> producer = createProducer();
+        long time = System.currentTimeMillis();
+        
+        try {
+            for (long index = 0; index < sendMessageCount; index++) {
+                final ProducerRecord<Long, String> record =
+                        new ProducerRecord<>(TOPIC, "[" + id + "] Hello Kafka " + index);
+
+                RecordMetadata metadata = producer.send(record).get();
+
+                long elapsedTime = System.currentTimeMillis() - time;
+                System.out.printf("[" + id + "] sent record(key=%s value=%s) " +
+                                "meta(partition=%d, offset=%d) time=%d\n",
+                        record.key(), record.value(), metadata.partition(),
+                        metadata.offset(), elapsedTime);
+                time = System.currentTimeMillis();
+                
+                Thread.sleep(waitMsInBetween);
+            }
+        } finally {
+            producer.flush();
+            producer.close();
+        }
+    }  
+```
+
+Next you define the main method.
+    
+```
+    public static void main(String... args) throws Exception {
+        if (args.length == 0) {
+            runProducer(100,10,0);
+        } else {
+            runProducer(Integer.parseInt(args[0]),Integer.parseInt(args[1]),Long.parseLong(args[2]));
+        }
+    }
+```
+
+The `main()` method accepts 3 parameters, the number of messages to produce, the time in ms to wait inbetween sending each message and the ID of the producer.
+
+
+Now run it using the `mvn exec:java` command. It will generate 1000 messages, waiting 10ms inbetween sending each message and use 0 for the ID. 
+
+```
+mvn exec:java@producer -Dexec.args="1000,100,0"
+```
+
+Use `kafkacat` or `kafka-console-consumer` to consume the messages from the topic `test-java-topic`.
+
+```
+kafkacat -b localhost -t test-java-topic -f 'Part-%p => %k:%s\n'
+```
+
+```
+% Auto-selecting Consumer mode (use -P or -C to override)
+Part-5 => :[0] Hello Kafka 0
+Part-4 => :[0] Hello Kafka 1
+Part-3 => :[0] Hello Kafka 4
+Part-2 => :[0] Hello Kafka 7
+Part-5 => :[0] Hello Kafka 8
+Part-4 => :[0] Hello Kafka 9
+Part-7 => :[0] Hello Kafka 2
+Part-7 => :[0] Hello Kafka 10
+Part-1 => :[0] Hello Kafka 3
+Part-1 => :[0] Hello Kafka 11
+Part-3 => :[0] Hello Kafka 12
+Part-6 => :[0] Hello Kafka 5
+Part-6 => :[0] Hello Kafka 13
+Part-0 => :[0] Hello Kafka 6
+Part-0 => :[0] Hello Kafka 14
+Part-2 => :[0] Hello Kafka 15
+Part-5 => :[0] Hello Kafka 16
+Part-4 => :[0] Hello Kafka 17
+Part-7 => :[0] Hello Kafka 18
+Part-1 => :[0] Hello Kafka 19
+Part-3 => :[0] Hello Kafka 20
+Part-6 => :[0] Hello Kafka 21
+Part-0 => :[0] Hello Kafka 22
+Part-2 => :[0] Hello Kafka 23
+Part-2 => :[0] Hello Kafka 31
+Part-5 => :[0] Hello Kafka 24
+Part-5 => :[0] Hello Kafka 32
+Part-4 => :[0] Hello Kafka 25
+Part-7 => :[0] Hello Kafka 26
+Part-1 => :[0] Hello Kafka 27
+Part-4 => :[0] Hello Kafka 33
+Part-3 => :[0] Hello Kafka 28
+Part-6 => :[0] Hello Kafka 29
+Part-0 => :[0] Hello Kafka 30
+Part-3 => :[0] Hello Kafka 36
+Part-2 => :[0] Hello Kafka 39
+Part-5 => :[0] Hello Kafka 40
+...
+```
+
+### Using the Id field as the key
+
+```
+    static void runProducer(final int sendMessageCount, final int waitMsInBetween, final long id) throws Exception {
+        final Producer<Long, String> producer = createProducer();
+        long time = System.currentTimeMillis();
+        Long key = (id > 0) ? id : null;
+        
+        try {
+            for (long index = 0; index < sendMessageCount; index++) {
+                final ProducerRecord<Long, String> record =
+                        new ProducerRecord<>(TOPIC, key,
+                        		"[" + id + "] Hello Kafka " + index);
+
+                RecordMetadata metadata = producer.send(record).get();
+
+                long elapsedTime = System.currentTimeMillis() - time;
+                System.out.printf("[" + id + "] sent record(key=%s value=%s) " +
+                                "meta(partition=%d, offset=%d) time=%d\n",
+                        record.key(), record.value(), metadata.partition(),
+                        metadata.offset(), elapsedTime);
+                time = System.currentTimeMillis();
+                
+                Thread.sleep(waitMsInBetween);
+            }
+        } finally {
+            producer.flush();
+            producer.close();
+        }
+    }  
+```
+
+## Review Producer
+
+- What will happen if the first server is down in the bootstrap list? Can the producer still connect to the other Kafka brokers in the cluster?
+
+- When would you use Kafka async send vs. sync send?
+
+- Why do you need two serializers for a Kafka record?
+
+- What does the Callback lambda do?
+
+
+## Create a Kafka Consumer
+
+Just like we did with the producer, you need to specify bootstrap servers. You also need to define a `group.id` that identifies which consumer group this consumer belongs. Then you need to designate a Kafka record key deserializer and a record value deserializer. Then you need to subscribe the consumer to the topic you created in the producer tutorial.
+
+### Kafka Consumer with Automatic Offset Committing
+
+First create a new Java Package `com.trivadis.kafakws.consumer` in the folder **src/main/java**.
+
+Create a new Java Class `KafkaConsumerAuto` in the package `com.trivadis.kafakws.consumer` just created. 
+
+Add the following code to the empty class. 
+
+Now, that we imported the Kafka classes and defined some constants, let’s create a Kafka producer.
+
+First imported the Kafka classes, define some constants and create the Kafka consumer.
+
+```
+package com.trivadis.kafkaws.consumer;
+
+import java.util.Collections;
+import java.util.Properties;
+
+import org.apache.kafka.clients.consumer.Consumer;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.common.serialization.LongDeserializer;
+import org.apache.kafka.common.serialization.StringDeserializer;
+
+public class KafkaConsumerAuto {
+	private final static String TOPIC = "test-java-topic";
+    private final static String BOOTSTRAP_SERVERS =
+            "localhost:9092,localhost:9093,localhost:9094";
+    
+    private static Consumer<Long, String> createConsumer() {
+        final Properties props = new Properties();
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG,
+                                    BOOTSTRAP_SERVERS);
+        props.put(ConsumerConfig.GROUP_ID_CONFIG,
+                                    "KafkaExampleConsumer");
+        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
+                LongDeserializer.class.getName());
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
+                StringDeserializer.class.getName());
+
+        // Create the consumer using props.
+        final Consumer<Long, String> consumer =
+                                    new KafkaConsumer<>(props);
+
+        // Subscribe to the topic.
+        consumer.subscribe(Collections.singletonList(TOPIC));
+        return consumer;
+    }    
+}
+```
+
+With that in place, let's process the record with the Kafka Consumer. 
+
+```
+    static void runConsumer(int waitMsInBetween) throws InterruptedException {
+        final Consumer<Long, String> consumer = createConsumer();
+
+        final int giveUp = 100;   int noRecordsCount = 0;
+
+        while (true) {
+            final ConsumerRecords<Long, String> consumerRecords =
+                    consumer.poll(1000);
+
+            if (consumerRecords.count()==0) {
+                noRecordsCount++;
+                if (noRecordsCount > giveUp) break;
+                else continue;
+            }
+            
+            System.out.println("Consumed " + consumerRecords.count() + " records.... now processing it");
+            
+            consumerRecords.forEach(record -> {
+                System.out.printf("Consumer Record:(Key: %d, Value: %s, Partition: %d, Offset: %d)\n",
+                        record.key(), record.value(),
+                        record.partition(), record.offset());
+                try {
+                	Thread.sleep(waitMsInBetween);
+                } catch (InterruptedException e) {
+				} 
+                
+            });
+        }
+        consumer.close();
+        System.out.println("DONE");
+    }  
+```
+
+Notice you use `ConsumerRecords` which is a group of records from a Kafka topic partition. The `ConsumerRecords` class is a container that holds a list of ConsumerRecord(s) per partition for a particular topic. There is one `ConsumerRecord` list for every topic partition returned by a the `consumer.poll()`.
+
+Next you define the main method. You can pass the amount of time the consumer spends for processing each record consumed.
+
+```
+    public static void main(String... args) throws Exception {
+        if (args.length == 0) {
+        	runConsumer(10);
+        } else {
+        	runConsumer(Integer.parseInt(args[0]));
+        }
+    }
+```
+
+The main method just calls `runConsumer`.
+
+Before we run the consumer, let's add a new line to the `log4j.properties` configuration, just right after the `log4j.logger.org.apache.kafka=INFO` line. 
+
+```
+log4j.logger.org.apache.kafka.clients.consumer.internals.ConsumerCoordinator=DEBUG
+```
+
+If will show a DEBUG message whenever the auto commit is done. 
+
+Before we can run it, asdd the consumer to the <executions> section in the `pom.xml`.
+
+```
+					<execution>
+						<id>consumer</id>
+						<goals>
+							<goal>java</goal>
+						</goals>
+						<configuration>
+							<mainClass>com.trivadis.kafkaws.consumer.KafkaConsumerManual</mainClass>
+						</configuration>						
+					</execution>
+```
+
+Now run it using the `mvn exec:java` command.
+
+```
+mvn exec:java@consumer -Dexec.args="0"
+```
+
+### Kafka Consumer with Manual Offset Control
+
+Create a new Java Class `KafkaConsumerManual` in the package `com.trivadis.kafakws.consumer` just created by copy-pasting from the class `KafkaConsumerAuto`.
+
+Replace the `runConsumer()` method with the code below.
+
+```
+    static void runConsumer(int waitMsInBetween) throws InterruptedException {
+        final Consumer<Long, String> consumer = createConsumer();
+
+        final int giveUp = 100;   
+        int noRecordsCount = 0;
+
+        while (true) {
+            final ConsumerRecords<Long, String> consumerRecords = consumer.poll(1000);
+
+            if (consumerRecords.count()==0) {
+                noRecordsCount++;
+                if (noRecordsCount > giveUp) 
+                	break;
+            }
+            
+            System.out.println("Consumed " + consumerRecords.count() + " records.... now processing it");
+
+            consumerRecords.forEach(record -> {
+                System.out.printf("Consumer Record:(Key: %d, Value: %s, Partition: %d, Offset: %d)\n",
+                        record.key(), record.value(),
+                        record.partition(), record.offset());
+                try {
+                	Thread.sleep(waitMsInBetween);
+                } catch (InterruptedException e) {
+				} 
+            });
+
+            consumer.commitAsync();
+        }
+        consumer.close();
+        System.out.println("DONE");
+    }
+```
+
+Make sure to change the Consumer Group (`ConsumerConfig.GROUP_ID_CONFIG`) to `KafkaConsumerManual` and set the `ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG` to `false` in the `createConsumer()` method. 
+
+```
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, "KakfaConsumerManual");
+        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
+```
+
+## Producer and Consumer
+
+### Three Consumers in same group and one Producer sending 25 messages
+
+```
+mvn exec:java@producer -Dexec.args="25 0 0"
+```
+
+## Review Consumer
+
+- How did we demonstrate Consumers in a Consumer Group dividing up topic partitions and sharing them?
+- How did we demonstrate Consumers in different Consumer Groups each getting their own offsets?
+- How many records does poll get?
+- Does a call to poll ever get records from two different partitions?
