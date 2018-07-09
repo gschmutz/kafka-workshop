@@ -36,7 +36,7 @@ mkdir streamingplatform
 cd streamingplatform
 ```
 
-Copy the following code fragment into a file named `docker-compose.yml`.
+Copy the code from below and paste it into a docker-compose.yml file. Alternatively you can also use wget to retrieve the file from GitHub: `wget https://raw.githubusercontent.com/gschmutz/kafka-workshop/master/01-environment/docker-compose.yml`
 
 ```
 #
