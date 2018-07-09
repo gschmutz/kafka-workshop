@@ -1,15 +1,17 @@
 # Understanding Kafka Failover
-In this tutorial, we are going to run many Kafka Nodes on our development laptop so that you will need at least 16 GB of RAM for local dev machine. You can run just two servers if you have less memory than 16 GB. We are going to create a replicated topic. We then demonstrate consumer failover and broker failover. We also demonstrate load balancing Kafka consumers. We show how, with many groups, Kafka acts like a Publish/Subscribe. But, when we put all of our consumers in the same group, Kafka will load share the messages to the consumers in the same group (more like a queue than a topic in a traditional MOM sense).
-
-If not already running, then start up ZooKeeper (./run-zookeeper.sh from the first tutorial). Also, shut down Kafka from the first tutorial.
-
-Next, you need to copy server properties for three brokers (detailed instructions to follow). Then we will modify these Kafka server properties to add unique Kafka ports, Kafka log locations, and unique Broker ids. Then we will create three scripts to start these servers up using these properties, and then start the servers. Lastly, we create replicated topic and use it to demonstrate Kafka consumer failover, and Kafka broker failover.
+In this tutorial, we will demonstrate consumer failover and broker failover. We also demonstrate load balancing Kafka consumers. We show how, with many groups, Kafka acts like a Publish/Subscribe. But, when we put all of our consumers in the same group, Kafka will load share the messages to the consumers in the same group (more like a queue than a topic in a traditional MOM sense).
     
 ### Create Kafka replicated topic my-failsafe-topic 
+
+First let's create the topic we will use throughout this workshop.
+
+Connect to the `broker-1` container:
 
 ```
 docker exec -ti streamingplatform_broker-1_1 bash
 ```
+
+And create the topic. 
 
 ```
 kafka-topics --create \
@@ -31,7 +33,7 @@ cas@cas ~> kafkacat -b localhost -t failsafe-test-topic -o end
 
 ## Start Kafka Producer that uses Replicated Topic
 
-Start the producer using `Kafkacat` and produce 3 messages
+Start the producer using `kafkacat` and produce 3 messages
 
 ```
 cas@cas ~> kafkacat -P -b localhost -t failsafe-test-topic
@@ -143,12 +145,79 @@ Next, let’s demonstrate consumer failover by killing one of the consumers and 
 
 First, kill the third consumer (CTRL-C in the consumer terminal does the trick).
 
-Now send seven more messages with the Kafka console-producer.
+In the remaining two consumer terminals, you should get a rebalance message, showing that these consumers have gotten new partitions assigned.
 
+```
+% Group test rebalanced (memberid rdkafka-c6b9607c-fe47-4ffa-b2aa-c783787eedbe): revoked: failsafe-test-topic [3], failsafe-test-topic [4], failsafe-test-topic [5]
+% Group test rebalanced (memberid rdkafka-c6b9607c-fe47-4ffa-b2aa-c783787eedbe): assigned: failsafe-test-topic [0], failsafe-test-topic [1], failsafe-test-topic [2], failsafe-test-topic [3]
+```
+
+Now send 5 more messages with the Kafka console-producer.
+
+Notice that the messages are spread evenly among the remaining consumers.
+
+We killed one consumer, sent more messages, and saw Kafka spread the load to remaining consumers. Kafka consumer failover works!
+
+## Kafka Broker Failover
 ### Describe Topic
+We are going to lists which broker owns (leader of) which partition, and list replicas and ISRs of each partition. ISRs are replicas that are up to date. Remember there are 8 partitions.
+
+Connect to the `broker-1` container:
+
+```
+docker exec -ti streamingplatform_broker-1_1 bash
+```
+
+And create the topic. 
 
 ```
 kafka-topics --describe \
     --topic failsafe-test-topic \
     --zookeeper zookeeper:2181
 ```    
+
+```
+Topic:failsafe-test-topic	PartitionCount:8	ReplicationFactor:3	Configs:
+	Topic: failsafe-test-topic	Partition: 0	Leader: 3	Replicas: 3,2,1	Isr: 3,2,1
+	Topic: failsafe-test-topic	Partition: 1	Leader: 1	Replicas: 1,3,2	Isr: 1,3,2
+	Topic: failsafe-test-topic	Partition: 2	Leader: 2	Replicas: 2,1,3	Isr: 2,1,3
+	Topic: failsafe-test-topic	Partition: 3	Leader: 3	Replicas: 3,1,2	Isr: 3,1,2
+	Topic: failsafe-test-topic	Partition: 4	Leader: 1	Replicas: 1,2,3	Isr: 1,2,3
+	Topic: failsafe-test-topic	Partition: 5	Leader: 2	Replicas: 2,3,1	Isr: 2,1,3
+	Topic: failsafe-test-topic	Partition: 6	Leader: 3	Replicas: 3,2,1	Isr: 3,2,1
+	Topic: failsafe-test-topic	Partition: 7	Leader: 1	Replicas: 1,3,2	Isr: 1,3,2
+```
+
+Notice how each broker gets a share of the partitions as leaders and followers. Also, see how Kafka replicates the partitions on each broker.
+
+### Test Broker Failover by killing 1st server
+
+Let’s kill the 2nd broker, and then test the failover.
+
+```
+docker stop streamingplatform_broker-2_1
+```
+
+Now that the first Kafka broker has stopped, let’s use Kafka topics describe to see that new leaders were elected!
+
+```
+Topic:failsafe-test-topic	PartitionCount:8	ReplicationFactor:3	Configs:
+	Topic: failsafe-test-topic	Partition: 0	Leader: 3	Replicas: 3,2,1	Isr: 3,1
+	Topic: failsafe-test-topic	Partition: 1	Leader: 1	Replicas: 1,3,2	Isr: 1,3
+	Topic: failsafe-test-topic	Partition: 2	Leader: 1	Replicas: 2,1,3	Isr: 1,3
+	Topic: failsafe-test-topic	Partition: 3	Leader: 3	Replicas: 3,1,2	Isr: 3,1
+	Topic: failsafe-test-topic	Partition: 4	Leader: 1	Replicas: 1,2,3	Isr: 1,3
+	Topic: failsafe-test-topic	Partition: 5	Leader: 3	Replicas: 2,3,1	Isr: 1,3
+	Topic: failsafe-test-topic	Partition: 6	Leader: 3	Replicas: 3,2,1	Isr: 3,1
+	Topic: failsafe-test-topic	Partition: 7	Leader: 1	Replicas: 1,3,2	Isr: 1,3
+```
+
+You can see that `broker-2` is no longer a leader for any of the partitions. 
+
+Let’s prove that failover worked by sending two more messages from the producer console. Notice if the consumers still get the messages.
+
+## Kafka Cluster Failover Review
+- Why did the three consumers not load share the messages at first?
+- How did we demonstrate failover for consumers?
+- How did we show failover for producers?
+- What tool and option did we use to show ownership of partitions and the ISRs?
