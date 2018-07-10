@@ -1,4 +1,4 @@
-# Getting started with Apache Kafka
+# Working with Apache Kafka Broker
 In this workshop we will learn the basics of working with Apache Kafka. Make sure that you have created the environment as described in [Preparing the Environment](../01-environment/01-environment.md).
 
 The main units of interest in Kafka are topics and messages. A topic is simply what you publish a message to, topics are a stream of messages.
@@ -162,35 +162,12 @@ kafka-topics --zookeeper zookeeper:2181 --delete --topic test-topic
 ```
 
 ## Working with the Kafkacat utility
-[Kafkacat](https://docs.confluent.io/current/app-development/kafkacat-usage.html#kafkacat-usage) is a command line utility that you can use to test and debug Apache Kafka deployments. You can use kafkacat to produce, consume, and list topic and partition information for Kafka. Described as “netcat for Kafka”, it is a swiss-army knife of tools for inspecting and creating data in Kafka.
+[Kafkacat](https://docs.confluent.io/current/app-development/kafkacat-usage.html#kafkacat-usage) is a command line utility that you can use to test and debug Apache Kafka deployments. You can use `kafkacat` to produce, consume, and list topic and partition information for Kafka. Described as “netcat for Kafka”, it is a swiss-army knife of tools for inspecting and creating data in Kafka.
 
 It is similar to the `kafka-console-producer` and `kafka-console-consumer` you have learnt and used above, but much more powerful. 
 
-kafkacat is an open-source utility, available at <https://github.com/edenhill/kafkacat>. It is not part of the Confluent platform and also not part of the streaming platform we run in docker. 
+For the installation of `kafkacat`, refer to [Infrastructure Setup](../00-setup/README.md).
 
-### Install kafakcat
-
-You can install kafkacat directly on the Ubuntu environment. First let's install the required packages:
-
-Install the Confluent public key, which is used to sign the packages in the APT repository:
-
-```
-wget -qO - https://packages.confluent.io/deb/4.1/archive.key | sudo apt-key add -
-```
-
-Add the repository to the `/etc/apt/sources.list`:
-
-```
-sudo add-apt-repository "deb [arch=amd64] https://packages.confluent.io/deb/4.1 stable main"
-```
-
-Run apt-get update and install the 2 dependencies as well as kafkacat:
- 
-```
-sudo apt-get update
-sudo apt-get install librdkafka-dev libyajl-dev
-apt-get install kafkacat
-```
 
 ### Show kafkacat options
 kafkacat has many options. If you just enter `kafkacat` without any options, all the options and some description is shown on the console:
@@ -291,7 +268,7 @@ Now let's use it to Produce and Consume messages.
 
 ### Consuming messages using kafkacat
 
-The simplest way to consume a topic is just specfiying the broker and the topic. By default all messages from the beginning of the topic will be shown 
+The simplest way to consume a topic is just specifying the broker and the topic. By default all messages from the beginning of the topic will be shown 
 
 ```
 kafkacat -b 10.0.1.4 -t test-topic
@@ -315,7 +292,7 @@ You can use the `-f` option to format the output. Here we show the partition (%p
 kafkacat -b 10.0.1.4 -t test-topic -f 'Part-%p => %k:%s\n'
 ```
 
-If there are keys which are Null, then you can use -Z to actually show NULL in the output:
+If there are keys which are Null, then you can use `-Z` to actually show NULL in the output:
 
 ```
 kafkacat -b 10.0.1.4 -t test-topic -f 'Part-%p => %k:%s\n' -Z
@@ -323,7 +300,7 @@ kafkacat -b 10.0.1.4 -t test-topic -f 'Part-%p => %k:%s\n' -Z
 
 ### Producing messages using kafkacat
 
-Producing messages with kafacat is as easy as consuming. Just add the `-P` option to switch to Producer mode. Just enter the data on the next line.
+Producing messages with `kafacat` is as easy as consuming. Just add the `-P` option to switch to Producer mode. Just enter the data on the next line.
 
 ```
 kafkacat -b 10.0.1.4 -t test-topic -P

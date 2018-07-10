@@ -1,5 +1,5 @@
-# Working with Kafka from Java
-In this workshop we will learn how to produce and consume messages using the [Kafka Java API](https://kafka.apache.org/documentation/#api).
+# Working with Avro and Java
+In this workshop we will learn how to produce and consume messages using the [Kafka Java API](https://kafka.apache.org/documentation/#api) using Avro for serializing and deserializing messages.
 
 ## Create the project in Eclipse IDE
 
@@ -7,11 +7,11 @@ Start the Eclipse IDE if not yet done.
 
 ### Create the project and the project definition (pom.xml)
 
-Create a new [Maven project](../99-misc/97-working-with-eclipse/README.md) and in the last step use `com.trivadis.kafkaws` for the **Group Id** and `java-kafka` for the **Artifact Id**.
+Create a new [Maven project](../99-misc/97-working-with-eclipse/README.md) and in the last step use `com.trivadis.kafkaws` for the **Group Id** and `java-avro-kafka` for the **Artifact Id**.
 
 Navigate to the **pom.xml** and double-click on it. The POM Editor will be displayed. 
 
-You can either use the GUI to edit your pom.xml or click on the last tab **pom.xml** to switch to the "code view". Let's do that. 
+You can either use the GUI to edit your `pom.xml` or navigate to the last tab **pom.xml** to switch to the "code view". Let's do that. 
 
 You will see the still rather empty definition.
 
@@ -19,18 +19,19 @@ You will see the still rather empty definition.
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.trivadis.kafkaws</groupId>
-  <artifactId>java-kafka</artifactId>
+  <artifactId>java-avro-kafka</artifactId>
   <version>0.0.1-SNAPSHOT</version>
 </project>
 ```
 
-Let's add some initial dependencies for our project. We will add some more dependencies to the POM throughout this workshop.
+Let's add some initial dependencies for our project. We will add some more dependencies to the POM throughout this workshop. 
 
-Copy the following block right after the <version> tag, before the closing </project> tag.
+Copy the following block right after the `<version>` tag, before the closing `</project>` tag.
 
 ```
    <properties>
        <kafka.version>1.1.0</kafka.version>
+       <avro.version>1.8.2</avro.version>
        <java.version>1.8</java.version>
        <slf4j-version>1.7.5</slf4j-version>
        
@@ -44,6 +45,12 @@ Copy the following block right after the <version> tag, before the closing </pro
            <groupId>org.apache.kafka</groupId>
            <artifactId>kafka-clients</artifactId>
            <version>${kafka.version}</version>
+       </dependency>    
+
+     	<dependency>
+           <groupId>org.apache.avro</groupId>
+           <artifactId>avro</artifactId>
+           <version>${avro.version}</version>
        </dependency>    
 
 		<dependency>
@@ -79,7 +86,7 @@ Copy the following block right after the <version> tag, before the closing </pro
 							<goal>java</goal>
 						</goals>
 						<configuration>
-							<mainClass>com.trivadis.kafkaws.producer.KafkaProducerSync</mainClass>
+							<mainClass>com.trivadis.kafkaws.producer.KafkaProducerAvro</mainClass>
 						</configuration>						
 					</execution>
 				</executions>
@@ -88,7 +95,9 @@ Copy the following block right after the <version> tag, before the closing </pro
 	</build>
 ```
 
-In a terminal window, perform the following command to update the Eclipse IDE project settings. 
+In a terminal window, perform the following command to update the Eclipse IDE project settings.
+
+> **Tip:** a quick way to open the terminal at the right place: right-click on the project and select **Show In** | **System Explorer** and then right-click on the folder **java-avro-kafka** and select **Open in Terminal**.
 
 ```
 mvn eclipse:eclipse
@@ -158,7 +167,7 @@ and execute the necessary kafka-topics command.
 kafka-topics --create \
     --replication-factor 3 \
     --partitions 8 \
-    --topic test-java-topic \
+    --topic test-java-avro-topic \
     --zookeeper zookeeper:2181
 ```
 
@@ -169,19 +178,112 @@ kafka-topics --list \
     --zookeeper zookeeper:2181
 ```
 
-This finishes the setup steps and our new project is ready to be used. Next we will start implementing a **Kafka Producer**.
+This finishes the setup steps and our new project is ready to be used. Next we will start implementing the **Kafka Producer** which uses Avro for the serialization. 
 
-## Create a Kafka Producer
+## Create an Avro Schema representing the Notification Message
 
-Let's first create a producer in synchronous mode.
+First create a new Folder `avro` under the existing folder **src/main/**.
 
-### Using the Synchronous mode
+Create a new File `Notification-v1.avsc` in the folder  **src/main/avro** just created above.
+
+Add the following Avro schema to the empty file.  
+
+```
+{
+  "type" : "record",
+  "namespace" : "com.trivadis.kafkaws.avro.v1",
+  "name" : "Notification",
+  "description" : "A simple Notification Event message",
+  "fields" : [
+	    { "type" : ["long", "null"],
+	      "name" : "id"
+	    },
+	    { "type" : ["string", "null"],
+	      "name" : "message"
+	    }
+  ]
+}
+```
+
+In the `pom.xml`, add the `avro-maven-plugin` plugin to the `<build><plugins>` section, just below the `exec-maven-plugin`. 
+
+```
+			<plugin>
+				<groupId>org.apache.avro</groupId>
+				<artifactId>avro-maven-plugin</artifactId>
+				<version>${avro.version}</version>
+				<executions>
+					<execution>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>schema</goal>
+							<goal>protocol</goal>
+							<goal>idl-protocol</goal>
+						</goals>
+						<configuration>
+							<fieldVisibility>private</fieldVisibility>
+							<sourceDirectory>${project.basedir}/src/main/avro</sourceDirectory>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+```
+
+This plugin will make sure, that classes are generated based on the Avro schema, whenever a `mvn compile` is executed. Let's exactly do that on the still rather empty project. But first also execute an `mvn eclipse:eclipse` to regenerate the Eclipse project settings. 
+
+```
+mvn eclipse:eclipse
+mvn compile
+```
+
+After running this command, refresh the project in Eclipse and you should see a new folder named `target/generated-sources/avro`. Expand into this folder and you should see one generated Java class named `Notification`.
+
+![Alt Image Text](./images/avro-generated-sources-folder.png "Schema Registry UI")
+
+Double click on the `Notification` class to inspect the code. 
+
+```
+package com.trivadis.kafkaws.avro.v1;
+
+import org.apache.avro.specific.SpecificData;
+
+@SuppressWarnings("all")
+@org.apache.avro.specific.AvroGenerated
+public class Notification extends org.apache.avro.specific.SpecificRecordBase implements org.apache.avro.specific.SpecificRecord {
+  private static final long serialVersionUID = 799361421243801515L;
+  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"Notification\",\"namespace\":\"com.trivadis.kafkaws.avro.v1\",\"fields\":[{\"name\":\"id\",\"type\":[\"long\",\"null\"]},{\"name\":\"message\",\"type\":[\"string\",\"null\"]}],\"description\":\"A simple Notification Event message\"}");
+  public static org.apache.avro.Schema getClassSchema() { return SCHEMA$; }
+   private java.lang.Long id;
+   private java.lang.CharSequence message;
+
+  /**
+   * Default constructor.  Note that this does not initialize fields
+   * to their default values from the schema.  If that is desired then
+   * one should use <code>newBuilder()</code>.
+   */
+  public Notification() {}
+
+  /**
+   * All-args constructor.
+   * @param id The new value for id
+   * @param message The new value for message
+   */
+  public Notification(java.lang.Long id, java.lang.CharSequence message) {
+    this.id = id;
+    this.message = message;
+  }
+  ...
+```
+
+You can see that the code is based on the information in the Avro schema. We will use this class when we produce as well as consume Avro messages to/from Kafka.
+
+## Create a Kafka Producer using Avro for serialization
 
 First create a new Java Package `com.trivadis.kafakws.producer` in the folder **src/main/java**.
 
-Create a new Java Class `KafkaProducerSync` in the package `com.trivadis.kafakws.producer` just created. 
+Create a new Java Class `KafkaProducerAvro` in the package `com.trivadis.kafakws.producer` just created. 
 
-Add the following code to the empty class to create a Kafka Producer. 
+Add the following code to the empty class to create a Kafka Producer. It is similar to the code we have seen in the previous workshop. We have changed both serializer to use the Confluent `KafkaAvroSerializer` class and added the URL to the Confluent Schema Registry API. 
 
 ```
 package com.trivadis.kafakws.producer;
@@ -191,30 +293,34 @@ import java.util.Properties;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.LongSerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 
-public class KafkaProducerSync {
+import io.confluent.kafka.serializers.KafkaAvroSerializer;
+import io.confluent.kafka.serializers.KafkaAvroSerializerConfig;
 
-    private final static String TOPIC = "test-java-topic";
+public class KafkaProducerAvro {
+
+    private final static String TOPIC = "test-java-avro-topic";
     private final static String BOOTSTRAP_SERVERS =
             "localhost:9092,localhost:9093,localhost:9094";
+    private final static String SCHEMA_REGISTRY_URL = "localhost:8081";
     
     private static Producer<Long, String> createProducer() {
         Properties props = new Properties();
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,
                                             BOOTSTRAP_SERVERS);
         props.put(ProducerConfig.CLIENT_ID_CONFIG, "KafkaExampleProducer");
-        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
-                                        LongSerializer.class.getName());
-        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
-                                    StringSerializer.class.getName());
+        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, KafkaAvroSerializer.class.getName());
+        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, KafkaAvroSerializer.class.getName());
+        props.put(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, SCHEMA_REGISTRY_URL);   // use constant for "schema.registry.url"
+
         return new KafkaProducer<>(props);
     }	
-}
 ```
 
-Kafka provides a synchronous send method to send a record to a topic. Let’s use this method to send some message ids and messages to the Kafka topic we created earlier.
+We will be using the synchronous way for producing messages to the Kafka topic we created above, but the other methods would work as well with Avro.
 
 ```
     static void runProducer(final int sendMessageCount, final int waitMsInBetween, final long id) throws Exception {
@@ -256,10 +362,12 @@ Next you define the main method.
     }
 ```
 
-The `main()` method accepts 3 parameters, the number of messages to produce, the time in ms to wait in-between sending each message and the ID of the producer.
+The `main()` method accepts 3 parameters, the number of messages to produce, the time in ms to wait inbetween sending each message and the ID of the producer.
 
 
-Now run it using the `mvn exec:java` command. It will generate 1000 messages, waiting 10ms in-between sending each message and use 0 for the ID. 
+
+
+Now run it using the `mvn exec:java` command. It will generate 1000 messages, waiting 10ms inbetween sending each message and use 0 for the ID. 
 
 ```
 mvn exec:java@producer -Dexec.args="1000,100,0"
@@ -271,89 +379,28 @@ Use `kafkacat` or `kafka-console-consumer` to consume the messages from the topi
 kafkacat -b localhost -t test-java-topic -f 'Part-%p => %k:%s\n'
 ```
 
-```
-% Auto-selecting Consumer mode (use -P or -C to override)
-Part-5 => :[0] Hello Kafka 0
-Part-4 => :[0] Hello Kafka 1
-Part-3 => :[0] Hello Kafka 4
-Part-2 => :[0] Hello Kafka 7
-Part-5 => :[0] Hello Kafka 8
-Part-4 => :[0] Hello Kafka 9
-Part-7 => :[0] Hello Kafka 2
-Part-7 => :[0] Hello Kafka 10
-Part-1 => :[0] Hello Kafka 3
-Part-1 => :[0] Hello Kafka 11
-Part-3 => :[0] Hello Kafka 12
-Part-6 => :[0] Hello Kafka 5
-Part-6 => :[0] Hello Kafka 13
-Part-0 => :[0] Hello Kafka 6
-Part-0 => :[0] Hello Kafka 14
-Part-2 => :[0] Hello Kafka 15
-Part-5 => :[0] Hello Kafka 16
-Part-4 => :[0] Hello Kafka 17
-Part-7 => :[0] Hello Kafka 18
-Part-1 => :[0] Hello Kafka 19
-Part-3 => :[0] Hello Kafka 20
-Part-6 => :[0] Hello Kafka 21
-Part-0 => :[0] Hello Kafka 22
-Part-2 => :[0] Hello Kafka 23
-Part-2 => :[0] Hello Kafka 31
-Part-5 => :[0] Hello Kafka 24
-Part-5 => :[0] Hello Kafka 32
-Part-4 => :[0] Hello Kafka 25
-Part-7 => :[0] Hello Kafka 26
-Part-1 => :[0] Hello Kafka 27
-Part-4 => :[0] Hello Kafka 33
-Part-3 => :[0] Hello Kafka 28
-Part-6 => :[0] Hello Kafka 29
-Part-0 => :[0] Hello Kafka 30
-Part-3 => :[0] Hello Kafka 36
-Part-2 => :[0] Hello Kafka 39
-Part-5 => :[0] Hello Kafka 40
-...
-```
-
-### Using the Id field as the key
+## Register in Schema Registry using Maven
 
 ```
-    static void runProducer(final int sendMessageCount, final int waitMsInBetween, final long id) throws Exception {
-        final Producer<Long, String> producer = createProducer();
-        long time = System.currentTimeMillis();
-        Long key = (id > 0) ? id : null;
-        
-        try {
-            for (long index = 0; index < sendMessageCount; index++) {
-                final ProducerRecord<Long, String> record =
-                        new ProducerRecord<>(TOPIC, key,
-                        		"[" + id + "] Hello Kafka " + index);
-
-                RecordMetadata metadata = producer.send(record).get();
-
-                long elapsedTime = System.currentTimeMillis() - time;
-                System.out.printf("[" + id + "] sent record(key=%s value=%s) " +
-                                "meta(partition=%d, offset=%d) time=%d\n",
-                        record.key(), record.value(), metadata.partition(),
-                        metadata.offset(), elapsedTime);
-                time = System.currentTimeMillis();
-                
-                Thread.sleep(waitMsInBetween);
-            }
-        } finally {
-            producer.flush();
-            producer.close();
-        }
-    }  
+			<plugin>
+				<groupId>io.confluent</groupId>
+				<artifactId>kafka-schema-registry-maven-plugin</artifactId>
+				<version>3.2.0</version>
+				<configuration>
+					<schemaRegistryUrls>
+						<param>http://192.168.69.135:8081</param>
+					</schemaRegistryUrls>
+					<subjects>
+						<tweet-value>src/main/resources/avro/TwitterSchema.avsc</tweet-value>
+					</subjects>
+				</configuration>
+				<goals>
+					<goal>register</goal>
+					<goal>test-compatibility</goal>
+				</goals>
+			</plugin>
 ```
 
-## Review Producer
-
-- What will happen if the first server is down in the bootstrap list? Can the producer still connect to the other Kafka brokers in the cluster?
-
-- When would you use Kafka async send vs. sync send?
-
-- Why do you need two serializers for a Kafka record?
-
-- What does the Callback lambda do?
 
 
 ## Create a Kafka Consumer
@@ -469,7 +516,7 @@ log4j.logger.org.apache.kafka.clients.consumer.internals.ConsumerCoordinator=DEB
 
 If will show a DEBUG message whenever the auto commit is done. 
 
-Before we can run it, add the consumer to the `<executions>` section in the `pom.xml`.
+Before we can run it, asdd the consumer to the <executions> section in the `pom.xml`.
 
 ```
 					<execution>

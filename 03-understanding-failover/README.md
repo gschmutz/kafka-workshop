@@ -1,5 +1,7 @@
 # Understanding Kafka Failover
 In this tutorial, we will demonstrate consumer failover and broker failover. We also demonstrate load balancing Kafka consumers. We show how, with many groups, Kafka acts like a Publish/Subscribe. But, when we put all of our consumers in the same group, Kafka will load share the messages to the consumers in the same group (more like a queue than a topic in a traditional MOM sense).
+
+For the exercise we will be using the `kafkacat` command line utility we have learned about in [Working with Apache Kafka Broker](../02-working-with-kafka-broker/README.md). For the installation of Kafkacat, refer to [Infrastructure Setup](../00-setup/README.md).
     
 ### Create Kafka replicated topic my-failsafe-topic 
 
@@ -25,10 +27,10 @@ Notice that the replication factor gets set to 3, and the topic name is `failsaf
 
 ## Start Kafka Consumer that uses Replicated Topic
 
-Start a consumer using `kafkacat` on the topic `failsafe-test-topic`.
+Start a consumer using `kafkacat` on the topic `failsafe-test-topic`. Use the `-o end` switch to read only from the end. 
 
 ```
-cas@cas ~> kafkacat -b localhost -t failsafe-test-topic -o end
+kafkacat -b localhost -t failsafe-test-topic -o end
 ```
 
 ## Start Kafka Producer that uses Replicated Topic
