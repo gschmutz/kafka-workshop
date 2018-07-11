@@ -324,13 +324,15 @@ We will be using the synchronous way for producing messages to the Kafka topic w
 
 ```
     static void runProducer(final int sendMessageCount, final int waitMsInBetween, final long id) throws Exception {
-        final Producer<Long, String> producer = createProducer();
+        final Producer<Long, Notification> producer = createProducer();
         long time = System.currentTimeMillis();
-        
+        Long key = (id > 0) ? id : null;
+                
         try {
             for (long index = 0; index < sendMessageCount; index++) {
-                final ProducerRecord<Long, String> record =
-                        new ProducerRecord<>(TOPIC, "[" + id + "] Hello Kafka " + index);
+            	Notification notification = new Notification(id, "Hello Kafka " + index);
+                final ProducerRecord<Long, Notification> record =
+                        new ProducerRecord<>(TOPIC, key, notification);
 
                 RecordMetadata metadata = producer.send(record).get();
 
@@ -347,7 +349,7 @@ We will be using the synchronous way for producing messages to the Kafka topic w
             producer.flush();
             producer.close();
         }
-    }  
+    } 
 ```
 
 Next you define the main method.
@@ -364,20 +366,19 @@ Next you define the main method.
 
 The `main()` method accepts 3 parameters, the number of messages to produce, the time in ms to wait inbetween sending each message and the ID of the producer.
 
+Use `kafkacat` or `kafka-console-consumer` to consume the messages from the topic `test-java-avro-topic `.
 
+```
+kafkacat -b 192.168.25.137 -t test-java-avro-topic
+```
 
-
-Now run it using the `mvn exec:java` command. It will generate 1000 messages, waiting 10ms inbetween sending each message and use 0 for the ID. 
+Now run it using the `mvn exec:java` command. It will generate 1000 messages, waiting 10ms in-between sending each message and use 0 for the ID. 
 
 ```
 mvn exec:java@producer -Dexec.args="1000,100,0"
 ```
 
-Use `kafkacat` or `kafka-console-consumer` to consume the messages from the topic `test-java-topic`.
 
-```
-kafkacat -b localhost -t test-java-topic -f 'Part-%p => %k:%s\n'
-```
 
 ## Register in Schema Registry using Maven
 
@@ -403,332 +404,3 @@ kafkacat -b localhost -t test-java-topic -f 'Part-%p => %k:%s\n'
 
 
 
-## Create a Kafka Consumer
-
-Just like we did with the producer, you need to specify bootstrap servers. You also need to define a `group.id` that identifies which consumer group this consumer belongs. Then you need to designate a Kafka record key deserializer and a record value deserializer. Then you need to subscribe the consumer to the topic you created in the producer tutorial.
-
-### Kafka Consumer with Automatic Offset Committing
-
-First create a new Java Package `com.trivadis.kafakws.consumer` in the folder **src/main/java**.
-
-Create a new Java Class `KafkaConsumerAuto` in the package `com.trivadis.kafakws.consumer` just created. 
-
-Add the following code to the empty class. 
-
-Now, that we imported the Kafka classes and defined some constants, let’s create a Kafka producer.
-
-First imported the Kafka classes, define some constants and create the Kafka consumer.
-
-```
-package com.trivadis.kafkaws.consumer;
-
-import java.util.Collections;
-import java.util.Properties;
-
-import org.apache.kafka.clients.consumer.Consumer;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.common.serialization.LongDeserializer;
-import org.apache.kafka.common.serialization.StringDeserializer;
-
-public class KafkaConsumerAuto {
-	private final static String TOPIC = "test-java-topic";
-    private final static String BOOTSTRAP_SERVERS =
-            "localhost:9092,localhost:9093,localhost:9094";
-    
-    private static Consumer<Long, String> createConsumer() {
-        final Properties props = new Properties();
-        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG,
-                                    BOOTSTRAP_SERVERS);
-        props.put(ConsumerConfig.GROUP_ID_CONFIG,
-                                    "KafkaExampleConsumer");
-        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
-                LongDeserializer.class.getName());
-        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
-                StringDeserializer.class.getName());
-
-        // Create the consumer using props.
-        final Consumer<Long, String> consumer =
-                                    new KafkaConsumer<>(props);
-
-        // Subscribe to the topic.
-        consumer.subscribe(Collections.singletonList(TOPIC));
-        return consumer;
-    }    
-}
-```
-
-With that in place, let's process the record with the Kafka Consumer. 
-
-```
-    static void runConsumer(int waitMsInBetween) throws InterruptedException {
-        final Consumer<Long, String> consumer = createConsumer();
-
-        final int giveUp = 100;   int noRecordsCount = 0;
-
-        while (true) {
-            final ConsumerRecords<Long, String> consumerRecords =
-                    consumer.poll(1000);
-
-            if (consumerRecords.count()==0) {
-                noRecordsCount++;
-                if (noRecordsCount > giveUp) break;
-                else continue;
-            }
-            
-            consumerRecords.forEach(record -> {
-                System.out.printf("%d - Consumer Record:(Key: %d, Value: %s, Partition: %d, Offset: %d)\n",
-                        consumerRecords.count(), record.key(), record.value(),
-                        record.partition(), record.offset());
-                try {
-                	Thread.sleep(waitMsInBetween);
-                } catch (InterruptedException e) {
-				} 
-                
-            });
-        }
-        consumer.close();
-        System.out.println("DONE");
-    }  
-```
-
-Notice you use `ConsumerRecords` which is a group of records from a Kafka topic partition. The `ConsumerRecords` class is a container that holds a list of ConsumerRecord(s) per partition for a particular topic. There is one `ConsumerRecord` list for every topic partition returned by a the `consumer.poll()`.
-
-Next you define the main method. You can pass the amount of time the consumer spends for processing each record consumed.
-
-```
-    public static void main(String... args) throws Exception {
-        if (args.length == 0) {
-        	runConsumer(10);
-        } else {
-        	runConsumer(Integer.parseInt(args[0]));
-        }
-    }
-```
-
-The main method just calls `runConsumer`.
-
-Before we run the consumer, let's add a new line to the `log4j.properties` configuration, just right after the `log4j.logger.org.apache.kafka=INFO` line. 
-
-```
-log4j.logger.org.apache.kafka.clients.consumer.internals.ConsumerCoordinator=DEBUG
-```
-
-If will show a DEBUG message whenever the auto commit is done. 
-
-Before we can run it, asdd the consumer to the <executions> section in the `pom.xml`.
-
-```
-					<execution>
-						<id>consumer</id>
-						<goals>
-							<goal>java</goal>
-						</goals>
-						<configuration>
-							<mainClass>com.trivadis.kafkaws.consumer.KafkaConsumerManual</mainClass>
-						</configuration>						
-					</execution>
-```
-
-Now run it using the `mvn exec:java` command.
-
-```
-mvn exec:java@consumer -Dexec.args="0"
-```
-
-### Kafka Consumer with Manual Offset Control
-
-Create a new Java Class `KafkaConsumerManual` in the package `com.trivadis.kafakws.consumer` just created by copy-pasting from the class `KafkaConsumerAuto`.
-
-Replace the `runConsumer()` method with the code below.
-
-```
-    static void runConsumer(int waitMsInBetween) throws InterruptedException {
-        final Consumer<Long, String> consumer = createConsumer();
-
-        final int giveUp = 100;   
-        int noRecordsCount = 0;
-
-        while (true) {
-            final ConsumerRecords<Long, String> consumerRecords = consumer.poll(1000);
-
-            if (consumerRecords.count()==0) {
-                noRecordsCount++;
-                if (noRecordsCount > giveUp) 
-                	break;
-            }
-
-            consumerRecords.forEach(record -> {
-                System.out.printf("%d - Consumer Record:(Key: %d, Value: %s, Partition: %d, Offset: %d)\n",
-                        consumerRecords.count(), record.key(), record.value(),
-                        record.partition(), record.offset());
-                try {
-                	Thread.sleep(waitMsInBetween);
-                } catch (InterruptedException e) {
-				} 
-            });
-
-            consumer.commitAsync();
-        }
-        consumer.close();
-        System.out.println("DONE");
-    }
-```
-
-Make sure to change the Consumer Group (`ConsumerConfig.GROUP_ID_CONFIG`) to `KafkaConsumerManual` and set the `ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG` to `false` in the `createConsumer()` method. 
-
-```
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, "KakfaConsumerManual");
-        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
-```
-
-## Try running Producer and Consumer
-Run the consumer from your IDE or Terminal (Maven). Then run the producer from above from your IDE or Terminal (Maven). You should see the consumer get the records that the producer sent.
-
-### Three Consumers in same group and one Producer sending 25 messages
-
-Start the consumer 3 times by executing the following command in 3 different terminal windows.
-
-```
-mvn exec:java@consumer -Dexec.args="0"
-```
-
-and then start the producer
-
-```
-mvn exec:java@producer -Dexec.args="25 0 0"
-```
-
-#### Producer Output
-
-```
-[0] sent record(key=null value=[0] Hello Kafka 0) meta(partition=0, offset=284) time=804
-[0] sent record(key=null value=[0] Hello Kafka 1) meta(partition=2, offset=283) time=27
-[0] sent record(key=null value=[0] Hello Kafka 2) meta(partition=5, offset=284) time=11
-[0] sent record(key=null value=[0] Hello Kafka 3) meta(partition=4, offset=1284) time=65
-[0] sent record(key=null value=[0] Hello Kafka 4) meta(partition=7, offset=284) time=26
-[0] sent record(key=null value=[0] Hello Kafka 5) meta(partition=1, offset=283) time=8
-[0] sent record(key=null value=[0] Hello Kafka 6) meta(partition=3, offset=283) time=18
-[0] sent record(key=null value=[0] Hello Kafka 7) meta(partition=6, offset=283) time=16
-[0] sent record(key=null value=[0] Hello Kafka 8) meta(partition=0, offset=285) time=19
-[0] sent record(key=null value=[0] Hello Kafka 9) meta(partition=2, offset=284) time=17
-[0] sent record(key=null value=[0] Hello Kafka 10) meta(partition=5, offset=285) time=21
-[0] sent record(key=null value=[0] Hello Kafka 11) meta(partition=4, offset=1285) time=11
-[0] sent record(key=null value=[0] Hello Kafka 12) meta(partition=7, offset=285) time=7
-[0] sent record(key=null value=[0] Hello Kafka 13) meta(partition=1, offset=284) time=15
-[0] sent record(key=null value=[0] Hello Kafka 14) meta(partition=3, offset=284) time=21
-[0] sent record(key=null value=[0] Hello Kafka 15) meta(partition=6, offset=284) time=18
-[0] sent record(key=null value=[0] Hello Kafka 16) meta(partition=0, offset=286) time=12
-[0] sent record(key=null value=[0] Hello Kafka 17) meta(partition=2, offset=285) time=18
-[0] sent record(key=null value=[0] Hello Kafka 18) meta(partition=5, offset=286) time=9
-[0] sent record(key=null value=[0] Hello Kafka 19) meta(partition=4, offset=1286) time=4
-[0] sent record(key=null value=[0] Hello Kafka 20) meta(partition=7, offset=286) time=7
-[0] sent record(key=null value=[0] Hello Kafka 21) meta(partition=1, offset=285) time=17
-[0] sent record(key=null value=[0] Hello Kafka 22) meta(partition=3, offset=285) time=14
-[0] sent record(key=null value=[0] Hello Kafka 23) meta(partition=6, offset=285) time=8
-[0] sent record(key=null value=[0] Hello Kafka 24) meta(partition=0, offset=287) time=16
-```
-
-#### Consumer 1 Output (same consumer group)
-```
-1 - Consumer Record:(Key: null, Value: [0] Hello Kafka 0, Partition: 0, Offset: 284)
-1 - Consumer Record:(Key: null, Value: [0] Hello Kafka 1, Partition: 2, Offset: 283)
-1 - Consumer Record:(Key: null, Value: [0] Hello Kafka 5, Partition: 1, Offset: 283)
-1 - Consumer Record:(Key: null, Value: [0] Hello Kafka 8, Partition: 0, Offset: 285)
-1 - Consumer Record:(Key: null, Value: [0] Hello Kafka 9, Partition: 2, Offset: 284)
-1 - Consumer Record:(Key: null, Value: [0] Hello Kafka 13, Partition: 1, Offset: 284)
-1 - Consumer Record:(Key: null, Value: [0] Hello Kafka 16, Partition: 0, Offset: 286)
-1 - Consumer Record:(Key: null, Value: [0] Hello Kafka 17, Partition: 2, Offset: 285)
-1 - Consumer Record:(Key: null, Value: [0] Hello Kafka 21, Partition: 1, Offset: 285)
-1 - Consumer Record:(Key: null, Value: [0] Hello Kafka 24, Partition: 0, Offset: 287)
-```
-#### Consumer 2 Output (same consumer group)
-
-```
-1 - Consumer Record:(Key: null, Value: [0] Hello Kafka 2, Partition: 5, Offset: 284)
-2 - Consumer Record:(Key: null, Value: [0] Hello Kafka 6, Partition: 3, Offset: 283)
-2 - Consumer Record:(Key: null, Value: [0] Hello Kafka 3, Partition: 4, Offset: 1284)
-2 - Consumer Record:(Key: null, Value: [0] Hello Kafka 10, Partition: 5, Offset: 285)
-2 - Consumer Record:(Key: null, Value: [0] Hello Kafka 11, Partition: 4, Offset: 1285)
-1 - Consumer Record:(Key: null, Value: [0] Hello Kafka 14, Partition: 3, Offset: 284)
-1 - Consumer Record:(Key: null, Value: [0] Hello Kafka 18, Partition: 5, Offset: 286)
-1 - Consumer Record:(Key: null, Value: [0] Hello Kafka 19, Partition: 4, Offset: 1286)
-1 - Consumer Record:(Key: null, Value: [0] Hello Kafka 22, Partition: 3, Offset: 285)
-```
-
-#### Consumer 3 Output (same consumer group)
-
-```
-1 - Consumer Record:(Key: null, Value: [0] Hello Kafka 4, Partition: 7, Offset: 284)
-1 - Consumer Record:(Key: null, Value: [0] Hello Kafka 7, Partition: 6, Offset: 283)
-1 - Consumer Record:(Key: null, Value: [0] Hello Kafka 12, Partition: 7, Offset: 285)
-1 - Consumer Record:(Key: null, Value: [0] Hello Kafka 15, Partition: 6, Offset: 284)
-1 - Consumer Record:(Key: null, Value: [0] Hello Kafka 20, Partition: 7, Offset: 286)
-1 - Consumer Record:(Key: null, Value: [0] Hello Kafka 23, Partition: 6, Offset: 285)
-```
-**Questions**
-
-- Which consumer owns partition 10?
-- How many ConsumerRecords objects did Consumer 0 get?
-- What is the next offset from Partition 11 that Consumer 2 should get?
-- Why does each consumer get unique messages?
-
-### Three Consumers in same group and one Producer sending 10 messages using key
-
-Start the consumer 3 times by executing the following command in 3 different terminal windows.
-
-```
-mvn exec:java@consumer -Dexec.args="0"
-```
-
-and then start the producer (using 10 for the ID)
-
-```
-mvn exec:java@producer -Dexec.args="25 0 10"
-```
-
-#### Producer Output
-
-```
-[10] sent record(key=10 value=[10] Hello Kafka 0) meta(partition=3, offset=289) time=326
-[10] sent record(key=10 value=[10] Hello Kafka 1) meta(partition=3, offset=290) time=7
-[10] sent record(key=10 value=[10] Hello Kafka 2) meta(partition=3, offset=291) time=3
-[10] sent record(key=10 value=[10] Hello Kafka 3) meta(partition=3, offset=292) time=3
-[10] sent record(key=10 value=[10] Hello Kafka 4) meta(partition=3, offset=293) time=3
-[10] sent record(key=10 value=[10] Hello Kafka 5) meta(partition=3, offset=294) time=2
-[10] sent record(key=10 value=[10] Hello Kafka 6) meta(partition=3, offset=295) time=2
-[10] sent record(key=10 value=[10] Hello Kafka 7) meta(partition=3, offset=296) time=2
-[10] sent record(key=10 value=[10] Hello Kafka 8) meta(partition=3, offset=297) time=2
-[10] sent record(key=10 value=[10] Hello Kafka 9) meta(partition=3, offset=298) time=3
-```
-
-#### Consumer 1 Output (same consumer group)
-nothing consumed
-
-#### Consumer 2 Output (same consumer group)
-```
-1 - Consumer Record:(Key: 10, Value: [10] Hello Kafka 0, Partition: 3, Offset: 299)
-3 - Consumer Record:(Key: 10, Value: [10] Hello Kafka 1, Partition: 3, Offset: 300)
-3 - Consumer Record:(Key: 10, Value: [10] Hello Kafka 2, Partition: 3, Offset: 301)
-3 - Consumer Record:(Key: 10, Value: [10] Hello Kafka 3, Partition: 3, Offset: 302)
-6 - Consumer Record:(Key: 10, Value: [10] Hello Kafka 4, Partition: 3, Offset: 303)
-6 - Consumer Record:(Key: 10, Value: [10] Hello Kafka 5, Partition: 3, Offset: 304)
-6 - Consumer Record:(Key: 10, Value: [10] Hello Kafka 6, Partition: 3, Offset: 305)
-6 - Consumer Record:(Key: 10, Value: [10] Hello Kafka 7, Partition: 3, Offset: 306)
-6 - Consumer Record:(Key: 10, Value: [10] Hello Kafka 8, Partition: 3, Offset: 307)
-6 - Consumer Record:(Key: 10, Value: [10] Hello Kafka 9, Partition: 3, Offset: 308)
-```
-
-#### Consumer 3 Output (same consumer group)
-nothing consumed
-
-**Questions**
-
-- Why is consumer 2 the only one getting data?
-
-## Review Consumer
-
-- How did we demonstrate Consumers in a Consumer Group dividing up topic partitions and sharing them?
-- How did we demonstrate Consumers in different Consumer Groups each getting their own offsets?
-- How many records does poll get?
-- Does a call to poll ever get records from two different partitions?

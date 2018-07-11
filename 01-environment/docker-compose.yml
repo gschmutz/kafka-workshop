@@ -257,6 +257,15 @@ services:
       - "28080:8080"
     restart: always
 
+  mosquitto-1:
+    image: eclipse-mosquitto:latest
+    hostname: mosquitto-1
+    ports: 
+      - "1883:1883"
+      - "9001:9001"
+#    volumes:
+#      - ./mosquitto/mosquitto-1.conf:/mosquitto/config/mosquitto.conf
+
   hawtio:
     image: "indigo/hawtio"
     hostname: hawtio
