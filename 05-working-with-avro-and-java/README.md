@@ -66,6 +66,19 @@ Copy the following block right after the `<version>` tag, before the closing `</
 		    <version>${slf4j-version}</version>
 		</dependency>
     </dependencies>
+
+	<repositories>
+		<repository>
+			<id>confluent</id>
+			<url>http://packages.confluent.io/maven/</url>
+		</repository>
+	</repositories>
+	<pluginRepositories>
+		<pluginRepository>
+			<id>confluent</id>
+			<url>http://packages.confluent.io/maven/</url>
+		</pluginRepository>
+	</pluginRepositories>    
     
 	<build>
 		<defaultGoal>install</defaultGoal>
