@@ -46,6 +46,12 @@ Copy the following block right after the `<version>` tag, before the closing `</
            <artifactId>kafka-clients</artifactId>
            <version>${kafka.version}</version>
        </dependency>    
+          
+		<dependency>
+			<groupId>io.confluent</groupId>
+			<artifactId>kafka-avro-serializer</artifactId>
+			<version>${confluent.version}</version>
+		</dependency>
 
      	<dependency>
            <groupId>org.apache.avro</groupId>
@@ -305,7 +311,7 @@ public class KafkaProducerAvro {
     private final static String TOPIC = "test-java-avro-topic";
     private final static String BOOTSTRAP_SERVERS =
             "localhost:9092,localhost:9093,localhost:9094";
-    private final static String SCHEMA_REGISTRY_URL = "localhost:8081";
+    private final static String SCHEMA_REGISTRY_URL = "http://localhost:8081";
     
     private static Producer<Long, String> createProducer() {
         Properties props = new Properties();
@@ -521,6 +527,10 @@ public class KafkaConsumerAvro {
 
 ## Register in Schema Registry using Maven
 
+To register an Avro schema automatically, you can use the following Maven plugin. 
+
+Add the following definition to the `pom.xml`.
+
 ```
 			<plugin>
 				<groupId>io.confluent</groupId>
@@ -531,7 +541,7 @@ public class KafkaConsumerAvro {
 						<param>http://192.168.69.135:8081</param>
 					</schemaRegistryUrls>
 					<subjects>
-						<tweet-value>src/main/resources/avro/TwitterSchema.avsc</tweet-value>
+						<tweet-value>src/main/avro/Notification-v1.avsc</tweet-value>
 					</subjects>
 				</configuration>
 				<goals>
@@ -541,5 +551,10 @@ public class KafkaConsumerAvro {
 			</plugin>
 ```
 
+Now you can use the following command to register the schemas with the Schema Registry:
+
+```
+mvn schema-registry:register
+```
 
 
