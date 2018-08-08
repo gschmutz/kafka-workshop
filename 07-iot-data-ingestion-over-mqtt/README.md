@@ -122,7 +122,7 @@ Therefore change the definition of the `connect` service in the `docker-compose.
 
 ```
   connect:
-    image: confluentinc/cp-kafka-connect:5.0.0-beta30-1
+    image: confluentinc/cp-kafka-connect:5.0.0
     hostname: connect
     depends_on:
       - zookeeper
