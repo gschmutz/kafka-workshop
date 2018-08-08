@@ -59,7 +59,7 @@ Copy the code from below and paste it into a docker-compose.yml file. Alternativ
 version: '2'
 services:
   zookeeper:
-    image: confluentinc/cp-zookeeper:5.0.0-beta30-1
+    image: confluentinc/cp-zookeeper:5.0.0
     hostname: zookeeper
     ports:
       - "2181:2181"
@@ -69,7 +69,7 @@ services:
     restart: always
 
   broker-1:
-    image: confluentinc/cp-enterprise-kafka:5.0.0-beta30-1
+    image: confluentinc/cp-enterprise-kafka:5.0.0
     hostname: broker-1
     depends_on:
       - zookeeper
@@ -94,7 +94,7 @@ services:
     restart: always
 
   broker-2:
-    image: confluentinc/cp-enterprise-kafka:5.0.0-beta30-1
+    image: confluentinc/cp-enterprise-kafka:5.0.0
     hostname: broker-2
     depends_on:
       - zookeeper
@@ -119,7 +119,7 @@ services:
     restart: always
 
   broker-3:
-    image: confluentinc/cp-enterprise-kafka:5.0.0-beta30-1
+    image: confluentinc/cp-enterprise-kafka:5.0.0
     hostname: broker-3
     depends_on:
       - zookeeper
@@ -144,7 +144,7 @@ services:
     restart: always
       
   schema_registry:
-    image: confluentinc/cp-schema-registry:5.0.0-beta30-1
+    image: confluentinc/cp-schema-registry:5.0.0
     hostname: schema_registry
     depends_on:
       - zookeeper
@@ -159,7 +159,7 @@ services:
     restart: always
       
   connect:
-    image: confluentinc/cp-kafka-connect:5.0.0-beta30-1
+    image: confluentinc/cp-kafka-connect:5.0.0
     hostname: connect
     depends_on:
       - zookeeper
@@ -194,7 +194,7 @@ services:
     restart: always
 
   rest-proxy:
-    image: confluentinc/cp-kafka-rest:5.0.0-beta30-1
+    image: confluentinc/cp-kafka-rest:5.0.0
     hostname: rest-proxy
     depends_on:
       - broker-1
@@ -209,7 +209,7 @@ services:
     restart: always
 
   ksql-server:
-    image: confluentinc/cp-ksql-server:5.0.0-beta30
+    image: confluentinc/cp-ksql-server:5.0.0
     hostname: ksql-server
     ports:
       - '8088:8088'
@@ -224,24 +224,8 @@ services:
       KSQL_CONSUMER_INTERCEPTOR_CLASSES: io.confluent.monitoring.clients.interceptor.MonitoringConsumerInterceptor
     restart: always
 
-  ksql-cli:
-    image: confluentinc/ksql-cli:5.0.0-beta30
-    hostname: ksql-cli
-    depends_on:
-      - broker-1
-      - schema_registry
-      - ksql-server
-    command: "perl -e 'while(1){ sleep 99999 }'"
-    environment:
-      KSQL_CONFIG_DIR: "/etc/ksql"
-      KSQL_LOG4J_OPTS: "-Dlog4j.configuration=file:/etc/ksql/log4j-rolling.properties"
-      STREAMS_BOOTSTRAP_SERVERS: broker-1:9092
-      STREAMS_SCHEMA_REGISTRY_HOST: schema_registry
-      STREAMS_SCHEMA_REGISTRY_PORT: 8081
-    restart: always
-
   control-center:
-    image: confluentinc/cp-enterprise-control-center:5.0.0-beta30-1
+    image: confluentinc/cp-enterprise-control-center:5.0.0
     hostname: control-center
     depends_on:
       - zookeeper
@@ -293,11 +277,20 @@ services:
     restart: always
 
   nifi:
-    image: apache/nifi:1.6.0
+    image: apache/nifi:1.7.0
     hostname: nifi
     ports:
       - "28080:8080"
     restart: always
+
+  mosquitto-1:
+    image: eclipse-mosquitto:latest
+    hostname: mosquitto-1
+    ports: 
+      - "1883:1883"
+      - "9001:9001"
+#    volumes:
+#      - ./mosquitto/mosquitto-1.conf:/mosquitto/config/mosquitto.conf
 
   hawtio:
     image: "indigo/hawtio"
