@@ -142,7 +142,7 @@ Run apt-get update and install the 2 dependencies as well as kafkacat:
 ```
 sudo apt-get update
 sudo apt-get install librdkafka-dev libyajl-dev
-apt-get install kafkacat
+sudo apt-get install kafkacat
 ```
 
 Now we can use it via the `kafkacat` command:
