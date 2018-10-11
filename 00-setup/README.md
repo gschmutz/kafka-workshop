@@ -11,6 +11,7 @@ For the workshops, the following software needs to be installed locally.
   * Docker with Docker Compose
   * kafkacat (optional)
   * Fish Shell (optional)
+  * SSH Server
 
 The following chapters show how to install the necessary software.
 
@@ -20,6 +21,21 @@ You can also get a virtual machine with all the software pre-installed.
 
 ## Ubuntu Linux
 For the workshops we assume a Ubuntu Linux environment. You can either install that on your machine, use the Virtual Machine image provide with the course or setup a VM in the cloud, for example through the Azure market place. 
+
+### Install Net Tools
+
+To be able to retrieve the IP address using `ifconfig` we have to install Net Tools:
+
+```
+sudo apt install net-tools
+```
+
+### Enable SSH (optional)
+In order to work with the virtual machine from an external terminal, we need to enable SSH. 
+
+```
+sudo apt install ssh
+```
 
 ## Apache Java JDK 8
 If you want to install the latest JDK 1.8, use the webupd8team PPA.
