@@ -299,14 +299,14 @@ You can see that the code is based on the information in the Avro schema. We wil
 
 ## Create a Kafka Producer using Avro for serialization
 
-First create a new Java Package `com.trivadis.kafakws.producer` in the folder **src/main/java**.
+First create a new Java Package `com.trivadis.kafkaws.producer` in the folder **src/main/java**.
 
 Create a new Java Class `KafkaProducerAvro` in the package `com.trivadis.kafakws.producer` just created. 
 
 Add the following code to the empty class to create a Kafka Producer. It is similar to the code we have seen in the previous workshop. We have changed both serializer to use the Confluent `KafkaAvroSerializer` class and added the URL to the Confluent Schema Registry API. 
 
 ```
-package com.trivadis.kafakws.producer;
+package com.trivadis.kafkaws.producer;
 
 import java.util.Properties;
 
@@ -446,7 +446,7 @@ If you click on the schema to the left, you can view the details of the schema. 
 
 ## Create a Kafka Consumer using Avro for serialization
 
-First create a new Java Package `com.trivadis.kafakws.consumer` in the folder **src/main/java**.
+First create a new Java Package `com.trivadis.kafkaws.consumer` in the folder **src/main/java**.
 
 Create a new Java Class `KafkaConsumerAvro` in the package `com.trivadis.kafakws.consumer` just created. 
 
