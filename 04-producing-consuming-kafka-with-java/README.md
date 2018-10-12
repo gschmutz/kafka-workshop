@@ -478,7 +478,7 @@ Before we can run it, add the consumer to the `<executions>` section in the `pom
 							<goal>java</goal>
 						</goals>
 						<configuration>
-							<mainClass>com.trivadis.kafkaws.consumer.KafkaConsumerManual</mainClass>
+							<mainClass>com.trivadis.kafkaws.consumer.KafkaConsumerAuto</mainClass>
 						</configuration>						
 					</execution>
 ```
