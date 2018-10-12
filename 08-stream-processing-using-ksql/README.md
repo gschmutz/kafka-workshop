@@ -5,10 +5,35 @@ With the truck data continously ingested into the truck_movemnt topic, let's per
 
 ## Connect to KSQL Server
 
-In order to use KSQL, we need to connect to the KSQL engine using the KSQL CLI. One instance of a KSQL server has been started with our Streaming Platform and can be reached on port 8088. You can start it using the cp-`ksql-cli` docker image. Make sure that you change the IP address to the one of your docker host. 
+In order to use KSQL, we need to connect to the KSQL engine using the KSQL CLI. One instance of a KSQL server has been started with our Streaming Platform and can be reached on port 8088. 
+
+You can start it using the cp-`ksql-cli` docker image. For that, add the following service to the `docker-compose.yml` file.
 
 ```
-docker run -it confluentinc/cp-ksql-cli:5.0.0-beta180702222458 http://192.168.25.137:8088 
+  ksql-cli:
+    image: confluentinc/cp-ksql-cli:5.0.0
+    container_name: ksql-cli
+    depends_on:
+      - broker-1
+      - connect
+      - ksql-server
+    volumes:
+      - $PWD/scripts/ksql/ksqlcommands:/tmp/ksqlcommands
+    entrypoint: /bin/sh
+    tty: true
+    restart: always
+```
+
+Start the new service:
+
+```
+docker-compose up -d 
+```
+
+Now let's connect to the KSQL CLI. 
+
+```
+docker-compose exec ksql-cli ksql http://ksql-server:8088
 ```
 
 We can use the show command to show topics as well as streams and tables. We have not yet created streams and tables, therefore we won't see anything. 
