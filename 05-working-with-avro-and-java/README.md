@@ -337,7 +337,8 @@ public class KafkaProducerAvro {
         props.put(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, SCHEMA_REGISTRY_URL);   // use constant for "schema.registry.url"
 
         return new KafkaProducer<>(props);
-    }	
+    }
+}	
 ```
 
 We will be using the synchronous way for producing messages to the Kafka topic we created above, but the other methods would work as well with Avro.
