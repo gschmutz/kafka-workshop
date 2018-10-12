@@ -327,7 +327,7 @@ public class KafkaProducerAvro {
             "localhost:9092,localhost:9093,localhost:9094";
     private final static String SCHEMA_REGISTRY_URL = "http://localhost:8081";
     
-    private static Producer<Long, String> createProducer() {
+    private static Producer<Long, Notification> createProducer() {
         Properties props = new Properties();
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,
                                             BOOTSTRAP_SERVERS);
