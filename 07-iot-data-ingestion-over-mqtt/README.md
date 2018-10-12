@@ -10,7 +10,7 @@ Our streaming platform does not yet provide an MQTT broker.
 
 So let's add a new service to the docker-compose.yml file we have created in [Setup of the Streaming Platform](../01-environment/README.md).
 
-[Mosquitto](https://mosquitto.org/) is an easy to use MQTT broker, belonging to the Eclipse project. The is a docker images available for us on Docker Hub. Just add the following section at the end of the `docker-compose.yml`, right below the zeppelin service. 
+[Mosquitto](https://mosquitto.org/) is an easy to use MQTT broker, belonging to the Eclipse project. There is a docker images available for us on Docker Hub. Just make sure that the service is configured in the `docker-compose.yml` with the volume mapping as shown below.
 
 ```
   mosquitto-1:
