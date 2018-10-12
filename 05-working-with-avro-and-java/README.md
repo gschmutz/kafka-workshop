@@ -395,7 +395,7 @@ kafkacat -b 192.168.25.137 -t test-java-avro-topic
 Now run it using the `mvn exec:java` command. It will generate 1000 messages, waiting 10ms in-between sending each message and use 0 for the ID. 
 
 ```
-mvn exec:java@producer -Dexec.args="1000,100,0"
+mvn exec:java@producer -Dexec.args="1000 100 0"
 ```
 
 You can see that kafkacat shows some special, non-printable characters. This is due to the Avro format. If you want to display the Avro, you can use the `kafka-avro-console-consumer` CLI, which is part of the Schema Registry. 
