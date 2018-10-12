@@ -177,14 +177,14 @@ Let's first create a producer in synchronous mode.
 
 ### Using the Synchronous mode
 
-First create a new Java Package `com.trivadis.kafakws.producer` in the folder **src/main/java**.
+First create a new Java Package `com.trivadis.kafkaws.producer` in the folder **src/main/java**.
 
-Create a new Java Class `KafkaProducerSync` in the package `com.trivadis.kafakws.producer` just created. 
+Create a new Java Class `KafkaProducerSync` in the package `com.trivadis.kafkaws.producer` just created. 
 
 Add the following code to the empty class to create a Kafka Producer. 
 
 ```
-package com.trivadis.kafakws.producer;
+package com.trivadis.kafkaws.producer;
 
 import java.util.Properties;
 
@@ -362,9 +362,9 @@ Just like we did with the producer, you need to specify bootstrap servers. You a
 
 ### Kafka Consumer with Automatic Offset Committing
 
-First create a new Java Package `com.trivadis.kafakws.consumer` in the folder **src/main/java**.
+First create a new Java Package `com.trivadis.kafkaws.consumer` in the folder **src/main/java**.
 
-Create a new Java Class `KafkaConsumerAuto` in the package `com.trivadis.kafakws.consumer` just created. 
+Create a new Java Class `KafkaConsumerAuto` in the package `com.trivadis.kafkaws.consumer` just created. 
 
 Add the following code to the empty class. 
 
@@ -491,7 +491,7 @@ mvn exec:java@consumer -Dexec.args="0"
 
 ### Kafka Consumer with Manual Offset Control
 
-Create a new Java Class `KafkaConsumerManual` in the package `com.trivadis.kafakws.consumer` just created by copy-pasting from the class `KafkaConsumerAuto`.
+Create a new Java Class `KafkaConsumerManual` in the package `com.trivadis.kafkaws.consumer` just created by copy-pasting from the class `KafkaConsumerAuto`.
 
 Replace the `runConsumer()` method with the code below.
 
