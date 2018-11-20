@@ -229,9 +229,4 @@ services:
 #    volumes:
 #      - ./mosquitto/mosquitto-1.conf:/mosquitto/config/mosquitto.conf
 
-  hawtio:
-    image: "indigo/hawtio"
-    hostname: hawtio
-    ports:
-      - "8090:8090" 
-    restart: always
+
