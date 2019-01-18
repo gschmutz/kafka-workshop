@@ -66,9 +66,9 @@ INSERT INTO "driver" ("id", "first_name", "last_name", "available", "birthdate",
 
 Keep this window open and connected to PostgeSQL, we will need it again later.
  
-## Create a new topic trucking_driver
+## Create a new topic truck_driver
 
-Now let's create a new topic `trucking_driver`, a compacted topic which will hold the latest view of all our drivers. 
+Now let's create a new topic `truck_driver`, a compacted topic which will hold the latest view of all our drivers. 
 
 First connect to one of the Kafka brokers.
 
@@ -79,20 +79,20 @@ docker exec -ti streamingplatform_broker-1_1 bash
 And then perform the `kafka-topics --create` command:
 
 ```
-kafka-topics --zookeeper zookeeper:2181 --create --topic trucking_driver --partitions 8 --replication-factor 2 --config cleanup.policy=compact --config segment.ms=100 --config delete.retention.ms=100 --config min.cleanable.dirty.ratio=0.001
+kafka-topics --zookeeper zookeeper:2181 --create --topic truck_driver --partitions 8 --replication-factor 2 --config cleanup.policy=compact --config segment.ms=100 --config delete.retention.ms=100 --config min.cleanable.dirty.ratio=0.001
 ```
 
 Eventhough we have no messages yet, let's create a consumer wich reads the new topic from the beginning. 
 
 ```
-kafka-console-consumer --bootstrap-server broker-1:9092 --topic trucking_driver --from-beginning
+kafka-console-consumer --bootstrap-server broker-1:9092 --topic truck_driver --from-beginning
 ```
 
 Keep it running, we will come back to it in a minute!
 
 ## Create the Kafka Connector to pull driver from Postgresql
 
-No it's time to start a Kafka JDBC connector, which gets all the data from the `driver` table and publishes into the `trucking_driver` topic. 
+No it's time to start a Kafka JDBC connector, which gets all the data from the `driver` table and publishes into the `truck_driver` topic. 
 
 Similar to the way we have configured and created the MQTT connect, create a new file `configure-connect-jdbc.sh` in the `scripts` folder.
  
@@ -125,7 +125,7 @@ curl -X "POST" "$DOCKER_HOST_IP:8083/connectors" \
     "timestamp.column.name":"last_update",
     "table.whitelist":"driver",
     "validate.non.null":"false",
-    "topic.prefix":"trucking_",
+    "topic.prefix":"truck_",
     "key.converter":"org.apache.kafka.connect.storage.StringConverter",
     "key.converter.schemas.enable": "false",
     "value.converter":"org.apache.kafka.connect.json.JsonConverter",
@@ -166,7 +166,7 @@ INSERT INTO "driver" ("id", "first_name", "last_name", "available", "birthdate",
 INSERT INTO "driver" ("id", "first_name", "last_name", "available", "birthdate", "last_update") VALUES (32,'Shaun', ' Marshall', 'Y', '22-JAN-85', CURRENT_TIMESTAMP);
 ```
 
-The new records should also appear as events in the `trucking_driver` topic. 
+The new records should also appear as events in the `truck_driver` topic. 
 
 Now also update some existing records: 
 
@@ -175,7 +175,7 @@ UPDATE "driver" SET "available" = 'N', "last_update" = CURRENT_TIMESTAMP  WHERE 
 UPDATE "driver" SET "available" = 'N', "last_update" = CURRENT_TIMESTAMP  WHERE "id" = 14;
 ```
 
-Again we should see the updates as new events in the `trucking_driver` topic. 
+Again we should see the updates as new events in the `truck_driver` topic. 
 
 No let's use the driver data to enrich the `dangerous_driving_s` stream from workshop [IoT Data Ingestion through MQTT into Kafka](../06-iot-data-ingestion-over-mqtt/README.md). 
 
@@ -187,7 +187,7 @@ Connect to KSQL
 docker run -it confluentinc/cp-ksql-cli:5.0.0-beta180702222458 http://192.168.25.137:8088 
 ```
 
-Create a KSQL table on top of `trucking_driver` topic, giving the topic a structure.
+Create a KSQL table on top of `truck_driver` topic, giving the topic a structure.
 
 ```
 set 'commit.interval.ms'='5000';
@@ -201,7 +201,7 @@ CREATE TABLE driver_t  \
    last_name VARCHAR, \
    available VARCHAR, \
    birthdate VARCHAR) \
-  WITH (kafka_topic='trucking_driver', \
+  WITH (kafka_topic='truck_driver', \
         value_format='JSON', \
         KEY = 'id');
 ```
