@@ -156,7 +156,7 @@ services:
     image: confluentinc/cp-kafka-connect:5.1.0
     hostname: connect-2
     depends_on:
-      - zookeeper
+      - zookeeper-1
       - broker-1
       - schema-registry
     ports:
