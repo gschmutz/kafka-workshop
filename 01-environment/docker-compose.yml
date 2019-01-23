@@ -234,7 +234,7 @@ services:
     hostname: schema-registry-ui
     depends_on:
       - broker-1
-      - schema_registry
+      - schema-registry
     ports:
       - "8002:8000"
     environment:
@@ -250,7 +250,7 @@ services:
       CONNECT_URL: "http://${PUBLIC_IP}:8083/,http://${PUBLIC_IP}:8084/"
       PROXY: "true"
     depends_on:
-      - connect
+      - connect-1
     restart: always
 
   kafka-manager:
