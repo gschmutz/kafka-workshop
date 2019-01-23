@@ -14,17 +14,19 @@ The following services are provisioned as part of the Streaming Platform:
  * Apache Zookeeper
  * Kafka Broker 1-3
  * Confluent Schema Registry
- * kafka connect
+ * kafka connect 1 -2 
  * kafka rest proxy
  * ksql server
  * ksql cli
  * Confluent control center
  * Schema registry UI
+ * Kafka Connect UI
+ * Zoonavigator
  * Kafka Manager
  * Apache Zeppelin (optional)
  * Streamsets Data Collector
  * Apache NiFi
- * Hawtio
+
 
 For Kafka we will be using the Docker images provided by Confluent and available under the following GitHub project: <https://github.com/confluentinc/cp-docker-images>. In this project, there is an example folder with a few different docker compose configuration for various Confluent Platform configurations. 
 
@@ -59,7 +61,7 @@ Copy the code from below and paste it into a docker-compose.yml file. Alternativ
 version: '2'
 services:
   zookeeper:
-    image: confluentinc/cp-zookeeper:5.0.0
+    image: confluentinc/cp-zookeeper:5.1.0
     hostname: zookeeper
     ports:
       - "2181:2181"
@@ -69,7 +71,7 @@ services:
     restart: always
 
   broker-1:
-    image: confluentinc/cp-enterprise-kafka:5.0.0
+    image: confluentinc/cp-enterprise-kafka:5.1.0
     hostname: broker-1
     depends_on:
       - zookeeper
@@ -94,7 +96,7 @@ services:
     restart: always
 
   broker-2:
-    image: confluentinc/cp-enterprise-kafka:5.0.0
+    image: confluentinc/cp-enterprise-kafka:5.1.0
     hostname: broker-2
     depends_on:
       - zookeeper
@@ -119,7 +121,7 @@ services:
     restart: always
 
   broker-3:
-    image: confluentinc/cp-enterprise-kafka:5.0.0
+    image: confluentinc/cp-enterprise-kafka:5.1.0
     hostname: broker-3
     depends_on:
       - zookeeper
@@ -144,7 +146,7 @@ services:
     restart: always
       
   schema_registry:
-    image: confluentinc/cp-schema-registry:5.0.0
+    image: confluentinc/cp-schema-registry:5.1.0
     hostname: schema_registry
     depends_on:
       - zookeeper
@@ -158,9 +160,9 @@ services:
       SCHEMA_REGISTRY_ACCESS_CONTROL_ALLOW_METHODS: 'GET,POST,PUT,OPTIONS'
     restart: always
       
-  connect:
-    image: confluentinc/cp-kafka-connect:5.0.0
-    hostname: connect
+  connect-1:
+    image: confluentinc/cp-kafka-connect:5.1.0
+    hostname: connect-1
     depends_on:
       - zookeeper
       - broker-1
@@ -169,7 +171,7 @@ services:
       - "8083:8083"
     environment:
       CONNECT_BOOTSTRAP_SERVERS: 'broker-1:9092'
-      CONNECT_REST_ADVERTISED_HOST_NAME: connect
+      CONNECT_REST_ADVERTISED_HOST_NAME: connect-1
       CONNECT_REST_PORT: 8083
       CONNECT_GROUP_ID: compose-connect-group
       CONNECT_CONFIG_STORAGE_TOPIC: docker-connect-configs
@@ -193,23 +195,58 @@ services:
       - $PWD/kafka-connect:/etc/kafka-connect/custom-plugins
     restart: always
 
-  rest-proxy:
-    image: confluentinc/cp-kafka-rest:5.0.0
-    hostname: rest-proxy
+  connect-2:
+    image: confluentinc/cp-kafka-connect:5.1.0
+    hostname: connect-2
     depends_on:
+      - zookeeper
       - broker-1
       - schema_registry
     ports:
       - "8084:8084"
     environment:
+      CONNECT_BOOTSTRAP_SERVERS: 'broker-1:9092'
+      CONNECT_REST_ADVERTISED_HOST_NAME: connect-2
+      CONNECT_REST_PORT: 8084
+      CONNECT_GROUP_ID: compose-connect-group
+      CONNECT_CONFIG_STORAGE_TOPIC: docker-connect-configs
+      CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_OFFSET_FLUSH_INTERVAL_MS: 10000
+      CONNECT_OFFSET_STORAGE_TOPIC: docker-connect-offsets
+      CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_STATUS_STORAGE_TOPIC: docker-connect-status
+      CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_KEY_CONVERTER: io.confluent.connect.avro.AvroConverter
+      CONNECT_KEY_CONVERTER_SCHEMA_REGISTRY_URL: 'http://schema_registry:8081'
+      CONNECT_VALUE_CONVERTER: io.confluent.connect.avro.AvroConverter
+      CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: 'http://schema_registry:8081'
+      CONNECT_INTERNAL_KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONNECT_INTERNAL_VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONNECT_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      CONNECT_PLUGIN_PATH: "/usr/share/java,/etc/kafka-connect/custom-plugins"
+      CONNECT_LOG4J_ROOT_LOGLEVEL: INFO
+      CLASSPATH: /usr/share/java/monitoring-interceptors/monitoring-interceptors-4.0.0.jar
+    volumes:
+      - $PWD/kafka-connect:/etc/kafka-connect/custom-plugins
+    restart: always
+
+  rest-proxy:
+    image: confluentinc/cp-kafka-rest:5.1.0
+    hostname: rest-proxy
+    depends_on:
+      - broker-1
+      - schema_registry
+    ports:
+      - "8086:8086"
+    environment:
       KAFKA_REST_ZOOKEEPER_CONNECT: '${DOCKER_HOST_IP}:2181'
-      KAFKA_REST_LISTENERS: 'http://0.0.0.0:8084'
+      KAFKA_REST_LISTENERS: 'http://0.0.0.0:8086'
       KAFKA_REST_SCHEMA_REGISTRY_URL: 'http://schema_registry:8081'
       KAFKA_REST_HOST_NAME: 'rest-proxy'
     restart: always
 
   ksql-server:
-    image: confluentinc/cp-ksql-server:5.0.0
+    image: confluentinc/cp-ksql-server:5.1.0
     hostname: ksql-server
     ports:
       - '8088:8088'
@@ -224,27 +261,6 @@ services:
       KSQL_CONSUMER_INTERCEPTOR_CLASSES: io.confluent.monitoring.clients.interceptor.MonitoringConsumerInterceptor
     restart: always
 
-  control-center:
-    image: confluentinc/cp-enterprise-control-center:5.0.0
-    hostname: control-center
-    depends_on:
-      - zookeeper
-      - broker-1
-      - schema_registry
-      - connect
-    ports:
-      - "9021:9021"
-    environment:
-      CONTROL_CENTER_BOOTSTRAP_SERVERS: 'broker-1:9092'
-      CONTROL_CENTER_ZOOKEEPER_CONNECT: 'zookeeper:2181'
-      CONTROL_CENTER_CONNECT_CLUSTER: 'connect:8083'
-      CONTROL_CENTER_REPLICATION_FACTOR: 1
-      CONTROL_CENTER_INTERNAL_TOPICS_PARTITIONS: 1
-      CONTROL_CENTER_MONITORING_INTERCEPTOR_TOPIC_PARTITIONS: 1
-      CONFLUENT_METRICS_TOPIC_REPLICATION: 1
-      PORT: 9021
-    restart: always
-
   schema-registry-ui:
     image: landoop/schema-registry-ui
     hostname: schema-registry-ui
@@ -255,6 +271,18 @@ services:
       - "8002:8000"
     environment:
       SCHEMAREGISTRY_URL: 'http://${PUBLIC_IP}:8081'
+    restart: always
+
+  kafka-connect-ui:
+    image: landoop/kafka-connect-ui:0.9.5
+    hostname: kafka-connect-ui
+    ports:
+      - "8003:8000"
+    environment:
+      CONNECT_URL: "http://${PUBLIC_IP}:8083/,http://${PUBLIC_IP}:8084/""
+      PROXY: "true"
+    depends_on:
+      - connect
     restart: always
 
   kafka-manager:
@@ -269,6 +297,46 @@ services:
       APPLICATION_SECRET: 'letmein'
     restart: always
 
+  web:
+    image: elkozmon/zoonavigator-web:0.5.1
+    container_name: zoonavigator-web
+    ports:
+     - "8010:8010"
+    environment:
+      WEB_HTTP_PORT: 8010
+      API_HOST: "api"
+      API_PORT: 9010
+    depends_on:
+     - api
+    restart: always
+  api:
+    image: elkozmon/zoonavigator-api:0.5.1
+    container_name: zoonavigator-api
+    environment:
+      API_HTTP_PORT: 9010
+    restart: always
+
+  kafdrop:
+    image: thomsch98/kafdrop:latest
+    ports:
+      - "9020:9020" 
+    environment:
+      ZK_HOSTS: zookeeper:2181
+      LISTEN: 9020
+    restart: always
+    
+  stream-registry:
+    image: homeaway/stream-registry
+    ports:
+      - "38080:8080"
+    depends_on:
+      - broker-1
+      - schema-registry
+    environment:
+      STREAM_REGISTRY_BOOTSTRAP_SERVERS: 'broker-1:9092'
+      STREAM_REGISTRY_SCHEMA_REGISTRY_URL: 'http://schema-registry:8081'
+      STREAM_REGISTRY_PRODUCER_RETRIES: 100
+
   streamsets:
     image: trivadisbds/streamsets-kafka-nosql
     hostname: streamsets
@@ -281,22 +349,6 @@ services:
     hostname: nifi
     ports:
       - "28080:8080"
-    restart: always
-
-  mosquitto-1:
-    image: eclipse-mosquitto:latest
-    hostname: mosquitto-1
-    ports: 
-      - "1883:1883"
-      - "9001:9001"
-#    volumes:
-#      - ./mosquitto/mosquitto-1.conf:/mosquitto/config/mosquitto.conf
-
-  hawtio:
-    image: "indigo/hawtio"
-    hostname: hawtio
-    ports:
-      - "8090:8090" 
     restart: always
 ```
 
