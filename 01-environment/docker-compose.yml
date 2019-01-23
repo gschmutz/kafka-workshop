@@ -247,7 +247,7 @@ services:
     ports:
       - "8003:8000"
     environment:
-      CONNECT_URL: "http://${PUBLIC_IP}:8083/,http://${PUBLIC_IP}:8084/""
+      CONNECT_URL: "http://${PUBLIC_IP}:8083/,http://${PUBLIC_IP}:8084/"
       PROXY: "true"
     depends_on:
       - connect
@@ -306,5 +306,6 @@ services:
     ports:
       - "28080:8080"
     restart: always
+    
 
 
