@@ -307,13 +307,4 @@ services:
       - "28080:8080"
     restart: always
 
-  mosquitto:
-    image: eclipse-mosquitto:latest
-    hostname: mosquitto
-    ports: 
-      - "1883:1883"
-      - "9001:9001"
-#    volumes:
-#      - ./mosquitto/mosquitto-1.conf:/mosquitto/config/mosquitto.conf
-
 
