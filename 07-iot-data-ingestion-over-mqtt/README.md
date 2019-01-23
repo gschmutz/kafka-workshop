@@ -113,8 +113,11 @@ After successful creation, start a kafka-console-consumer to listen on messages 
 kafka-console-consumer --bootstrap-server broker-1:9092 --topic truck_position
 ```
 
+```
+kafkacat -b broker-1 -t truck_position
+```
 
-## Adding Kafka Connect to bridge between MQTT and Kafka
+## Using Kafka Connect to bridge between MQTT and Kafka
 
 In order to get the messages from MQTT into Kafka, we will be using Kafka Connect. Luckily, there are multiple Kafka Connectors available for MQTT. We will be using the one available from the [Landoop Stream-Reactor Project](https://github.com/Landoop/stream-reactor/tree/master/kafka-connect-mqtt) called `kafka-connect-mqtt`.
 
@@ -218,7 +221,7 @@ mkdir scripts
 cd scripts
 ```
 
-In there, create a script `configure-mqtt.sh` and copy/paste the code below.  
+In there, create a script `start-mqtt.sh` and copy/paste the code below.  
 
 ```
 #!/bin/bash
@@ -249,12 +252,24 @@ curl -X "POST" "$DOCKER_HOST_IP:8083/connectors" \
   }'
 ```
 
+In there, also create a script `stop-mqtt.sh` for stopping the connector when no longer needed and add add the following code:
+
+```
+#!/bin/bash
+
+echo "removing MQTT Source Connector"
+
+curl -X "DELETE" "$DOCKER_HOST_IP:8083/connectors/mqtt-source"
+```
+
+
+
 The script first removes the MQTT connector, if it already exists and then creates it (again). 
 
 Make sure it is executable
 
 ```
-sudo chmod +x configure-mqtt.sh
+sudo chmod +x start-mqtt.sh
 ```
 
 ### Start the connector
@@ -262,8 +277,9 @@ sudo chmod +x configure-mqtt.sh
 Now let's start the connector by running the configure-mqtt script.
 
 ```
-./scripts/configure-mqtt.sh
+./scripts/start-mqtt.sh
 ```
 
 The messages should start appear in the window with the `kafka-console-consumer` running. 
 
+## Using StreamSets Data Collector to bridge between MQTT and Kafka
