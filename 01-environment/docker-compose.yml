@@ -185,18 +185,6 @@ services:
     volumes:
       - $PWD/kafka-connect:/etc/kafka-connect/custom-plugins
     restart: always
-    
-  stream-registry:
-    image: homeaway/stream-registry
-    ports:
-      - "38080:8080"
-    depends_on:
-      - broker-1
-      - schema-registry
-    environment:
-      STREAM_REGISTRY_BOOTSTRAP_SERVERS: 'broker-1:9092'
-      STREAM_REGISTRY_SCHEMA_REGISTRY_URL: 'http://schema-registry:8081'
-      STREAM_REGISTRY_PRODUCER_RETRIES: 100
       
   rest-proxy:
     image: confluentinc/cp-kafka-rest:5.1.0
