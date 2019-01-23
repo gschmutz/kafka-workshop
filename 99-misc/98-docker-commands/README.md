@@ -35,7 +35,16 @@ docker volume rm (docker volume ls -qf dangling=true)
 
 ## Docker Compose
 
+To get the logs for all of the services running inside the docker compose environment, perform
+
 ```
 docker-compose logs -f
+```
+
+if you only want to see the logs for one of the services, say of `connect-1`, perform
+
+
+```
+docker-compose logs -f connect-1
 ```
 

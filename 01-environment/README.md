@@ -7,26 +7,22 @@ Either use the Virtual Machine image made available in the course, containing a 
 
 In order to simplify the provisioning, a single docker-compose configuration is used. All the necessary software will be provisioned using Docker. 
 
-## What is this Streaming Platform?
+## What is the Streaming Platform?
 
 The following services are provisioned as part of the Streaming Platform: 
 
  * Apache Zookeeper
  * Kafka Broker 1-3
  * Confluent Schema Registry
- * kafka connect 1 -2 
- * kafka rest proxy
- * ksql server
- * ksql cli
- * Confluent control center
+ * Kafka Connect 1 -2 
+ * Kafka Rest Proxy
+ * KSQL Server
  * Schema registry UI
  * Kafka Connect UI
  * Zoonavigator
  * Kafka Manager
- * Apache Zeppelin (optional)
  * Streamsets Data Collector
  * Apache NiFi
-
 
 For Kafka we will be using the Docker images provided by Confluent and available under the following GitHub project: <https://github.com/confluentinc/cp-docker-images>. In this project, there is an example folder with a few different docker compose configuration for various Confluent Platform configurations. 
 
@@ -44,18 +40,19 @@ Copy the code from below and paste it into a docker-compose.yml file. Alternativ
 ```
 #
 # Docker Compose with the following services:
-#  zookeeper
-#  kafka broker 1-3
-#  schema registry
-#  kafka connect
-#  kafka rest proxy
-#  ksql server
-#  ksql cli
-#  confluent control center
-#  schema registry UI
-#  kafka manager
-#  streamsets
-#  apache nifi
+#  Zookeeper
+#  Kafka Broker 1-3
+#  Schema Registry
+#  Kafka Connect 1 - 2
+#  Kafka Rest Proxy
+#  KSQL server
+#  Schema Registry UI
+#  Kafka Connect UI
+#  Kafka Manager
+#  Zoonavigator
+#  Kafdrop
+#  Streamsets
+#  Apache NiFi
 #
 
 version: '2'
@@ -145,16 +142,16 @@ services:
       CONFLUENT_SUPPORT_CUSTOMER_ID: 'anonymous'
     restart: always
       
-  schema_registry:
+  schema-registry:
     image: confluentinc/cp-schema-registry:5.1.0
-    hostname: schema_registry
+    hostname: schema-registry
     depends_on:
       - zookeeper
       - broker-1
     ports:
       - "8081:8081"
     environment:
-      SCHEMA_REGISTRY_HOST_NAME: schema_registry
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
       SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL: 'zookeeper:2181'
       SCHEMA_REGISTRY_ACCESS_CONTROL_ALLOW_ORIGIN: '*'
       SCHEMA_REGISTRY_ACCESS_CONTROL_ALLOW_METHODS: 'GET,POST,PUT,OPTIONS'
@@ -166,7 +163,7 @@ services:
     depends_on:
       - zookeeper
       - broker-1
-      - schema_registry
+      - schema-registry
     ports:
       - "8083:8083"
     environment:
@@ -201,7 +198,7 @@ services:
     depends_on:
       - zookeeper
       - broker-1
-      - schema_registry
+      - schema-registry
     ports:
       - "8084:8084"
     environment:
@@ -229,13 +226,13 @@ services:
     volumes:
       - $PWD/kafka-connect:/etc/kafka-connect/custom-plugins
     restart: always
-
+      
   rest-proxy:
     image: confluentinc/cp-kafka-rest:5.1.0
     hostname: rest-proxy
     depends_on:
       - broker-1
-      - schema_registry
+      - schema-registry
     ports:
       - "8086:8086"
     environment:
@@ -252,7 +249,7 @@ services:
       - '8088:8088'
     depends_on:
       - broker-1
-      - schema_registry
+      - schema-registry
     environment:
       KSQL_BOOTSTRAP_SERVERS: "broker-1:9092"
       KSQL_LISTENERS: "http://0.0.0.0:8088"
@@ -266,7 +263,7 @@ services:
     hostname: schema-registry-ui
     depends_on:
       - broker-1
-      - schema_registry
+      - schema-registry
     ports:
       - "8002:8000"
     environment:
@@ -279,10 +276,10 @@ services:
     ports:
       - "8003:8000"
     environment:
-      CONNECT_URL: "http://${PUBLIC_IP}:8083/,http://${PUBLIC_IP}:8084/""
+      CONNECT_URL: "http://${PUBLIC_IP}:8083/,http://${PUBLIC_IP}:8084/"
       PROXY: "true"
     depends_on:
-      - connect
+      - connect-1
     restart: always
 
   kafka-manager:
@@ -324,18 +321,6 @@ services:
       ZK_HOSTS: zookeeper:2181
       LISTEN: 9020
     restart: always
-    
-  stream-registry:
-    image: homeaway/stream-registry
-    ports:
-      - "38080:8080"
-    depends_on:
-      - broker-1
-      - schema-registry
-    environment:
-      STREAM_REGISTRY_BOOTSTRAP_SERVERS: 'broker-1:9092'
-      STREAM_REGISTRY_SCHEMA_REGISTRY_URL: 'http://schema-registry:8081'
-      STREAM_REGISTRY_PRODUCER_RETRIES: 100
 
   streamsets:
     image: trivadisbds/streamsets-kafka-nosql
@@ -415,10 +400,11 @@ Service | Url
 ------- | -------------
 StreamSets Data Collector | 18630
 Apache NiFi | 28080
-Apache Zepplin  | 38080
 Schema Registry UI  | 8002
 Schema Registry Rest API  | 8081
+Kafka Connect UI  | 8003
 Kafka Manager  | 39000
+Kafdrop  | 9020
 Confluent Control Center | 9021
 
 
@@ -438,7 +424,10 @@ Development | StreamSets Data Collector | <http://streamingplatform:18630>
 Development | Apache NiFi | <http://streamingplatform:28080/nifi>
 Governance | Schema Registry UI  | <http://streamingplatform:8002>
 Governance | Schema Registry Rest API  | <http://streamingplatform:8081>
+Management | Kafka Connect UI | <http://streamingplatform:8003>
 Management | Kafka Manager  | <http://streamingplatform:39000>
+Management | Kafdrop  | <http://streamingplatform:9020>
+Management | Zoonavigator  | <http://streamingplatform:8010>
 Management | Confluent Control Center | <http://streamingplatform:9021>
 
 
