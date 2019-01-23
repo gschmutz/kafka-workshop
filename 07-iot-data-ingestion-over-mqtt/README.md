@@ -104,7 +104,7 @@ docker exec -ti streamingplatform_broker-1_1 bash
 Now using the `kafka-topics` command, create the truck_position topic. 
 
 ```
-kafka-topics --zookeeper zookeeper:2181 --create --topic truck_position --partitions 8 --replication-factor 2
+kafka-topics --zookeeper zookeeper-1:2181 --create --topic truck_position --partitions 8 --replication-factor 2
 ```
 
 After successful creation, start a kafka-console-consumer to listen on messages on the truck_position topic. 
@@ -130,7 +130,7 @@ Therefore change the definition of the `connect` service in the `docker-compose.
     image: confluentinc/cp-kafka-connect:5.0.0
     hostname: connect
     depends_on:
-      - zookeeper
+      - zookeeper-1
       - broker-1
       - schema_registry
     ports:
@@ -153,7 +153,7 @@ Therefore change the definition of the `connect` service in the `docker-compose.
       CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: 'http://schema_registry:8081'
       CONNECT_INTERNAL_KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
       CONNECT_INTERNAL_VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
-      CONNECT_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      CONNECT_ZOOKEEPER_CONNECT: 'zookeeper-1:2181'
       CONNECT_PLUGIN_PATH: "/usr/share/java,/etc/kafka-connect/custom-plugins"
       CONNECT_LOG4J_ROOT_LOGLEVEL: INFO
       CLASSPATH: /usr/share/java/monitoring-interceptors/monitoring-interceptors-4.0.0.jar

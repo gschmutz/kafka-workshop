@@ -126,7 +126,7 @@ In order to separate the Avro tests from the other tests, lets create a new topi
 ```
 kafka-topics --create \
 			--if-not-exists \
-			--zookeeper zookeeper:2181 \
+			--zookeeper zookeeper-1:2181 \
 			--topic test-avro-topic \
 			--partitions 6 \
 			--replication-factor 2

@@ -101,7 +101,7 @@ docker exec -ti docker_broker-1_1 bash
 And perform the following `kafka-topics` command creating a new `dangerous_driving_ksql` topic in Kafka.
 
 ```
-kafka-topics --zookeeper zookeeper:2181 --create --topic dangerous_driving_ksql --partitions 8 --replication-factor 2
+kafka-topics --zookeeper zookeeper-1:2181 --create --topic dangerous_driving_ksql --partitions 8 --replication-factor 2
 ```
 
 Now let's publish to that topic from KSQL. For that we can create a new Stream. Instead of creating it on an existing topic as we have done before, we use the `CREATE STREAM ... AS SELECT ...` variant. 

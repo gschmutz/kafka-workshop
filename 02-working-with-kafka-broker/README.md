@@ -28,7 +28,7 @@ First, let's list the topics availble on a given Kafka Cluster.
 For that we use the `kafka-topics` utility with the `--list` option. 
 
 ```
-kafka-topics --list --zookeeper zookeeper:2181
+kafka-topics --list --zookeeper zookeeper-1:2181
 ```
 We can see that there are some techical topics, _schemas being the one, where the Confluent Schema Registry stores its schemas. 
 
@@ -39,7 +39,7 @@ Now let's create a new topic. For that we again use the `kafka-topics` utility b
 ```
 kafka-topics --create \
 			--if-not-exists \
-			--zookeeper zookeeper:2181 \
+			--zookeeper zookeeper-1:2181 \
 			--topic test-topic \
 			--partitions 6 \
 			--replication-factor 2
@@ -50,7 +50,7 @@ Re-Run the command to list the topics. You should see the new topic you have jus
 ### Describe a Topic
 
 ```
-kafka-topics --describe --zookeeper zookeeper:2181 --topic test-topic
+kafka-topics --describe --zookeeper zookeeper-1:2181 --topic test-topic
 ```
 
 ```
@@ -158,8 +158,10 @@ Enter your messages so that a key and messages are separated by a comma, i.e. `k
 A Kafka topic can be droped using the `kafka-topics` utility with the `--delete` option. 
 
 ```
-kafka-topics --zookeeper zookeeper:2181 --delete --topic test-topic
+kafka-topics --zookeeper zookeeper-1:2181 --delete --topic test-topic
 ```
+
+The delete only works if the server property `delete.topic.enable` is set to `true`. This is the case with the streaming platform as setup in chapter 1.
 
 ## Working with the Kafkacat utility
 [Kafkacat](https://docs.confluent.io/current/app-development/kafkacat-usage.html#kafkacat-usage) is a command line utility that you can use to test and debug Apache Kafka deployments. You can use `kafkacat` to produce, consume, and list topic and partition information for Kafka. Described as “netcat for Kafka”, it is a swiss-army knife of tools for inspecting and creating data in Kafka.
@@ -337,12 +339,14 @@ Navigate to the **Cluster** menu and click on the drop-down and select **Add Clu
 The **Add Cluster** details page should be displayed. Enter the following values into the edit fields / drop down windows:
 
   * **Cluster Name**: Streaming Platform
-  * **Custer Zookeeper Hosts**: zookeeper:2181
+  * **Custer Zookeeper Hosts**: zookeeper-1:2181
   * **Kafka Version**: 0.10.2.1
 
-Select the **Enable JMX Polling**, **Poll consumer information**, **Filter out inactive consumers**, **Enable Active OffsetCache** and **Display Broker and Topic Size** and click on **Save** to add the cluster. 
+Select the **Enable JMX Polling**, **Enable Logkafka**, **Poll consumer information**, **Filter out inactive consumers**, **Enable Active OffsetCache** and **Display Broker and Topic Size**.
 
 ![Alt Image Text](./images/kafka-manager-add-cluster2.png "Kafka Manager Add Cluster2")
+
+Click on **Save** to add the cluster. 
 
 ![Alt Image Text](./images/kafka-manager-cluster-added.png "Kafka Manager Add Cluster2")
 

@@ -57,9 +57,9 @@ Copy the code from below and paste it into a docker-compose.yml file. Alternativ
 
 version: '2'
 services:
-  zookeeper:
+  zookeeper-1:
     image: confluentinc/cp-zookeeper:5.1.0
-    hostname: zookeeper
+    hostname: zookeeper-1
     ports:
       - "2181:2181"
     environment:
@@ -71,13 +71,13 @@ services:
     image: confluentinc/cp-enterprise-kafka:5.1.0
     hostname: broker-1
     depends_on:
-      - zookeeper
+      - zookeeper-1
     ports:
       - "9092:9092"
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_BROKER_RACK: 'r1'
-      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper-1:2181'
       KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://${DOCKER_HOST_IP}:9092'
       KAFKA_METRIC_REPORTERS: io.confluent.metrics.reporter.ConfluentMetricsReporter
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
@@ -86,7 +86,7 @@ services:
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'false'
       KAFKA_JMX_PORT: 9994
       CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: broker-1:9092
-      CONFLUENT_METRICS_REPORTER_ZOOKEEPER_CONNECT: zookeeper:2181
+      CONFLUENT_METRICS_REPORTER_ZOOKEEPER_CONNECT: zookeeper-1:2181
       CONFLUENT_METRICS_REPORTER_TOPIC_REPLICAS: 1
       CONFLUENT_METRICS_ENABLE: 'true'
       CONFLUENT_SUPPORT_CUSTOMER_ID: 'anonymous'
@@ -96,13 +96,13 @@ services:
     image: confluentinc/cp-enterprise-kafka:5.1.0
     hostname: broker-2
     depends_on:
-      - zookeeper
+      - zookeeper-1
     ports:
       - "9093:9093"
     environment:
       KAFKA_BROKER_ID: 2
       KAFKA_BROKER_RACK: 'r1'
-      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper-1:2181'
       KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://${DOCKER_HOST_IP}:9093'
       KAFKA_METRIC_REPORTERS: io.confluent.metrics.reporter.ConfluentMetricsReporter
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
@@ -111,7 +111,7 @@ services:
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'false'
       KAFKA_JMX_PORT: 9993
       CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: broker-2:9093
-      CONFLUENT_METRICS_REPORTER_ZOOKEEPER_CONNECT: zookeeper:2181
+      CONFLUENT_METRICS_REPORTER_ZOOKEEPER_CONNECT: zookeeper-1:2181
       CONFLUENT_METRICS_REPORTER_TOPIC_REPLICAS: 1
       CONFLUENT_METRICS_ENABLE: 'true'
       CONFLUENT_SUPPORT_CUSTOMER_ID: 'anonymous'
@@ -121,13 +121,13 @@ services:
     image: confluentinc/cp-enterprise-kafka:5.1.0
     hostname: broker-3
     depends_on:
-      - zookeeper
+      - zookeeper-1
     ports:
       - "9094:9094"
     environment:
       KAFKA_BROKER_ID: 3
       KAFKA_BROKER_RACK: 'r1'
-      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper-1:2181'
       KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://${DOCKER_HOST_IP}:9094'
       KAFKA_METRIC_REPORTERS: io.confluent.metrics.reporter.ConfluentMetricsReporter
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
@@ -136,7 +136,7 @@ services:
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'false'
       KAFKA_JMX_PORT: 9992
       CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: broker-3:9094
-      CONFLUENT_METRICS_REPORTER_ZOOKEEPER_CONNECT: zookeeper:2181
+      CONFLUENT_METRICS_REPORTER_ZOOKEEPER_CONNECT: zookeeper-1:2181
       CONFLUENT_METRICS_REPORTER_TOPIC_REPLICAS: 1
       CONFLUENT_METRICS_ENABLE: 'true'
       CONFLUENT_SUPPORT_CUSTOMER_ID: 'anonymous'
@@ -146,13 +146,13 @@ services:
     image: confluentinc/cp-schema-registry:5.1.0
     hostname: schema-registry
     depends_on:
-      - zookeeper
+      - zookeeper-1
       - broker-1
     ports:
       - "8081:8081"
     environment:
       SCHEMA_REGISTRY_HOST_NAME: schema-registry
-      SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL: 'zookeeper:2181'
+      SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL: 'zookeeper-1:2181'
       SCHEMA_REGISTRY_ACCESS_CONTROL_ALLOW_ORIGIN: '*'
       SCHEMA_REGISTRY_ACCESS_CONTROL_ALLOW_METHODS: 'GET,POST,PUT,OPTIONS'
     restart: always
@@ -161,7 +161,7 @@ services:
     image: confluentinc/cp-kafka-connect:5.1.0
     hostname: connect-1
     depends_on:
-      - zookeeper
+      - zookeeper-1
       - broker-1
       - schema-registry
     ports:
@@ -184,7 +184,7 @@ services:
       CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: 'http://schema_registry:8081'
       CONNECT_INTERNAL_KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
       CONNECT_INTERNAL_VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
-      CONNECT_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      CONNECT_ZOOKEEPER_CONNECT: 'zookeeper-1:2181'
       CONNECT_PLUGIN_PATH: "/usr/share/java,/etc/kafka-connect/custom-plugins"
       CONNECT_LOG4J_ROOT_LOGLEVEL: INFO
       CLASSPATH: /usr/share/java/monitoring-interceptors/monitoring-interceptors-4.0.0.jar
@@ -196,7 +196,7 @@ services:
     image: confluentinc/cp-kafka-connect:5.1.0
     hostname: connect-2
     depends_on:
-      - zookeeper
+      - zookeeper-1
       - broker-1
       - schema-registry
     ports:
@@ -219,7 +219,7 @@ services:
       CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: 'http://schema_registry:8081'
       CONNECT_INTERNAL_KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
       CONNECT_INTERNAL_VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
-      CONNECT_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      CONNECT_ZOOKEEPER_CONNECT: 'zookeeper-1:2181'
       CONNECT_PLUGIN_PATH: "/usr/share/java,/etc/kafka-connect/custom-plugins"
       CONNECT_LOG4J_ROOT_LOGLEVEL: INFO
       CLASSPATH: /usr/share/java/monitoring-interceptors/monitoring-interceptors-4.0.0.jar
@@ -286,11 +286,11 @@ services:
     image: trivadisbds/kafka-manager
     hostname: kafka-manager
     depends_on:
-      - zookeeper
+      - zookeeper-1
     ports:
       - "39000:9000"
     environment:
-      ZK_HOSTS: 'zookeeper:2181'
+      ZK_HOSTS: 'zookeeper-1:2181'
       APPLICATION_SECRET: 'letmein'
     restart: always
 
@@ -318,7 +318,7 @@ services:
     ports:
       - "9020:9020" 
     environment:
-      ZK_HOSTS: zookeeper:2181
+      ZK_HOSTS: zookeeper-1:2181
       LISTEN: 9020
     restart: always
 

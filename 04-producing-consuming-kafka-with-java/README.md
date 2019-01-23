@@ -159,14 +159,14 @@ kafka-topics --create \
     --replication-factor 3 \
     --partitions 8 \
     --topic test-java-topic \
-    --zookeeper zookeeper:2181
+    --zookeeper zookeeper-1:2181
 ```
 
 Cross check that the topic has been created.
 
 ```
 kafka-topics --list \
-    --zookeeper zookeeper:2181
+    --zookeeper zookeeper-1:2181
 ```
 
 This finishes the setup steps and our new project is ready to be used. Next we will start implementing a **Kafka Producer**.

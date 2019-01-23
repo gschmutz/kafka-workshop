@@ -17,7 +17,7 @@ And create the topic.
 
 ```
 kafka-topics --create \
-    --zookeeper zookeeper:2181 \
+    --zookeeper zookeeper-1:2181 \
     --replication-factor 3 \
     --partitions 8 \
     --topic failsafe-test-topic
@@ -175,7 +175,7 @@ And create the topic.
 ```
 kafka-topics --describe \
     --topic failsafe-test-topic \
-    --zookeeper zookeeper:2181
+    --zookeeper zookeeper-1:2181
 ```    
 
 ```
