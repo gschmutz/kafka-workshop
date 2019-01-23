@@ -101,16 +101,16 @@ services:
       CONFLUENT_SUPPORT_CUSTOMER_ID: 'anonymous'
     restart: always
       
-  schema_registry:
+  schema-registry:
     image: confluentinc/cp-schema-registry:5.1.0
-    hostname: schema_registry
+    hostname: schema-registry
     depends_on:
       - zookeeper
       - broker-1
     ports:
       - "8081:8081"
     environment:
-      SCHEMA_REGISTRY_HOST_NAME: schema_registry
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
       SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL: 'zookeeper:2181'
       SCHEMA_REGISTRY_ACCESS_CONTROL_ALLOW_ORIGIN: '*'
       SCHEMA_REGISTRY_ACCESS_CONTROL_ALLOW_METHODS: 'GET,POST,PUT,OPTIONS'
@@ -122,7 +122,7 @@ services:
     depends_on:
       - zookeeper
       - broker-1
-      - schema_registry
+      - schema-registry
     ports:
       - "8083:8083"
     environment:
@@ -157,7 +157,7 @@ services:
     depends_on:
       - zookeeper
       - broker-1
-      - schema_registry
+      - schema-registry
     ports:
       - "8084:8084"
     environment:
@@ -191,7 +191,7 @@ services:
     hostname: rest-proxy
     depends_on:
       - broker-1
-      - schema_registry
+      - schema-registry
     ports:
       - "8086:8086"
     environment:
@@ -208,7 +208,7 @@ services:
       - '8088:8088'
     depends_on:
       - broker-1
-      - schema_registry
+      - schema-registry
     environment:
       KSQL_BOOTSTRAP_SERVERS: "broker-1:9092"
       KSQL_LISTENERS: "http://0.0.0.0:8088"
