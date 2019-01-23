@@ -38,7 +38,7 @@ Now lets write a simple program in Python which produces a message to the Kafka 
 First we will produce messages. In order to see the results, run `kafkacat` in a separate terminal window and print the partion, key and value of each message:
 
 ```
-kafkacat -b 10.0.1.4 -t test-topic -f "P-%p: %k=%s\n" -Z 
+kafkacat -b streamingplatform -t test-topic -f "P-%p: %k=%s\n" -Z 
 ``` 
 
 The following code segements assume that they are run inside the Zepplin docker container. If you want to run them from the Docker Host, you have to replace broker-1 and broker-2 by the IP Address of the Docker Host.
