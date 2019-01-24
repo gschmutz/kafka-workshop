@@ -48,3 +48,9 @@ if you only want to see the logs for one of the services, say of `connect-1`, pe
 docker-compose logs -f connect-1
 ```
 
+To see the log of multiple services, just list them as shown below
+
+```
+docker-compose logs -f connect-1 connect-2
+```
+
