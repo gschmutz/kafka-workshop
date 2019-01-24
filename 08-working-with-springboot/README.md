@@ -208,7 +208,7 @@ First let's rename the existing `application.properties` file to `application.ym
 
 Add the following settings to configure the Kafka cluster and the name of the two topics:
 
-```
+```yml
 spring:
   kafka:
     bootstrap-servers: ${PUBLIC_IP}:9092
@@ -226,11 +226,11 @@ kafka:
 
 ## Build and Run the application
 
-```
+```bash
 mvn package -Dmaven.test.skip=true
 ```
 
-```
+```bash
 java -jar target/kafka-transform-0.0.1-SNAPSHOT.jar
 ```
 
@@ -238,12 +238,12 @@ java -jar target/kafka-transform-0.0.1-SNAPSHOT.jar
 
 In a terminal window start consuming from the output topic:
 
-```
+```bash
 kafkacat -b ${PUBLIC_IP} -t test-spring-out
 ```
 
 In another terminal window, write to the input topic:
 
-```
+```bash
 kafkacat -P -b ${PUBLIC_IP} -t test-spring-in
 ```
