@@ -183,7 +183,7 @@ Create a new Java Class `KafkaProducerSync` in the package `com.trivadis.kafkaws
 
 Add the following code to the empty class to create a Kafka Producer. 
 
-```
+```java
 package com.trivadis.kafkaws.producer;
 
 import java.util.Properties;
@@ -216,7 +216,7 @@ public class KafkaProducerSync {
 
 Kafka provides a synchronous send method to send a record to a topic. Let’s use this method to send some message ids and messages to the Kafka topic we created earlier.
 
-```
+```java
     static void runProducer(final int sendMessageCount, final int waitMsInBetween, final long id) throws Exception {
         final Producer<Long, String> producer = createProducer();
         long time = System.currentTimeMillis();
@@ -246,7 +246,7 @@ Kafka provides a synchronous send method to send a record to a topic. Let’s us
 
 Next you define the main method.
     
-```
+```java
     public static void main(String... args) throws Exception {
         if (args.length == 0) {
             runProducer(100,10,0);
@@ -315,7 +315,7 @@ Part-5 => :[0] Hello Kafka 40
 
 ### Using the Id field as the key
 
-```
+```java
     static void runProducer(final int sendMessageCount, final int waitMsInBetween, final long id) throws Exception {
         final Producer<Long, String> producer = createProducer();
         long time = System.currentTimeMillis();
@@ -372,7 +372,7 @@ Now, that we imported the Kafka classes and defined some constants, let’s crea
 
 First imported the Kafka classes, define some constants and create the Kafka consumer.
 
-```
+```java
 package com.trivadis.kafkaws.consumer;
 
 import java.util.Collections;
@@ -413,7 +413,7 @@ public class KafkaConsumerAuto {
 
 With that in place, let's process the record with the Kafka Consumer. 
 
-```
+```java
     static void runConsumer(int waitMsInBetween) throws InterruptedException {
         final Consumer<Long, String> consumer = createConsumer();
 
@@ -449,7 +449,7 @@ Notice you use `ConsumerRecords` which is a group of records from a Kafka topic 
 
 Next you define the main method. You can pass the amount of time the consumer spends for processing each record consumed.
 
-```
+```java
     public static void main(String... args) throws Exception {
         if (args.length == 0) {
         	runConsumer(10);
@@ -495,7 +495,7 @@ Create a new Java Class `KafkaConsumerManual` in the package `com.trivadis.kafka
 
 Replace the `runConsumer()` method with the code below.
 
-```
+```java
     static void runConsumer(int waitMsInBetween) throws InterruptedException {
         final Consumer<Long, String> consumer = createConsumer();
 
