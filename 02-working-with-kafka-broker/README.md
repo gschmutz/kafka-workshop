@@ -38,11 +38,11 @@ Now let's create a new topic. For that we again use the `kafka-topics` utility b
 
 ```
 kafka-topics --create \
-			--if-not-exists \
-			--zookeeper zookeeper-1:2181 \
-			--topic test-topic \
-			--partitions 6 \
-			--replication-factor 2
+--if-not-exists \
+--zookeeper zookeeper-1:2181 \
+--topic test-topic \
+--partitions 6 \
+--replication-factor 2
 ```
 
 Re-Run the command to list the topics. You should see the new topic you have just created. 
@@ -75,16 +75,18 @@ Now let's see the topic in use. The most basic way to test it is through the com
 In a new terminal window, first let's run the consumer
 
 ```
-kafka-console-consumer --bootstrap-server broker-1:9092,broker-2:9093 \
-				--topic test-topic
+kafka-console-consumer \
+--bootstrap-server broker-1:9092,broker-2:9093 \
+--topic test-topic
 ```
 After it is started, the consumer just waits for newly produced messages. 
 
 In a another terminal, connect into broker-1 using `docker exec` and run the following command to start the producer. The console producer reads from stdin, and takes a broker list instead of a zookeeper address. We specify 2 of the 3 brokers of our streaming platform.  
  
 ```
-kafka-console-producer --broker-list broker-1:9092,broker-2:9093 \
-				--topic test-topic
+kafka-console-producer \
+--broker-list broker-1:9092,broker-2:9093 \
+--topic test-topic
 ```
 
 On the `>` prompt enter a few messages, execute each single message by hitting the Enter key.<br>
@@ -117,8 +119,8 @@ You can also echo a longer message and pipe it into the console producer, as he 
 
 ```
 echo "This is my first message!" | kafka-console-producer \
-                  --broker-list broker-1:9092,broker-2:9093 \
-                  --topic test-topic
+--broker-list broker-1:9092,broker-2:9093 \
+--topic test-topic
 ```
 
 And of course you can send messages inside a bash for loop:
@@ -144,18 +146,18 @@ We can check that by just listing the messages we have created so far specifying
 
 ```
 kafka-console-consumer --bootstrap-server broker-1:9092,broker-2:9093 \
-							--topic test-topic \
-							--property print.key=true \
-							--property key.separator=, \
-							--from-beginning
+--topic test-topic \
+--property print.key=true \
+--property key.separator=, \
+--from-beginning
 ```
 To produce messages with a key, use the properties `parse.key` and `key.separator`. 
 
 ```
 kafka-console-producer --broker-list broker-1:9092,broker-2:9093 \
-							--topic test-topic \
-							--property parse.key=true \
-							--property key.separator=,
+--topic test-topic \
+--property parse.key=true \
+--property key.separator=,
 ```
 
 Enter your messages so that a key and messages are separated by a comma, i.e. `key1,message1`.
@@ -168,10 +170,6 @@ kafka-topics --zookeeper zookeeper-1:2181 --delete --topic test-topic
 ```
 
 The delete only works if the server property `delete.topic.enable` is set to `true`. This is the case with the streaming platform we have setup for this course. See the environment variable settings of the broker configuration in the `docker-compose.yml`.
-
-```
-
-```
 
 ## Working with the Kafkacat utility
 [Kafkacat](https://docs.confluent.io/current/app-development/kafkacat-usage.html#kafkacat-usage) is a command line utility that you can use to test and debug Apache Kafka deployments. You can use `kafkacat` to produce, consume, and list topic and partition information for Kafka. Described as “netcat for Kafka”, it is a swiss-army knife of tools for inspecting and creating data in Kafka.
@@ -283,31 +281,31 @@ Now let's use it to Produce and Consume messages.
 The simplest way to consume a topic is just specifying the broker and the topic. By default all messages from the beginning of the topic will be shown 
 
 ```
-kafkacat -b 10.0.1.4 -t test-topic
+kafkacat -b $DOCKER_HOST_IP -t test-topic
 ```
 
 If you want to start at the end of the topic, i.e. only show new messages, add the `-o` option. 
 
 ```
-kafkacat -b 10.0.1.4 -t test-topic -o end
+kafkacat -b $DOCKER_HOST_IP -t test-topic -o end
 ```
 
 To show only the last message (one for each partition), set the `-o` option to -1. -2 would show the last 2 messages.
 
 ```
-kafkacat -b 10.0.1.4 -t test-topic -o -1
+kafkacat -b $DOCKER_HOST_IP -t test-topic -o -1
 ```
 
 You can use the `-f` option to format the output. Here we show the partition (%p) as well as key (%k) and message (%s):
 
 ```
-kafkacat -b 10.0.1.4 -t test-topic -f 'Part-%p => %k:%s\n'
+kafkacat -b $DOCKER_HOST_IP -t test-topic -f 'Part-%p => %k:%s\n'
 ```
 
 If there are keys which are Null, then you can use `-Z` to actually show NULL in the output:
 
 ```
-kafkacat -b 10.0.1.4 -t test-topic -f 'Part-%p => %k:%s\n' -Z
+kafkacat -b $DOCKER_HOST_IP -t test-topic -f 'Part-%p => %k:%s\n' -Z
 ```
 
 ### Producing messages using kafkacat
@@ -315,13 +313,13 @@ kafkacat -b 10.0.1.4 -t test-topic -f 'Part-%p => %k:%s\n' -Z
 Producing messages with `kafacat` is as easy as consuming. Just add the `-P` option to switch to Producer mode. Just enter the data on the next line.
 
 ```
-kafkacat -b 10.0.1.4 -t test-topic -P
+kafkacat -b $DOCKER_HOST_IP -t test-topic -P
 ```
 
 To produce with key, specify the delimiter to split key and message, using the `-K` option. 
 
 ```
-kafkacat -b 10.0.1.4 -t test-topic -P -K , -X topic.partitioner=murmur2_random
+kafkacat -b $DOCKER_HOST_IP -t test-topic -P -K , -X topic.partitioner=murmur2_random
 ```
 
 
@@ -333,7 +331,7 @@ Taking his example, you can send 10 orders to test-topic.
 
 ```
 curl -s "https://api.mockaroo.com/api/d5a195e0?count=20&key=ff7856d0"| \
-	kafkacat -b 10.0.1.4:9092 -t test-topic -P
+	kafkacat -b $DOCKER_HOST_IP:9092 -t test-topic -P
 ```
 
 ## Using Kafka Manager
