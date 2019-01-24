@@ -13,7 +13,7 @@ Connect to the `broker-1` container:
 docker exec -ti streamingplatform_broker-1_1 bash
 ```
 
-And create the topic. 
+And create a new topic. 
 
 ```
 kafka-topics --create \
@@ -23,7 +23,7 @@ kafka-topics --create \
     --topic failsafe-test-topic
 ```
 
-Notice that the replication factor gets set to 3, and the topic name is `failsafe-test-topic`.
+Note that the replication factor is set to 3, and the topic name is `failsafe-test-topic`.
 
 ## Start Kafka Consumer that uses Replicated Topic
 
@@ -100,7 +100,9 @@ Notice that the messages are sent to all of the consumers because each consumer 
 
 Stop the producers and the consumers from before.
 
-Now let’s start the console consumers to use the same consumer group. This way the consumers will share the messages as each consumer in the consumer group will get its share of partitions.
+Now let’s start the console consumers to use the same consumer group. This way the consumers will share the messages among eachother, as each consumer in the consumer group will get its share of partitions. With `kafkacat` you can specify the consumer group name by using the `-G` option. ¨
+
+Let's start each of the 3 consumers using the smae `test-group` consumer group:
 
 ```
 kafkacat -b localhost -t failsafe-test-topic -G test-group failsafe-test-topic 
@@ -139,7 +141,7 @@ message 4
 message 5
 ```
 
-Notice that the messages are spread evenly among the consumers.
+Notice that the messages are spread among the consumers.
 
 ## Kafka Consumer Failover
 
