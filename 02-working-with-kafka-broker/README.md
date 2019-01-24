@@ -47,11 +47,17 @@ kafka-topics --create \
 
 Re-Run the command to list the topics. You should see the new topic you have just created. 
 
+With the Kafka installation we use for this course, a topic always has to be created before it can be used. This is due to the parameter `auto.create.topics.enable` which is set to `false` in the configuration of each broker in the `docker-compose.yml`.
+
 ### Describe a Topic
+
+You can get information on a given topic by using the `--describe` option. An other alternative way is to use Kafka Manager, which is also started with the platform and demonstrated later in this workshop. 
 
 ```
 kafka-topics --describe --zookeeper zookeeper-1:2181 --topic test-topic
 ```
+
+and you should get an output similar to the one shown below:
 
 ```
 Topic:test-topic	PartitionCount:6	ReplicationFactor:2	Configs:
@@ -161,7 +167,11 @@ A Kafka topic can be droped using the `kafka-topics` utility with the `--delete`
 kafka-topics --zookeeper zookeeper-1:2181 --delete --topic test-topic
 ```
 
-The delete only works if the server property `delete.topic.enable` is set to `true`. This is the case with the streaming platform as setup in chapter 1.
+The delete only works if the server property `delete.topic.enable` is set to `true`. This is the case with the streaming platform we have setup for this course. See the environment variable settings of the broker configuration in the `docker-compose.yml`.
+
+```
+
+```
 
 ## Working with the Kafkacat utility
 [Kafkacat](https://docs.confluent.io/current/app-development/kafkacat-usage.html#kafkacat-usage) is a command line utility that you can use to test and debug Apache Kafka deployments. You can use `kafkacat` to produce, consume, and list topic and partition information for Kafka. Described as “netcat for Kafka”, it is a swiss-army knife of tools for inspecting and creating data in Kafka.
