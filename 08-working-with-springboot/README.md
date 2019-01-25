@@ -144,61 +144,61 @@ import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
+import org.springframework.kafka.listener.ContainerProperties.AckMode;
 
 @Configuration
 public class KafkaConfig {
-	  @Value("${spring.kafka.bootstrap-servers}")
-	  private String bootstrapServers;
+      @Value("${spring.kafka.bootstrap-servers}")
+      private String bootstrapServers;
   
 
-	  // Producer Configuration
-	  
-	  @Bean
-	  public Map<String, Object> producerConfigs() {
-	    Map<String, Object> props = new HashMap<>();
-	    props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-	    props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, LongSerializer.class);
-	    props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+      // Producer Configuration
+      
+      private Map<String, Object> producerConfigs() {
+        Map<String, Object> props = new HashMap<>();
+        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, LongSerializer.class);
+        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
 
-	    return props;
-	  }
-	  
-	  @Bean
-	  public ProducerFactory<Long, String> producerFactory() {
-	    return new DefaultKafkaProducerFactory<>(producerConfigs());
-	  }
+        return props;
+      }
+      
+      @Bean
+      public ProducerFactory<Long, String> producerFactory() {
+        return new DefaultKafkaProducerFactory<>(producerConfigs());
+      }
 
-	  @Bean
-	  public KafkaTemplate<Long, String> kafkaTemplate() {
-	    return new KafkaTemplate<>(producerFactory());
-	  }
+      @Bean
+      public KafkaTemplate<Long, String> kafkaTemplate() {
+        return new KafkaTemplate<>(producerFactory());
+      }
 
-	  // Consumer Configuration
-	  
-	  @Bean
-	  public Map<String, Object> consumerConfigs() {
-	    Map<String, Object> props = new HashMap<>();
-	    props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-	    props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, LongDeserializer.class);
-	    props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-	    props.put(ConsumerConfig.GROUP_ID_CONFIG, "upperCaser");
+      // Consumer Configuration
+      
+      private Map<String, Object> consumerConfigs() {
+        Map<String, Object> props = new HashMap<>();
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, LongDeserializer.class);
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, "upperCaser");
+        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, true);   // is also the default
 
-	    return props;
-	  }
-	  
-	  @Bean
-	  public ConsumerFactory<Long, String> consumerFactory() {
-	    return new DefaultKafkaConsumerFactory<>(consumerConfigs());
-	  }
-	  
-	  @Bean
-	  public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<Long, String>> kafkaListenerContainerFactory() {
-	    ConcurrentKafkaListenerContainerFactory<Long, String> factory =
-	        new ConcurrentKafkaListenerContainerFactory<>();
-	    factory.setConsumerFactory(consumerFactory());
+        return props;
+      }
+      
+      @Bean
+      public ConsumerFactory<Long, String> consumerFactory() {
+        return new DefaultKafkaConsumerFactory<>(consumerConfigs());
+      }
+      
+      @Bean
+      public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<Long, String>> kafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<Long, String> factory =
+            new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(consumerFactory());
 
-	    return factory;
-	  }
+        return factory;
+      }
 }
 ```
 
@@ -212,17 +212,13 @@ Add the following settings to configure the Kafka cluster and the name of the tw
 spring:
   kafka:
     bootstrap-servers: ${PUBLIC_IP}:9092
-    kafka.acks: all
-    retries: 0
-    consumer:
-      auto-offset-reset: earliest
-      group-id: customer-group      
-  
 kafka:
   topic:
     in: test-spring-in
     out: test-spring-out
 ```
+
+https://docs.spring.io/spring-kafka/reference/htmlsingle/#committing-offsets
 
 ## Build and Run the application
 
