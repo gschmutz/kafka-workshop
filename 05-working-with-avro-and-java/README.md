@@ -15,7 +15,7 @@ You can either use the GUI to edit your `pom.xml` or navigate to the last tab **
 
 You will see the still rather empty definition.
 
-```
+```xml
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.trivadis.kafkaws</groupId>
@@ -28,7 +28,7 @@ Let's add some initial dependencies for our project. We will add some more depen
 
 Copy the following block right after the `<version>` tag, before the closing `</project>` tag.
 
-```
+```xml
    <properties>
        <kafka.version>1.1.0</kafka.version>
        <confluent.version>4.1.0</confluent.version>
@@ -185,10 +185,10 @@ and execute the necessary kafka-topics command.
 
 ```
 kafka-topics --create \
-    --replication-factor 3 \
-    --partitions 8 \
-    --topic test-java-avro-topic \
-    --zookeeper zookeeper-1:2181
+--replication-factor 3 \
+--partitions 8 \
+--topic test-java-avro-topic \
+--zookeeper zookeeper-1:2181
 ```
 
 Cross check that the topic has been created.
@@ -208,7 +208,7 @@ Create a new File `Notification-v1.avsc` in the folder  **src/main/avro** just c
 
 Add the following Avro schema to the empty file.  
 
-```
+```json
 {
   "type" : "record",
   "namespace" : "com.trivadis.kafkaws.avro.v1",
@@ -227,7 +227,7 @@ Add the following Avro schema to the empty file.
 
 In the `pom.xml`, add the `avro-maven-plugin` plugin to the `<build><plugins>` section, just below the `exec-maven-plugin`. 
 
-```
+```xml
 			<plugin>
 				<groupId>org.apache.avro</groupId>
 				<artifactId>avro-maven-plugin</artifactId>
@@ -262,7 +262,7 @@ After running this command, refresh the project in Eclipse and you should see a 
 
 Double click on the `Notification` class to inspect the code. 
 
-```
+```java
 package com.trivadis.kafkaws.avro.v1;
 
 import org.apache.avro.specific.SpecificData;
@@ -305,7 +305,7 @@ Create a new Java Class `KafkaProducerAvro` in the package `com.trivadis.kafakws
 
 Add the following code to the empty class to create a Kafka Producer. It is similar to the code we have seen in the previous workshop. We have changed both serializer to use the Confluent `KafkaAvroSerializer` class and added the URL to the Confluent Schema Registry API. 
 
-```
+```java
 package com.trivadis.kafkaws.producer;
 
 import java.util.Properties;
@@ -343,7 +343,7 @@ public class KafkaProducerAvro {
 
 We will be using the synchronous way for producing messages to the Kafka topic we created above, but the other methods would work as well with Avro.
 
-```
+```java
     static void runProducer(final int sendMessageCount, final int waitMsInBetween, final long id) throws Exception {
         final Producer<Long, Notification> producer = createProducer();
         long time = System.currentTimeMillis();
@@ -453,7 +453,7 @@ Create a new Java Class `KafkaConsumerAvro` in the package `com.trivadis.kafakws
 
 Add the following code to the empty class. 
 
-```
+```java
 package com.trivadis.kafkaws.consumer;
 
 import java.util.Collections;
@@ -546,7 +546,7 @@ To register an Avro schema automatically, you can use the following Maven plugin
 
 Add the following definition to the `pom.xml`.
 
-```
+```xml
 			<plugin>
 				<groupId>io.confluent</groupId>
 				<artifactId>kafka-schema-registry-maven-plugin</artifactId>
