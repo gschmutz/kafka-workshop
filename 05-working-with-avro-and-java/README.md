@@ -30,8 +30,8 @@ Copy the following block right after the `<version>` tag, before the closing `</
 
 ```xml
    <properties>
-       <kafka.version>1.1.0</kafka.version>
-       <confluent.version>4.1.0</confluent.version>
+       <kafka.version>2.1.0</kafka.version>
+       <confluent.version>5.1.0</confluent.version>
        <avro.version>1.8.2</avro.version>
        <java.version>1.8</java.version>
        <slf4j-version>1.7.5</slf4j-version>
@@ -194,8 +194,7 @@ kafka-topics --create \
 Cross check that the topic has been created.
 
 ```
-kafka-topics --list \
-    --zookeeper zookeeper-1:2181
+kafka-topics --list --zookeeper zookeeper-1:2181
 ```
 
 This finishes the setup steps and our new project is ready to be used. Next we will start implementing the **Kafka Producer** which uses Avro for the serialization. 
@@ -329,8 +328,7 @@ public class KafkaProducerAvro {
     
     private static Producer<Long, Notification> createProducer() {
         Properties props = new Properties();
-        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,
-                                            BOOTSTRAP_SERVERS);
+        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS);
         props.put(ProducerConfig.CLIENT_ID_CONFIG, "KafkaExampleProducer");
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, KafkaAvroSerializer.class.getName());
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, KafkaAvroSerializer.class.getName());
@@ -390,7 +388,7 @@ The `main()` method accepts 3 parameters, the number of messages to produce, the
 Use `kafkacat` or `kafka-console-consumer` to consume the messages from the topic `test-java-avro-topic `.
 
 ```
-kafkacat -b 192.168.25.137 -t test-java-avro-topic
+kafkacat -b $PUBLIC_IP -t test-java-avro-topic
 ```
 
 Now run it using the `mvn exec:java` command. It will generate 1000 messages, waiting 10ms in-between sending each message and use 0 for the ID. 
