@@ -181,8 +181,9 @@ public class KafkaConfig {
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, LongDeserializer.class);
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(ConsumerConfig.GROUP_ID_CONFIG, "upperCaser");
-        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, true);   // is also the default
-
+        // disable auto commit
+        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
+        
         return props;
       }
       
@@ -196,11 +197,17 @@ public class KafkaConfig {
         ConcurrentKafkaListenerContainerFactory<Long, String> factory =
             new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
-
+        
+        // set the commit mode to COUNT and commit every 5 records (after they have been processed)
+        factory.getContainerProperties().setAckMode(AckMode.COUNT);
+        factory.getContainerProperties().setAckCount(5);
+        
         return factory;
       }
 }
 ```
+
+We set `enable.auto.commit` to `false` and configure the `AckMode` to `COUNT` to "manually" commit the offset after 5 processed records. You can find the different settings for `AckMode` [here](https://docs.spring.io/spring-kafka/reference/htmlsingle/#committing-offsets).
 
 ## Configure Kafka through application.yml configuration file
 
@@ -217,8 +224,6 @@ kafka:
     in: test-spring-in
     out: test-spring-out
 ```
-
-https://docs.spring.io/spring-kafka/reference/htmlsingle/#committing-offsets
 
 ## Build and Run the application
 
