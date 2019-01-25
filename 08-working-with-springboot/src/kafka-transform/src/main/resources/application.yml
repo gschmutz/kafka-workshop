@@ -1,0 +1,13 @@
+spring:
+  kafka:
+    bootstrap-servers: ${PUBLIC_IP}:9092
+    kafka.acks: all
+    retries: 0
+    consumer:
+      auto-offset-reset: earliest
+      group-id: customer-group      
+  
+kafka:
+  topic:
+    in: test-spring-in
+    out: test-spring-out
