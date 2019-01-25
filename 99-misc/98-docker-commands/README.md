@@ -1,4 +1,4 @@
-# Docker Commnands
+# Docker Commands
 
 ## Docker Core
 
@@ -26,12 +26,11 @@ To run a command in a running container
 docker exec -ti <container-name> bash
 ```
 
-### Remove dangling volumes
+### Remove all unused local volumes
 
 ```
-docker volume rm (docker volume ls -qf dangling=true)
+docker volume prune
 ```
-
 
 ## Docker Compose
 
