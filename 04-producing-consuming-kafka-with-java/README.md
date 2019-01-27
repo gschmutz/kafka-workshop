@@ -208,18 +208,17 @@ public class KafkaProducerSync {
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS);
         props.put(ProducerConfig.CLIENT_ID_CONFIG, "KafkaExampleProducer");
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
-                                        LongSerializer.class.getName());
+                LongSerializer.class.getName());
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
-                                    StringSerializer.class.getName());
+                StringSerializer.class.getName());
         return new KafkaProducer<>(props);
-    }	
+    }
 }
 ```
 
 Kafka provides a synchronous send method to send a record to a topic. Let’s use this method to send some message ids and messages to the Kafka topic we created earlier.
 
 ```java
-    static void runProducer(final int sendMessageCount, final int waitMsInBetween, final long id) throws Exception {
     private static void runProducer(int sendMessageCount, int waitMsInBetween, long id) throws Exception {
         try (Producer<Long, String> producer = createProducer()) {
             for (int index = 0; index < sendMessageCount; index++) {
