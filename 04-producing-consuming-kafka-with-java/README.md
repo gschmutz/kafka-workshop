@@ -30,7 +30,7 @@ Copy the following block right after the <version> tag, before the closing </pro
 
 ```
    <properties>
-       <kafka.version>1.1.0</kafka.version>
+       <kafka.version>2.1.0</kafka.version>
        <java.version>1.8</java.version>
        <slf4j-version>1.7.5</slf4j-version>
        
@@ -186,24 +186,26 @@ Add the following code to the empty class to create a Kafka Producer.
 ```java
 package com.trivadis.kafkaws.producer;
 
+import java.time.LocalDateTime;
 import java.util.Properties;
 
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.serialization.LongSerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 
 public class KafkaProducerSync {
 
     private final static String TOPIC = "test-java-topic";
-    private final static String BOOTSTRAP_SERVERS =
-            "localhost:9092,localhost:9093,localhost:9094";
-    
+    private final static String BOOTSTRAP_SERVERS
+            = "localhost:9092,localhost:9093";
+
     private static Producer<Long, String> createProducer() {
         Properties props = new Properties();
-        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,
-                                            BOOTSTRAP_SERVERS);
+        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS);
         props.put(ProducerConfig.CLIENT_ID_CONFIG, "KafkaExampleProducer");
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
                                         LongSerializer.class.getName());
@@ -218,30 +220,27 @@ Kafka provides a synchronous send method to send a record to a topic. Let’s us
 
 ```java
     static void runProducer(final int sendMessageCount, final int waitMsInBetween, final long id) throws Exception {
-        final Producer<Long, String> producer = createProducer();
-        long time = System.currentTimeMillis();
-        
-        try {
-            for (long index = 0; index < sendMessageCount; index++) {
-                final ProducerRecord<Long, String> record =
-                        new ProducerRecord<>(TOPIC, "[" + id + "] Hello Kafka " + index);
+    private static void runProducer(int sendMessageCount, int waitMsInBetween, long id) throws Exception {
+        try (Producer<Long, String> producer = createProducer()) {
+            for (int index = 0; index < sendMessageCount; index++) {
+                long time = System.currentTimeMillis();
+
+                ProducerRecord<Long, String> record
+                        = new ProducerRecord<>(TOPIC, "[" + id + "] Hello Kafka " + LocalDateTime.now());
 
                 RecordMetadata metadata = producer.send(record).get();
 
                 long elapsedTime = System.currentTimeMillis() - time;
-                System.out.printf("[" + id + "] sent record(key=%s value=%s) " +
-                                "meta(partition=%d, offset=%d) time=%d\n",
+                System.out.printf("[" + id + "] sent record(key=%s value=%s) "
+                        + "meta(partition=%d, offset=%d) time=%d\n",
                         record.key(), record.value(), metadata.partition(),
                         metadata.offset(), elapsedTime);
-                time = System.currentTimeMillis();
-                
+
+                // Simulate slow processing
                 Thread.sleep(waitMsInBetween);
             }
-        } finally {
-            producer.flush();
-            producer.close();
         }
-    }  
+    }
 ```
 
 Next you define the main method.
@@ -249,9 +248,9 @@ Next you define the main method.
 ```java
     public static void main(String... args) throws Exception {
         if (args.length == 0) {
-            runProducer(100,10,0);
+            runProducer(100, 10, 0);
         } else {
-            runProducer(Integer.parseInt(args[0]),Integer.parseInt(args[1]),Long.parseLong(args[2]));
+            runProducer(Integer.parseInt(args[0]), Integer.parseInt(args[1]), Long.parseLong(args[2]));
         }
     }
 ```
@@ -316,33 +315,105 @@ Part-5 => :[0] Hello Kafka 40
 ### Using the Id field as the key
 
 ```java
-    static void runProducer(final int sendMessageCount, final int waitMsInBetween, final long id) throws Exception {
-        final Producer<Long, String> producer = createProducer();
-        long time = System.currentTimeMillis();
+    private static void runProducer(int sendMessageCount, int waitMsInBetween, long id) throws Exception {
         Long key = (id > 0) ? id : null;
-        
-        try {
-            for (long index = 0; index < sendMessageCount; index++) {
-                final ProducerRecord<Long, String> record =
-                        new ProducerRecord<>(TOPIC, key,
-                        		"[" + id + "] Hello Kafka " + index);
+
+        try (Producer<Long, String> producer = createProducer()) {
+            for (int index = 0; index < sendMessageCount; index++) {
+                long time = System.currentTimeMillis();
+
+                ProducerRecord<Long, String> record
+                        = new ProducerRecord<>(TOPIC, key,
+                                "[" + id + "] Hello Kafka " + LocalDateTime.now());
 
                 RecordMetadata metadata = producer.send(record).get();
 
                 long elapsedTime = System.currentTimeMillis() - time;
-                System.out.printf("[" + id + "] sent record(key=%s value=%s) " +
-                                "meta(partition=%d, offset=%d) time=%d\n",
+                System.out.printf("[" + id + "] sent record(key=%s value=%s) "
+                        + "meta(partition=%d, offset=%d) time=%d\n",
                         record.key(), record.value(), metadata.partition(),
                         metadata.offset(), elapsedTime);
-                time = System.currentTimeMillis();
-                
+
+                // Simulate slow processing
                 Thread.sleep(waitMsInBetween);
             }
-        } finally {
-            producer.flush();
-            producer.close();
         }
-    }  
+    }
+```
+
+### Changing to Asynchronous mode
+
+The follwoing class shows the same logic but this time using the asynchronous way for sending records to Kafka. The difference can be seen in the `runProducer` method.
+
+```
+package com.trivadis.kafkaws.producer;
+
+import java.time.LocalDateTime;
+import java.util.Properties;
+import java.util.concurrent.CountDownLatch;
+
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.Producer;
+import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.producer.RecordMetadata;
+import org.apache.kafka.common.serialization.LongSerializer;
+import org.apache.kafka.common.serialization.StringSerializer;
+
+public class KafkaProducerASync {
+
+    private final static String TOPIC = "test-java-topic";
+    private final static String BOOTSTRAP_SERVERS
+            = "localhost:9092,localhost:9093";
+
+    private static Producer<Long, String> createProducer() {
+        Properties props = new Properties();
+        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,
+                BOOTSTRAP_SERVERS);
+        props.put(ProducerConfig.CLIENT_ID_CONFIG, "KafkaExampleProducer");
+        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
+                LongSerializer.class.getName());
+        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
+                StringSerializer.class.getName());
+        return new KafkaProducer<>(props);
+    }
+
+    private static void runProducer(int sendMessageCount, int waitMsInBetween, long id) throws Exception {
+        Long key = (id > 0) ? id : null;
+        final CountDownLatch countDownLatch = new CountDownLatch(sendMessageCount);
+
+        try (Producer<Long, String> producer = createProducer()) {
+            for (int index = 0; index < sendMessageCount; index++) {
+                long time = System.currentTimeMillis();
+
+                ProducerRecord<Long, String> record
+                        = new ProducerRecord<>(TOPIC, key,
+                                "[" + id + "] Hello Kafka " + LocalDateTime.now());
+
+                producer.send(record, (metadata, exception) -> {
+                    long elapsedTime = System.currentTimeMillis() - time;
+                    if (metadata != null) {
+                        System.out.printf("[" + id + "] sent record(key=%s value=%s) "
+                                + "meta(partition=%d, offset=%d) time=%d\n",
+                                record.key(), record.value(), metadata.partition(),
+                                metadata.offset(), elapsedTime);
+                    } else {
+                        exception.printStackTrace();
+                    }
+                    countDownLatch.countDown();
+                });
+            }
+        }
+    }
+
+    public static void main(String... args) throws Exception {
+        if (args.length == 0) {
+            runProducer(100, 10, 0);
+        } else {
+            runProducer(Integer.parseInt(args[0]), Integer.parseInt(args[1]), Long.parseLong(args[2]));
+        }
+    }
+}
 ```
 
 ## Review Producer
@@ -352,9 +423,6 @@ Part-5 => :[0] Hello Kafka 40
 - When would you use Kafka async send vs. sync send?
 
 - Why do you need two serializers for a Kafka record?
-
-- What does the Callback lambda do?
-
 
 ## Create a Kafka Consumer
 
@@ -375,74 +443,78 @@ First imported the Kafka classes, define some constants and create the Kafka con
 ```java
 package com.trivadis.kafkaws.consumer;
 
+import java.time.Duration;
 import java.util.Collections;
 import java.util.Properties;
 
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.LongDeserializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 
 public class KafkaConsumerAuto {
-	private final static String TOPIC = "test-java-topic";
-    private final static String BOOTSTRAP_SERVERS =
-            "localhost:9092,localhost:9093,localhost:9094";
-    
+    private final static String TOPIC = "test-java-topic";
+    private final static String BOOTSTRAP_SERVERS
+            = "localhost:9092,localhost:9093,localhost:9094";
+    private final static Duration CONSUMER_TIMEOUT = Duration.ofSeconds(1);
+
     private static Consumer<Long, String> createConsumer() {
-        final Properties props = new Properties();
-        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG,
-                                    BOOTSTRAP_SERVERS);
-        props.put(ConsumerConfig.GROUP_ID_CONFIG,
-                                    "KafkaExampleConsumer");
-        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
-                LongDeserializer.class.getName());
-        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
-                StringDeserializer.class.getName());
+        Properties props = new Properties();
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS);
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, "KakfaConsumerAuto");
+        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, true);
+        props.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, 10000);
+        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, LongDeserializer.class.getName());
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
 
         // Create the consumer using props.
-        final Consumer<Long, String> consumer =
-                                    new KafkaConsumer<>(props);
+        Consumer<Long, String> consumer = new KafkaConsumer<>(props);
 
         // Subscribe to the topic.
         consumer.subscribe(Collections.singletonList(TOPIC));
         return consumer;
-    }    
-}
+    }
 ```
 
 With that in place, let's process the record with the Kafka Consumer. 
 
 ```java
-    static void runConsumer(int waitMsInBetween) throws InterruptedException {
-        final Consumer<Long, String> consumer = createConsumer();
+    private static void runConsumer(int waitMsInBetween) throws InterruptedException {
+        final int giveUp = 100;
 
-        final int giveUp = 100;   int noRecordsCount = 0;
+        try (Consumer<Long, String> consumer = createConsumer()) {
+            int noRecordsCount = 0;
 
-        while (true) {
-            final ConsumerRecords<Long, String> consumerRecords =
-                    consumer.poll(1000);
+            while (true) {
+                ConsumerRecords<Long, String> consumerRecords = consumer.poll(CONSUMER_TIMEOUT);
 
-            if (consumerRecords.count()==0) {
-                noRecordsCount++;
-                if (noRecordsCount > giveUp) break;
-                else continue;
+                if (consumerRecords.isEmpty()) {
+                    noRecordsCount++;
+                    if (noRecordsCount > giveUp) {
+                        break;
+                    } else {
+                        continue;
+                    }
+                }
+
+                consumerRecords.forEach(record -> {
+                    System.out.printf("%d - Consumer Record:(Key: %d, Value: %s, Partition: %d, Offset: %d)\n",
+                            consumerRecords.count(), record.key(), record.value(),
+                            record.partition(), record.offset());
+                    try {
+                        // Simulate slow processing
+                        Thread.sleep(waitMsInBetween);
+                    } catch (InterruptedException e) {
+                    }
+                });
             }
-            
-            consumerRecords.forEach(record -> {
-                System.out.printf("%d - Consumer Record:(Key: %d, Value: %s, Partition: %d, Offset: %d)\n",
-                        consumerRecords.count(), record.key(), record.value(),
-                        record.partition(), record.offset());
-                try {
-                	Thread.sleep(waitMsInBetween);
-                } catch (InterruptedException e) {
-				} 
-                
-            });
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        consumer.close();
         System.out.println("DONE");
-    }  
+    }
 ```
 
 Notice you use `ConsumerRecords` which is a group of records from a Kafka topic partition. The `ConsumerRecords` class is a container that holds a list of ConsumerRecord(s) per partition for a particular topic. There is one `ConsumerRecord` list for every topic partition returned by a the `consumer.poll()`.
@@ -452,9 +524,9 @@ Next you define the main method. You can pass the amount of time the consumer sp
 ```java
     public static void main(String... args) throws Exception {
         if (args.length == 0) {
-        	runConsumer(10);
+            runConsumer(10);
         } else {
-        	runConsumer(Integer.parseInt(args[0]));
+            runConsumer(Integer.parseInt(args[0]));
         }
     }
 ```
@@ -496,41 +568,45 @@ Create a new Java Class `KafkaConsumerManual` in the package `com.trivadis.kafka
 Replace the `runConsumer()` method with the code below.
 
 ```java
-    static void runConsumer(int waitMsInBetween) throws InterruptedException {
-        final Consumer<Long, String> consumer = createConsumer();
+    private static void runConsumer(int waitMsInBetween) throws InterruptedException {
+        final int giveUp = 100;
 
-        final int giveUp = 100;   
-        int noRecordsCount = 0;
+        try (Consumer<Long, String> consumer = createConsumer()) {
+            int noRecordsCount = 0;
 
-        while (true) {
-            final ConsumerRecords<Long, String> consumerRecords = consumer.poll(1000);
+            while (true) {
+                ConsumerRecords<Long, String> consumerRecords = consumer.poll(CONSUMER_TIMEOUT);
 
-            if (consumerRecords.count()==0) {
-                noRecordsCount++;
-                if (noRecordsCount > giveUp) 
-                	break;
+                if (consumerRecords.isEmpty()) {
+                    noRecordsCount++;
+                    if (noRecordsCount > giveUp) {
+                        break;
+                    }
+                }
+
+                consumerRecords.forEach(record -> {
+                    System.out.printf("%d - Consumer Record:(Key: %d, Value: %s, Partition: %d, Offset: %d)\n",
+                            consumerRecords.count(), record.key(), record.value(),
+                            record.partition(), record.offset());
+                    try {
+                        // Simulate slow processing
+                        Thread.sleep(waitMsInBetween);
+                    } catch (InterruptedException e) {
+                    }
+                });
+
+                consumer.commitAsync();
             }
-
-            consumerRecords.forEach(record -> {
-                System.out.printf("%d - Consumer Record:(Key: %d, Value: %s, Partition: %d, Offset: %d)\n",
-                        consumerRecords.count(), record.key(), record.value(),
-                        record.partition(), record.offset());
-                try {
-                	Thread.sleep(waitMsInBetween);
-                } catch (InterruptedException e) {
-				} 
-            });
-
-            consumer.commitAsync();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        consumer.close();
         System.out.println("DONE");
     }
 ```
 
 Make sure to change the Consumer Group (`ConsumerConfig.GROUP_ID_CONFIG`) to `KafkaConsumerManual` and set the `ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG` to `false` in the `createConsumer()` method. 
 
-```
+```java
         props.put(ConsumerConfig.GROUP_ID_CONFIG, "KakfaConsumerManual");
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
 ```
