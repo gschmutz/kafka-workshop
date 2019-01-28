@@ -259,6 +259,9 @@ services:
     hostname: kafka-manager
     depends_on:
       - zookeeper-1
+      - broker-1
+      - broker-2
+      - broker-3
     ports:
       - "39000:9000"
     environment:
@@ -302,7 +305,7 @@ services:
     restart: always
 
   nifi:
-    image: apache/nifi:1.7.0
+    image: apache/nifi:1.8.0
     hostname: nifi
     ports:
       - "28080:8080"
