@@ -120,6 +120,14 @@ sudo apt-get update
 sudo apt-get install docker-ce
 ```
 
+Add the user to the `docker` group to avoid having to use sudo all the time. 
+
+```
+sudo usermod -a -G docker $USER
+```
+
+Completely log out of your account and log back in (if in doubt, reboot!):
+
 ### Setup Docker Compose
 
 ```
