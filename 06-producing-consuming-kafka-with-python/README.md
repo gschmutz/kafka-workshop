@@ -73,7 +73,7 @@ for data in messages:
 # callbacks to be triggered.
 p.flush()
 ```
-### Prooduce a message with a key and value
+### Produce a message with a key and value
 To also produce a key, you have to also use the parameter `key` together with the parameter `value`.
 
 ```
