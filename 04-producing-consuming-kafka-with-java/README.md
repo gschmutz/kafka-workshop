@@ -1,4 +1,5 @@
 # Working with Kafka from Java
+
 In this workshop we will learn how to produce and consume messages using the [Kafka Java API](https://kafka.apache.org/documentation/#api).
 
 ## Create the project in Eclipse IDE
@@ -30,7 +31,7 @@ Copy the following block right after the <version> tag, before the closing </pro
 
 ```
    <properties>
-       <kafka.version>2.1.0</kafka.version>
+       <kafka.version>2.2.0</kafka.version>
        <java.version>1.8</java.version>
        <slf4j-version>1.7.5</slf4j-version>
        
@@ -149,7 +150,7 @@ We will use the topic `test-java-topic` in the Producer and Consumer code below.
 Connect to the `broker-1` container
 
 ```
-docker exec -ti streamingplatform_broker-1_1 bash
+docker exec -ti broker-1 bash
 ```
 
 and execute the necessary kafka-topics command. 
@@ -342,7 +343,7 @@ Part-5 => :[0] Hello Kafka 40
 
 ### Changing to Asynchronous mode
 
-The follwoing class shows the same logic but this time using the asynchronous way for sending records to Kafka. The difference can be seen in the `runProducer` method.
+The following class shows the same logic but this time using the asynchronous way for sending records to Kafka. The difference can be seen in the `runProducer` method.
 
 ```
 package com.trivadis.kafkaws.producer;
@@ -516,7 +517,7 @@ With that in place, let's process the record with the Kafka Consumer.
     }
 ```
 
-Notice you use `ConsumerRecords` which is a group of records from a Kafka topic partition. The `ConsumerRecords` class is a container that holds a list of ConsumerRecord(s) per partition for a particular topic. There is one `ConsumerRecord` list for every topic partition returned by a the `consumer.poll()`.
+Notice you use `ConsumerRecords` which is a group of records from a Kafka topic partition. The `ConsumerRecords` class is a container that holds a list of ConsumerRecord(s) per partition for a particular topic. There is one `ConsumerRecord` list for every topic partition returned by the `consumer.poll()`.
 
 Next you define the main method. You can pass the amount of time the consumer spends for processing each record consumed.
 

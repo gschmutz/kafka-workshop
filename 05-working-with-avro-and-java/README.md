@@ -1,4 +1,5 @@
 # Working with Avro and Java
+
 In this workshop we will learn how to produce and consume messages using the [Kafka Java API](https://kafka.apache.org/documentation/#api) using Avro for serializing and deserializing messages.
 
 ## Create the project in Eclipse IDE
@@ -30,7 +31,7 @@ Copy the following block right after the `<version>` tag, before the closing `</
 
 ```xml
    <properties>
-       <kafka.version>2.1.0</kafka.version>
+       <kafka.version>2.2.0</kafka.version>
        <confluent.version>5.1.0</confluent.version>
        <avro.version>1.8.2</avro.version>
        <java.version>1.8</java.version>
@@ -178,7 +179,7 @@ We will use the topic `test-java-topic` in the Producer and Consumer code below.
 Connect to the `broker-1` container
 
 ```
-docker exec -ti streamingplatform_broker-1_1 bash
+docker exec -ti broker-1 bash
 ```
 
 and execute the necessary kafka-topics command. 
@@ -383,7 +384,7 @@ Next you define the main method.
     }
 ```
 
-The `main()` method accepts 3 parameters, the number of messages to produce, the time in ms to wait inbetween sending each message and the ID of the producer.
+The `main()` method accepts 3 parameters, the number of messages to produce, the time in ms to wait in-between sending each message and the ID of the producer.
 
 Use `kafkacat` or `kafka-console-consumer` to consume the messages from the topic `test-java-avro-topic `.
 
@@ -405,7 +406,7 @@ So let's connect to the schema registry container:
 docker exec -ti streamingplatform_schema_registry_1 bash
 ```
 
-And then invoke the `kafka-avro-console-consumer` similar to the "normal" consumer consumer seen so far. 
+And then invoke the `kafka-avro-console-consumer` similar to the "normal" consumer seen so far. 
 
 ```
 kafka-avro-console-consumer --bootstrap-server broker-1:9092 --topic test-java-avro-topic
@@ -431,7 +432,8 @@ You should see an output similar to the one below.
 ```
 
 ## View the Schema in the Registry
-The Avro Serializer and Deserializer automatically register the Avro schmema, if it is not already in the registry. 
+
+The Avro Serializer and Deserializer automatically register the Avro schema, if it is not already in the registry. 
 
 The Streamingplatform also contains a tool made by a company called Landoop which allows us to see what's in the registry. 
 

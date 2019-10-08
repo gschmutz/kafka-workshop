@@ -347,7 +347,7 @@ brew install kafkacat
 There is also a Docker container from Confluent which can be used to run **Kafkacat**
 
 ```
-docker run --tty --network docker_default confluentinc/cp-kafkacat kafkacat
+docker run --tty --network kafkaworkshop_default edenhill/kafkacat:1.5.0 kafkacat
 ```
 
 Check the [Docker Image description on Docker Hub](https://hub.docker.com/r/confluentinc/cp-kafkacat) to see more options for using **Kafkacat** with Docker. 

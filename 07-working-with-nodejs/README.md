@@ -29,7 +29,7 @@ We will use the topic `test-node-topic` in the Producer and Consumer code below.
 Connect to the `broker-1` container
 
 ```
-docker exec -ti streamingplatform_broker-1_1 bash
+docker exec -ti broker-1 bash
 ```
 
 and execute the necessary kafka-topics command. 

@@ -7,10 +7,10 @@ We will use the topic `test-spring-in` to consume from and the topic `test-sprin
 Connect to the `broker-1` container
 
 ```
-docker exec -ti streamingplatform_broker-1_1 bash
+docker exec -ti broker-1 bash
 ```
 
-and execute the necessary kafka-topics commands 
+and execute the necessary `kafka-topics` commands 
 
 ```
 kafka-topics --create \
@@ -29,8 +29,7 @@ kafka-topics --create \
 Cross check that the topic has been created.
 
 ```
-kafka-topics --list \
-    --zookeeper zookeeper-1:2181
+kafka-topics --list --zookeeper zookeeper-1:2181
 ```
 
 This finishes the setup steps and our new project is ready to be used. Next we will start implementing the **Kafka Producer** which uses Avro for the serialization. 
@@ -42,11 +41,12 @@ Select Generate a **Maven Project** with **Java** and Spring Boot **2.1.2**. Spe
 
 ![Alt Image Text](./images/spring-initializr.png "Spring Initializr")
 
-Click on **Generate Project** and unzip the ZIP file to a convientent location for development. 
+Click on **Generate Project** and unzip the ZIP file to a convenient location for development. 
 
 Once you have unzipped the project, you’ll have a very simple structure. 
 
-Import the project as a Maven Project into your favorite IDE for further development. 
+Import the project as a Maven Project into your favourite IDE for further development. 
+
 ## Implement a Kafka Consumer in Spring
 Start by creating a simple Java class `KafkaEventConsumer` within the `com.trivadis.springboot.kafka.kafkatransform` package, which we will use to consume messages from Kafka. 
 
