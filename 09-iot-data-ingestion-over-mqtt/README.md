@@ -58,6 +58,8 @@ Now with the MQTT broker and the MQTT client in place, let's produce some messag
 
 For that we are using a Java simulator program (source Hortonworks). Download it and compile it locally. 
 
+### Run it as a Java Program
+
 Java and Maven has already been installed in chapter 0. If it is not available, perform the following steps to both install a Java JDK and [Apache Maven](https://maven.apache.org/):
 
 ```
@@ -87,6 +89,14 @@ And finally we can run it.
 
 ```
 mvn exec:java -Dexec.args="-s MQTT -f CSV -p 1883"
+```
+
+### Run it in a container
+
+To run it as a container instead:
+
+```
+docker run --network analyticsplatform_default  gschmutz/iot-truck-simulator '-s' 'MQTT' '-p' '1883' '-h' 'mosquitto-1' '-f' 'CSV'
 ```
 
 As soon as the simulator is up and running, you should see messages in the window with the `mosquitto-sub` running. 
