@@ -14,7 +14,7 @@ Our **Streaming Platform** does not yet provide all the services we need in this
 Create a file `docker-compose.override.yml` in the `docker` folder (the same place where the `docker-compose.yml` is) and add the version and services header:
 
 ```
-version: "2.1"
+version: "2.0"
 
 services:
 ```
@@ -153,7 +153,7 @@ kafka-console-consumer --bootstrap-server broker-1:9092 --topic truck_position
 or 
 
 ```
-kafkacat -b broker-1 -t truck_position
+kafkacat -b streamingplatform -t truck_position
 ```
 
 ## Using Kafka Connect to bridge between MQTT and Kafka
@@ -162,18 +162,11 @@ In order to get the messages from MQTT into Kafka, we will be using Kafka Connec
 
 Check-out the [IoT Truck Demo Tutorial](https://github.com/gschmutz/iot-truck-demo) to see the Confluent MQTT Connector in Action. 
 
-### Adding the Kafka Connect service 
+### Adding the Kafka Connect Service 
 
 There are two instances of the Kafka Connect service instance running as part of the Streaming Platform, `connect-1` and `connect-2`. To be able to add the connector implementations, without having to copy them into the docker container (or even create a dedicated docker image), both connect services are configured to retrieve additional implementations from the local folder `/etc/kafka-connect/custom-plugins`. This folder is mapped as a volume to the `kafka-connect` folder outside of the container. 
 
-Make sure that it is existing and that we can write into it. 
-
-```
-sudo rm -R kafka-connect/
-mkdir kafka-connect
-```
-
-In that folder we need to copy the artefacts of the Kafka connectors we want to use. 
+In that `kafka-connect` folder we need to copy the artefacts of the Kafka connectors we want to use. 
 
 ### Download and deploy the kafka-connect-mqtt artefact
 
@@ -202,13 +195,13 @@ Now let's restart Kafka connect in order to pick up the new connector.
 docker-compose restart connect-1 connect-2
 ```
 
-The connector should now be added to the Kafka cluster. You can confirm that by watching the log file of the two containers
+The connector has now been added to the Kafka cluster. You can confirm that by watching the log file of the two containers:
 
 ```
 docker-compose logs -f connect-1 connect-2
 ```
 
-After a while you should see an output similar to the one below with a message that the MQTT connector was added and later that the connector finished starting ...
+After some time you should see an output similar to the one below with a message that the MQTT connector has been added and later that the connector finished starting successfully ...
 
 ```
 ...
