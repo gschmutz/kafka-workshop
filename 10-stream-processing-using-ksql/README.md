@@ -1,39 +1,14 @@
 # Stream Processing using KSQL
-With the truck data continously ingested into the truck_movemnt topic, let's perform some stream processing on the information. There are many possible solutions for performing analytics directly on the event stream. In the Kafka project, we can either use Kafka Streams or KSQL, a SQL abstraction on top of Kafka Streams. For this workshop we will be using KSQL. 
+With the truck data continuously ingested into the `truck_movement` topic, let's perform some stream processing on the information. There are many possible solutions for performing analytics directly on the event stream. In the Kafka project, we can either use Kafka Streams or KSQL, a SQL abstraction on top of Kafka Streams. For this workshop we will be using KSQL. 
 
 ![Alt Image Text](./images/stream-processing-with-ksql-overview.png "Schema Registry UI")
 
 ## Connect to KSQL Server
 
-In order to use KSQL, we need to connect to the KSQL engine using the KSQL CLI. One instance of a KSQL server has been started with our Streaming Platform and can be reached on port 8088. 
-
-You can start it using the cp-`ksql-cli` docker image. For that, add the following service to the `docker-compose.yml` file.
+In order to use KSQL, we need to connect to the KSQL engine using the KSQL CLI. An instance of a KSQL server has been started with our Streaming Platform and can be reached on port 8088.
 
 ```
-  ksql-cli:
-    image: confluentinc/cp-ksql-cli:5.0.0
-    container_name: ksql-cli
-    depends_on:
-      - broker-1
-      - connect
-      - ksql-server
-    volumes:
-      - $PWD/scripts/ksql/ksqlcommands:/tmp/ksqlcommands
-    entrypoint: /bin/sh
-    tty: true
-    restart: always
-```
-
-Start the new service:
-
-```
-docker-compose up -d 
-```
-
-Now let's connect to the KSQL CLI. 
-
-```
-docker-compose exec ksql-cli ksql http://ksql-server:8088
+docker run -it --network docker_default confluentinc/cp-ksql-cli:5.2.1 http://ksql-server-1:8088
 ```
 
 We can use the show command to show topics as well as streams and tables. We have not yet created streams and tables, therefore we won't see anything. 
@@ -46,7 +21,7 @@ show tables;
 
 ## Working with KSQL in an ad-hoc fashion
 
-### Give the truck_position Topic a structure
+### Give the truck_position topic a structure
 
 Before we can use a KSQL SELECT statement, we have to describe the structure of our event in the `truck_position` topic. 
 
@@ -66,7 +41,7 @@ CREATE STREAM truck_position_s \
         value_format='DELIMITED');
 ```
 
-Now with the `truck_position_s` in place, let's use the SELECT statement to query live messages arriving on the stream. 
+Now with the `truck_position_s` in place, let's use the `SELECT` statement to query live messages arriving on the stream. 
 
 ### Using KSQL to find abnormal driver behaviour
 
@@ -101,7 +76,7 @@ docker exec -ti docker_broker-1_1 bash
 And perform the following `kafka-topics` command creating a new `dangerous_driving_ksql` topic in Kafka.
 
 ```
-kafka-topics --zookeeper zookeeper-1:2181 --create --topic dangerous_driving_ksql --partitions 8 --replication-factor 2
+kafka-topics --zookeeper zookeeper:2181 --create --topic dangerous_driving_ksql --partitions 8 --replication-factor 2
 ```
 
 Now let's publish to that topic from KSQL. For that we can create a new Stream. Instead of creating it on an existing topic as we have done before, we use the `CREATE STREAM ... AS SELECT ...` variant. 
@@ -132,7 +107,7 @@ We can use this new stream for further processing, just as we have used the `tru
 SELECT * FROM dangerous_driving_s;
 ```
 
-Now let's see that we actually produce data on that new topic by runing a `kafka-console-consumer` or alternatively a `kafkacat`.
+Now let's see that we actually produce data on that new topic by running a `kafka-console-consumer` or alternatively a `kafkacat`.
 
 ```
 docker exec -ti docker_broker-1_1 bash
@@ -145,7 +120,7 @@ kafka-console-consumer --bootstrap-server broker-1:9092 \
 
 You should see the abnormal driving behaviour as before in the KSQL shell.        
 
-### How many abnormal events do we get per 20 seconds
+### How many abnormal events do we get per 20 seconds 
 
 ```
 SELECT count(*) 
