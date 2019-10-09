@@ -1,17 +1,25 @@
 # IoT Data Ingestion through MQTT into Kafka
 In this workshop we will be ingesting data not directly into Kafka but rather through MQTT first. We will be using a fictitious Trucking company with a fleet of trucks constantly providing some data about the moving vehicles. 
 
-The following diagram shows the setup of the data flow we will be implementing. Of course we will not be using any real-life data, but have a program simulating some drivers and their trucks.
+The following diagram shows the setup of the data flow we will be implementing. 
 
 ![Alt Image Text](./images/iot-ingestion-overview.png "Schema Registry UI")
 
-## Adding a MQTT broker to Streaming Platform
-Our streaming platform does not yet provide an MQTT broker.
+We will not be using any real-life data, but have a program simulating some drivers and their trucks.
 
-So let's add a new service to the `docker-compose.yml` file we have created in [Setup of the Streaming Platform](../01-environment/README.md).
+## Adding the necessary additional services to the environment
 
-[Mosquitto](https://mosquitto.org/) is an easy to use MQTT broker, belonging to the Eclipse project. There is a docker image available for us on Docker Hub. Just make sure that the service is configured in the `docker-compose.yml` with the volume mapping as shown below.
-Additionally, if you want to use the MQTT UI later in the workshop, you have to add it as another service (`mqtt-ui`). 
+Our **Streaming Platform** does not yet provide all the services we need in this workshop, such as an **MQTT broker**.
+
+Create a file `docker-compose.override.yml` in the `docker` folder (the same place where the `docker-compose.yml` is) and add the version and services header:
+
+```
+version: "2.1"
+
+services:
+```
+
+Now let's add the MQTT broker. Add the following two services to the `docker-compose.override.yml` file. 
 
 ```
   mosquitto-1:
@@ -33,6 +41,9 @@ Additionally, if you want to use the MQTT UI later in the workshop, you have to 
       - "29080:80"
 ```
 
+[Mosquitto](https://mosquitto.org/) is an easy to use MQTT broker, belonging to the Eclipse project. There is a docker image available for us on Docker Hub. Just make sure that the service is configured in the `docker-compose.yml` with the volume mapping as shown below.
+Additionally, if you want to use the MQTT UI later in the workshop, you have to add it as another service (`mqtt-ui`). 
+
 Mosquitto needs to be configured, before we can use it. That's why we use the volume mapping above, to map the file `./conf/mosquitto-1.conf` into the `mosquitto-1` container. 
 
 Create a folder `conf` below the `docker` folder and in there create the `mosquitto-1.conf` file with the following content:
@@ -47,7 +58,7 @@ listener 9001
 protocol websockets
 ```
 
-With Docker Compose, you can easily later add some new services, even if the platform is currently running. If you redo a `docker-compose up -d`, Docker Compose will check if there is a delta between what is currently running and what the `docker-compose.yml` file tells. 
+With Docker Compose, you can easily later add some new services, even if the platform is currently running. If you redo a `docker-compose up -d`, Docker Compose will check if there is a delta between what is currently running and what the `docker-compose.yml` + the 'docker-compose.override.yml` file tells. 
 
 If there is a new service added, such as here with **Mosquitto**, Docker Compose will start the service, leaving the other, already running services untouched. 
 
