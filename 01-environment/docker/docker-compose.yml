@@ -139,7 +139,7 @@ services:
       AWS_ACCESS_KEY_ID: V42FCGRVMK24JJ8DHUYG
       AWS_SECRET_ACCESS_KEY: bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza
     volumes:
-      - $PWD/kafka-connect:/etc/kafka-connect/custom-plugins
+      - ./kafka-connect:/etc/kafka-connect/custom-plugins
     restart: always
 
   connect-2:
@@ -177,7 +177,7 @@ services:
       AWS_ACCESS_KEY_ID: V42FCGRVMK24JJ8DHUYG
       AWS_SECRET_ACCESS_KEY: bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza
     volumes:
-      - $PWD/kafka-connect:/etc/kafka-connect/custom-plugins
+      - ./kafka-connect:/etc/kafka-connect/custom-plugins
     restart: always
 
   ksql-server-1:
@@ -203,7 +203,7 @@ services:
       KSQL_CONSUMER_INTERCEPTOR_CLASSES: io.confluent.monitoring.clients.interceptor.MonitoringConsumerInterceptor
       KSQL_KSQL_SERVER_UI_ENABLED: "false"
     volumes:
-      - $PWD/ksql:/etc/ksql/ext      
+      - ./ksql:/etc/ksql/ext      
     restart: always
 
   ksql-server-2:
@@ -229,7 +229,7 @@ services:
       KSQL_CONSUMER_INTERCEPTOR_CLASSES: io.confluent.monitoring.clients.interceptor.MonitoringConsumerInterceptor
       KSQL_KSQL_SERVER_UI_ENABLED: "false"
     volumes:
-      - $PWD/ksql:/etc/ksql/ext      
+      - ./ksql:/etc/ksql/ext      
     restart: always
 
   kafka-rest-1:
