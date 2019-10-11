@@ -1,4 +1,5 @@
 # Static Data Ingestion into Kafka
+
 Let's simulate some rather static data about the drivers of our truck fleet.
 
 ![Alt Image Text](./images/joining-static-data-with-ksql-overview.png "Schema Registry UI")

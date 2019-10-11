@@ -487,21 +487,3 @@ kafka-console-consumer --bootstrap-server broker-1:9092 \
 You should only see events for abnormal driving behaviour.        
 
 
--------
-
-### How many abnormal events do we get per 20 seconds
-
-```
-SELECT count(*) 
-FROM dangerous_driving_s 
-WINDOW TUMBLING (size 20 seconds) 
-```
-
-### How many abnormal events do we get per 20 seconds
-
-```
-SELECT eventType, count(*) 
-FROM dangerous_driving_s 
-WINDOW TUMBLING (size 20 seconds) 
-GROUP BY eventType;
-```
