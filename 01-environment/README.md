@@ -39,7 +39,6 @@ Governance | Schema Registry UI  | <http://streamingplatform:28039>
 Governance | Schema Registry Rest API  | <http://streamingplatform:28030>
 Management | Kafka Connect UI | <http://streamingplatform:28038>
 Management | Kafka Manager  | <http://streamingplatform:28044>
-Management | Kadmin  | <http://streamingplatform:28080>
 Management | Kafkahq  | <http://streamingplatform:28042>
 Management | Zoonavigator  | <http://streamingplatform:28047>
 Management | Mino | <http://streamingplatform:28083>
