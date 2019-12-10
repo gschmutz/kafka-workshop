@@ -45,5 +45,6 @@ Management | Zoonavigator  | <http://streamingplatform:28047>
 Management | Mino | <http://streamingplatform:28083>
 Management | Kafka Rest Service | <http://streamingplatform:28012>
 Management | Kafka Connect Rest Service | <http://streamingplatform:28013>
+Management | MQTT UI | <http://streamingplatform:28082>
 Management | Portainer | <http://streamingplatform:28071>
 
