@@ -203,8 +203,8 @@ value = {"id":"1001", "firstName": "Peter", "lastName": "Muster"}
 key = {"id": "1001"}
 
 avroProducer = AvroProducer({
-    'bootstrap.servers': 'broker-1:9092,broker-2:9093',
-    'schema.registry.url': 'http://schema-registry:8081',
+    'bootstrap.servers': 'streamingplatform-1:9092,streamingplatform-2:9093',
+    'schema.registry.url': 'http://streamingplatform:28030',
     'compression.codec': 'snappy'
     }, default_key_schema=key_schema, default_value_schema=value_schema)
 
@@ -222,39 +222,39 @@ The Schema Registry provides a REST API which is documented in the [Confluent do
 To list all the schemas which are registered through the REST API, perform the following command 
 
 ```
-curl http://streamingplatform:18081/subjects
+curl http://streamingplatform:28030/subjects
 ```
 
 You should get back the two subjects:
 
 ```
-$ curl http://streamingplatform:18081/subjects
+$ curl http://streamingplatform:28030/subjects
 ["test-avro-topic-value","test-avro-topic-key"]~
 ```
 
 You can ask for the versions available for a given subject by using the following command
 
 ```
-curl http://streamingplatform:18081/subjects/test-avro-topic-value/versions
+curl http://streamingplatform:28030/subjects/test-avro-topic-value/versions
 ```
 
 and you should see that there is currently just one version available
 
 ```
-$ curl http://streamingplatform:18081/subjects/test-avro-topic-value/versions
+$ curl http://streamingplatform:28030/subjects/test-avro-topic-value/versions
 [1]
 ```
 
 To get the schema definition for that schema, use the following command
 
 ```
-curl http://streamingplatform:18081/subjects/test-avro-topic-value/versions/1
+curl http://streamingplatform:28030/subjects/test-avro-topic-value/versions/1
 ```
 
 and the schema is returned as shown below
 
 ```
-$ curl http://streamingplatform:18081/subjects/test-avro-topic-value/versions/1
+$ curl http://streamingplatform:28030/subjects/test-avro-topic-value/versions/1
 
 {"subject":"test-avro-topic-value","version":1,"id":1,"schema":"{\"type\":\"record\",
 \"name\":\"Person\",\"namespace\":\"my.test\",\"fields\":[{\"name\":\"id\",\"type\":
@@ -264,7 +264,7 @@ $ curl http://streamingplatform:18081/subjects/test-avro-topic-value/versions/1
 
 ### View schemas using Schema Registry UI
 
-To browse the Schema Registry using the browser-based [Landoop Schema Registry UI](http://www.landoop.com/blog/2016/08/schema-registry-ui/), navigate to the following URL: <http://streamingplatform:28002>.
+To browse the Schema Registry using the browser-based [Landoop Schema Registry UI](http://www.landoop.com/blog/2016/08/schema-registry-ui/), navigate to the following URL: <http://streamingplatform:28039>.
 
 You should see the two schemas registered. If you click on one of them, the Avro Schema will be displayed on the right side:
 
