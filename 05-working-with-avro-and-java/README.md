@@ -324,8 +324,8 @@ public class KafkaProducerAvro {
 
     private final static String TOPIC = "test-java-avro-topic";
     private final static String BOOTSTRAP_SERVERS =
-            "localhost:9092,localhost:9093,localhost:9094";
-    private final static String SCHEMA_REGISTRY_URL = "http://localhost:8081";
+            "streamingplatform:9092,streamingplatform:9093,streamingplatform:9094";
+    private final static String SCHEMA_REGISTRY_URL = "http://streamingplatform:28030";
     
     private static Producer<Long, Notification> createProducer() {
         Properties props = new Properties();
@@ -437,7 +437,7 @@ The Avro Serializer and Deserializer automatically register the Avro schema, if 
 
 The Streamingplatform also contains a tool made by a company called Landoop which allows us to see what's in the registry. 
 
-In a browser, navigate to <http://streamingplatform:8002> and you should see the home page of the Schema Registry UI. 
+In a browser, navigate to <http://streamingplatform:28039> and you should see the home page of the Schema Registry UI. 
 
 ![Alt Image Text](./images/schema-registry-ui-welcome.png "Schema Registry UI")
 
@@ -476,8 +476,8 @@ import io.confluent.kafka.serializers.KafkaAvroSerializerConfig;
 public class KafkaConsumerAvro {
 	private final static String TOPIC = "test-java-avro-topic";
     private final static String BOOTSTRAP_SERVERS =
-            "localhost:9092,localhost:9093,localhost:9094";
-    private final static String SCHEMA_REGISTRY_URL = "http://localhost:8081";
+            "streamingplatform:9092,streamingplatform:9093,streamingplatform:9094";
+    private final static String SCHEMA_REGISTRY_URL = "http://streamingplatform:28039";
   
     private static Consumer<Long, Notification> createConsumer() {
         final Properties props = new Properties();
