@@ -1,4 +1,4 @@
-# Streaming Platform on Docker
+# Kafka Streaming Platform on Docker
 
 The environment for this course is completely based on docker containers. 
 
@@ -31,19 +31,19 @@ The following service are available as part of the platform:
 
 Type | Service | Url
 ------|------- | -------------
-Development | StreamSets Data Collector | <http://streamingplatform:18630>
-Development | Apache NiFi | <http://streamingplatform:38080/nifi>
-Development | Apache Zeppelin | <http://streamingplatform:38081>
-Development | Jupyter | <http://streamingplatform:38888>
-Governance | Schema Registry UI  | <http://streamingplatform:28002>
-Governance | Schema Registry Rest API  | <http://streamingplatform:18081>
-Management | Kafka Connect UI | <http://streamingplatform:28001>
-Management | Kafka Manager  | <http://streamingplatform:29000>
-Management | Kafdrop  | <http://streamingplatform:29020>
+Development | StreamSets Data Collector | <http://streamingplatform:28029>
+Development | Apache NiFi | <http://streamingplatform:28054/nifi>
+Development | Apache Zeppelin | <http://streamingplatform:28055>
+Development | Jupyter | <http://streamingplatform:28060>
+Governance | Schema Registry UI  | <http://streamingplatform:28039>
+Governance | Schema Registry Rest API  | <http://streamingplatform:28030>
+Management | Kafka Connect UI | <http://streamingplatform:28038>
+Management | Kafka Manager  | <http://streamingplatform:28044>
 Management | Kadmin  | <http://streamingplatform:28080>
-Management | Kafkahq  | <http://streamingplatform:28082>
-Management | Zoonavigator  | <http://streamingplatform:28010>
-Management | Mino | <http://streamingplatform:9000>
-Management | Kafka Rest Service | <http://streamingplatform:8086>
-Management | Kafka Connect Rest Service | <http://streamingplatform:8083>
+Management | Kafkahq  | <http://streamingplatform:28042>
+Management | Zoonavigator  | <http://streamingplatform:28047>
+Management | Mino | <http://streamingplatform:28083>
+Management | Kafka Rest Service | <http://streamingplatform:28012>
+Management | Kafka Connect Rest Service | <http://streamingplatform:28013>
+Management | Portainer | <http://streamingplatform:28071>
 
