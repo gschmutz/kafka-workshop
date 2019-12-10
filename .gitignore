@@ -16,3 +16,6 @@
 .metadata/.plugins/org.eclipse.m2e.logback.configuration/logback.1.12.0.20190628-1134.xml
 .metadata/.plugins/org.eclipse.ui.workbench/workingsets.xml
 .metadata/version.ini
+/.metadata/
+**/.settings/**
+**/target/**
