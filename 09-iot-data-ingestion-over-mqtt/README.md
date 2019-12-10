@@ -27,8 +27,8 @@ Now let's add the MQTT broker. Add the following two services to the `docker-com
     container_name: mosquitto-1
     hostname: mosquitto-1
     ports: 
-      - "1883:1883"
-      - "9001:9001"
+      - "28100:1883"
+      - "28023:9001"
     volumes:
       - ./conf/mosquitto-1.conf:/mosquitto/config/mosquitto.conf
 
@@ -38,7 +38,7 @@ Now let's add the MQTT broker. Add the following two services to the `docker-com
     container_name: mqtt-ui
     restart: always
     ports:
-      - "29080:80"
+      - "28082:80"
 ```
 
 [Mosquitto](https://mosquitto.org/) is an easy to use MQTT broker, belonging to the Eclipse project. There is a docker image available for us on Docker Hub. Just make sure that the service is configured in the `docker-compose.yml` with the volume mapping as shown below.
@@ -86,7 +86,7 @@ The consumed messages will show up in the terminal.
 
 #### Using HiveMQ Web UI  
 
-To start consuming using the MQTT UI ([HiveMQ Web UI](https://www.hivemq.com/docs/3.4/web-ui/introduction.html)), navigate to <http://streamingplatform:29080> and connect using `streamingplatform` for the **Host** field, `9001` for the **Port** field and then click on **Connect**: 
+To start consuming using the MQTT UI ([HiveMQ Web UI](https://www.hivemq.com/docs/3.4/web-ui/introduction.html)), navigate to <http://streamingplatform:28082> and connect using `streamingplatform` for the **Host** field, `9001` for the **Port** field and then click on **Connect**: 
 
 ![Alt Image Text](./images/mqtt-ui-connect.png "MQTT UI Connect")
 	
@@ -106,7 +106,7 @@ The simulator can produce data either to a **Kafka** or **MQTT**. These two opti
 
 Producing truck events to the MQTT broker on port 1883 is as simple as running the `trivadis/iot-truck-simulator` docker image.
 ```
-docker run trivadis/iot-truck-simulator '-s' 'MQTT' '-h' $DOCKER_HOST_IP '-p' '1883' '-f' 'CSV'
+docker run trivadis/iot-truck-simulator '-s' 'MQTT' '-h' $DOCKER_HOST_IP '-p' '28100' '-f' 'CSV'
 ```
 
 As soon as messages are produced to MQTT, you should see them either on the CLI or in the MQTT UI (Hive MQ) as shown below.
@@ -140,7 +140,7 @@ Make sure to exit from the container after the topics have been created successf
 exit
 ```
 
-If you don't like to work with the CLI, you can also create the Kafka topics using the [Kafka Manager GUI](http://streamingplatform:29000). 
+If you don't like to work with the CLI, you can also create the Kafka topics using the [Kafka Manager GUI](http://streamingplatform:28044). 
 
 After successful creation, start a `kafka-console-consumer` or `kafkacat` to consume messages from the  `truck_position` topic. 
 
@@ -290,4 +290,4 @@ A soon as the connector starts getting the messages from MQTT, they should start
 
 ### Monitor connector in Kafka Connect UI
 
-Navigate to the [Kafka Connect UI](http://streamingplatform:28001) to see the connector running.
+Navigate to the [Kafka Connect UI](http://streamingplatform:28038) to see the connector running.
