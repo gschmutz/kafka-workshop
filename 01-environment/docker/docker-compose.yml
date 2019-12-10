@@ -233,8 +233,8 @@ services:
     restart: always
 
   ksqldb-cli:
-#    image: confluentinc/ksqldb-cli:0.6.0
-    image: confluentinc/cp-ksql-cli:5.3.1
+    image: confluentinc/ksqldb-cli:0.6.0
+#    image: confluentinc/cp-ksql-cli:5.3.1
     container_name: ksqldb-cli
     depends_on:
       - ksqldb-server-1
