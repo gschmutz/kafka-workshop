@@ -1,0 +1,27 @@
+{
+  "type" : "record",
+  "name" : "productType",
+  "namespace" : "CBI.PRODUCT",
+  "fields" : [ {
+    "name" : "productTypeId",
+    "type" : "long"
+  }, {
+    "name" : "buId",
+    "type" : "long"
+  }, {
+    "name" : "bankCode",
+    "type" : "int"
+  }, {
+    "name" : "interfaceId",
+    "type" : "long"
+  }, {
+    "name" : "rchProductNr",
+    "type" : "long"
+  }, {
+    "name" : "lastModifiedAt",
+    "type" : {
+      "type" : "long",
+      "logicalType" : "timestamp-millis"
+    }
+  } ]
+}
