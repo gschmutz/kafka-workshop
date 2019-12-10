@@ -477,7 +477,7 @@ public class KafkaConsumerAvro {
 	private final static String TOPIC = "test-java-avro-topic";
     private final static String BOOTSTRAP_SERVERS =
             "streamingplatform:9092,streamingplatform:9093,streamingplatform:9094";
-    private final static String SCHEMA_REGISTRY_URL = "http://streamingplatform:28039";
+    private final static String SCHEMA_REGISTRY_URL = "http://streamingplatform:28030";
   
     private static Consumer<Long, Notification> createConsumer() {
         final Properties props = new Properties();
@@ -553,7 +553,7 @@ Add the following definition to the `pom.xml`.
 				<version>3.2.0</version>
 				<configuration>
 					<schemaRegistryUrls>
-						<param>http://192.168.69.135:8081</param>
+						<param>http://streamingplatform:28030</param>
 					</schemaRegistryUrls>
 					<subjects>
 						<tweet-value>src/main/avro/Notification-v1.avsc</tweet-value>
