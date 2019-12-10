@@ -368,15 +368,33 @@ services:
     restart: always
     
   zeppelin:
-    image: 'trivadis/apache-zeppelin:0.8.2-hadoop2.7-spark2.4.4'
+    image: trivadis/apache-zeppelin:0.8.2-hadoop2.7-spark2.4.4
     container_name: zeppelin
     hostname: zeppelin
     ports:
-      - '28055:8080'
+      - "28055:8080"
     environment:
-      PYSPARK_PYTHON: python3
+      # AWS Credentials
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+
+      ZEPPELIN_ADDR: "0.0.0.0"
+      ZEPPELIN_PORT: "8080"
+      ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT: 120000
+      SPARK_MASTER: "spark://spark-master:7077"
+
+      # set spark-master for Zeppelin interpreter
+      MASTER: "spark://spark-master:7077"
+      SPARK_DRIVER_HOST: zeppelin
+      SPARK_DRIVER_BINDADDRESS: "0.0.0.0"
+      PYSPARK_PYTHON: "python3"
+      SPARK_SUBMIT_OPTIONS: "--conf spark.driver.extraJavaOptions=-Dcom.amazonaws.services.s3.enableV4 --conf spark.executor.extraJavaOptions=-Dcom.amazonaws.services.s3.enableV4"
+    volumes:
+      - ./conf/zeppelin/shiro.ini:/opt/zeppelin/conf/shiro.ini
+      - ./conf/zeppelin/interpreter-setting.json:/opt/zeppelin/interpreter/spark/interpreter-setting.json
+      - ./data-transfer:/data-transfer
     restart: always
-    
+
   jupyter:
     image: 'jupyter/all-spark-notebook:abdb27a6dfbb'
     container_name: jupyter
