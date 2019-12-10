@@ -595,7 +595,7 @@ curl -s "https://api.mockaroo.com/api/d5a195e0?count=20&key=ff7856d0"| \
 
 ## Using Kafka Manager
 
-[Kafka Manger](https://github.com/yahoo/kafka-manager) is an open source tool created by Yahoo for managing a Kafka cluster. It has been started as part of the **streamingplatform** and can be reached on <http://streamingplatform:29000/>.
+[Kafka Manger](https://github.com/yahoo/kafka-manager) is an open source tool created by Yahoo for managing a Kafka cluster. It has been started as part of the **streamingplatform** and can be reached on <http://streamingplatform:28044/>.
 
 ![Alt Image Text](./images/kafka-manager-homepage.png "Kafka Manager Homepage")
 
