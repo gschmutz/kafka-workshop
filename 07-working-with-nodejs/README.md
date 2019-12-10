@@ -5,19 +5,19 @@ In this workshop we will learn how to use the [node-rdkafka](https://github.com/
 ## Installing the Node.JS Client
 
 
-###Install Node.JS
+### Install Node.JS
 
 ```
 sudo apt install nodejs
 ```
 
-###Install NPM
+### Install NPM
 
 ```
 sudo apt install npm
 ```
 
-###Install node-rdkafka
+### Install node-rdkafka
 
 ```
 npm install node-rdkafka
@@ -59,7 +59,7 @@ console.log(Kafka.features);
 console.log(Kafka.librdkafkaVersion);
 
 var producer = new Kafka.Producer({
-  'metadata.broker.list': 'localhost:9092,localhost:9093'
+  'metadata.broker.list': 'streamingplatform:9092,streamingplatform:9093'
 });
 
 // Connect to the broker manually
@@ -105,7 +105,7 @@ var Kafka = require('node-rdkafka');
 
 var consumer = new Kafka.KafkaConsumer({
   'group.id': 'kafka',
-  'metadata.broker.list': 'localhost:9092',
+  'metadata.broker.list': 'streamingplatform:9092',
   'enable.auto.commit': false
 }, {});
 
