@@ -413,19 +413,6 @@ services:
       - ./data-transfer:/data-transfer
     restart: always
 
-  jupyter:
-    image: 'jupyter/all-spark-notebook:abdb27a6dfbb'
-    container_name: jupyter
-    hostname: jupyter
-    ports:
-      - '28060:8888'
-    environment:
-      JUPYTER_ENABLE_LAB: 'true'
-      JUPYTER_TOKEN: abc123
-      GRANT_SUDO: 'true'
-      TINI_SUBREAPER: 'true'
-    restart: always
-
   #  Container UI ===============================================
     
   portainer:
