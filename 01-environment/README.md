@@ -34,7 +34,6 @@ Type | Service | Url
 Development | StreamSets Data Collector | <http://streamingplatform:28029>
 Development | Apache NiFi | <http://streamingplatform:28054/nifi>
 Development | Apache Zeppelin | <http://streamingplatform:28055>
-Development | Jupyter | <http://streamingplatform:28060>
 Governance | Schema Registry UI  | <http://streamingplatform:28039>
 Governance | Schema Registry Rest API  | <http://streamingplatform:28030>
 Management | Kafka Connect UI | <http://streamingplatform:28038>
