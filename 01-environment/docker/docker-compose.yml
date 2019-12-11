@@ -347,7 +347,7 @@ services:
       - "28100:1883"
       - "28023:9001"
     volumes:
-      - ./conf/mosquitto-1.conf:/mosquitto/config/mosquitto.conf
+      - ./conf/mqtt/mosquitto-1.conf:/mosquitto/config/mosquitto.conf
 
   mqtt-ui:
     image: vergissberlin/hivemq-mqtt-web-client
