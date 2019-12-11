@@ -339,6 +339,24 @@ services:
       API_HTTP_PORT: 28048
     restart: always
 
+  mosquitto-1:
+    image: eclipse-mosquitto:latest
+    container_name: mosquitto-1
+    hostname: mosquitto-1
+    ports: 
+      - "28100:1883"
+      - "28023:9001"
+    volumes:
+      - ./conf/mosquitto-1.conf:/mosquitto/config/mosquitto.conf
+
+  mqtt-ui:
+    image: vergissberlin/hivemq-mqtt-web-client
+    hostname: mqtt-ui
+    container_name: mqtt-ui
+    restart: always
+    ports:
+      - "28082:80"
+
   streamsets:
     image: trivadisbds/streamsets-kafka-nosql
     hostname: streamsets
