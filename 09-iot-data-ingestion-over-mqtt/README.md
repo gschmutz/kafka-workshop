@@ -7,19 +7,9 @@ The following diagram shows the setup of the data flow we will be implementing.
 
 We will not be using any real-life data, but have a program simulating some drivers and their trucks.
 
-## Adding the necessary additional services to the environment
+Our **Streaming Platform** does already provide all the services we need in this workshop, such as an **MQTT broker** and of course **Apache Kafka**. 
 
-Our **Streaming Platform** does not yet provide all the services we need in this workshop, such as an **MQTT broker**.
-
-Create a file `docker-compose.override.yml` in the `docker` folder (the same place where the `docker-compose.yml` is) and add the version and services header:
-
-```
-version: "2.0"
-
-services:
-```
-
-Now let's add the MQTT broker. Add the following two services to the `docker-compose.override.yml` file. 
+The services related to mqtt are `mosquitto-1` an easy to use MQTT broker, belonging to the [Eclipse project](https://mosquitto.org/) and `mqtt-ui`, a UI to browse into any MQTT broker. 
 
 ```
   mosquitto-1:
@@ -41,12 +31,7 @@ Now let's add the MQTT broker. Add the following two services to the `docker-com
       - "28082:80"
 ```
 
-[Mosquitto](https://mosquitto.org/) is an easy to use MQTT broker, belonging to the Eclipse project. There is a docker image available for us on Docker Hub. Just make sure that the service is configured in the `docker-compose.yml` with the volume mapping as shown below.
-Additionally, if you want to use the MQTT UI later in the workshop, you have to add it as another service (`mqtt-ui`). 
-
-Mosquitto needs to be configured, before we can use it. That's why we use the volume mapping above, to map the file `./conf/mosquitto-1.conf` into the `mosquitto-1` container. 
-
-Create a folder `conf` below the `docker` folder and in there create the `mosquitto-1.conf` file with the following content:
+The configuration of mosquitto can be found in the  `./conf/mqtt/mosquitto-1.conf` file, which is volume mapped into the `mosquitto-1` container:
 
 ```
 persistence true
@@ -58,15 +43,8 @@ listener 9001
 protocol websockets
 ```
 
-With Docker Compose, you can easily later add some new services, even if the platform is currently running. If you redo a `docker-compose up -d`, Docker Compose will check if there is a delta between what is currently running and what the `docker-compose.yml` + the 'docker-compose.override.yml` file tells. 
-
-If there is a new service added, such as here with **Mosquitto**, Docker Compose will start the service, leaving the other, already running services untouched. 
-
-If you change configuration on an already running service, then Docker will recreate that service applying the new settings. 
-
-However, removing a service from the `docker-compose.yml` will not cause a running service to be stopped and removed. You have to do that manually. 
-
 ### Using an MQTT Client
+
 In order to be able to see what we are producing into MQTT, we need something similar to the `kafkacat` and `kafka-console-consumer` utilities. 
 
 In this workshop we show two options for consuming from MQTT
@@ -79,14 +57,14 @@ In this workshop we show two options for consuming from MQTT
 To start consuming using through a command line, perform the following docker command:
 
 ```
-docker run -it --rm efrecon/mqtt-client sub -h $DOCKER_HOST_IP -t "truck/+/position" -v
+docker run -it --rm efrecon/mqtt-client sub -h $DOCKER_HOST_IP -p 28100 -t "truck/+/position" -v
 ```
 
 The consumed messages will show up in the terminal.
 
 #### Using HiveMQ Web UI  
 
-To start consuming using the MQTT UI ([HiveMQ Web UI](https://www.hivemq.com/docs/3.4/web-ui/introduction.html)), navigate to <http://streamingplatform:28082> and connect using `streamingplatform` for the **Host** field, `9001` for the **Port** field and then click on **Connect**: 
+To start consuming using the MQTT UI ([HiveMQ Web UI](https://www.hivemq.com/docs/3.4/web-ui/introduction.html)), navigate to <http://streamingplatform:28082> and connect using `streamingplatform` for the **Host** field, `28023 ` for the **Port** field and then click on **Connect**: 
 
 ![Alt Image Text](./images/mqtt-ui-connect.png "MQTT UI Connect")
 	
@@ -105,6 +83,7 @@ For simulating truck data, we are going to use a Java program (adapted from Hort
 The simulator can produce data either to a **Kafka** or **MQTT**. These two options are shown below. 
 
 Producing truck events to the MQTT broker on port 1883 is as simple as running the `trivadis/iot-truck-simulator` docker image.
+
 ```
 docker run trivadis/iot-truck-simulator '-s' 'MQTT' '-h' $DOCKER_HOST_IP '-p' '28100' '-f' 'CSV'
 ```
@@ -176,17 +155,17 @@ Navigate into the `kafka-connect` folder
 cd kafka-connect
 ```
 
-and download the `kafka-connect-mqtt-1.2.1-2.1.0-all.tar.gz` file from the [Landoop Stream-Reactor Project](https://github.com/Landoop/stream-reactor/tree/master/kafka-connect-mqtt) project.
+and download the `kafka-connect-mqtt-1.2.3-2.1.0-all.tar.gz` file from the [Landoop Stream-Reactor Project](https://github.com/Landoop/stream-reactor/tree/master/kafka-connect-mqtt) project.
 
 ```
-wget https://github.com/Landoop/stream-reactor/releases/download/1.2.1/kafka-connect-mqtt-1.2.1-2.1.0-all.tar.gz
+wget https://github.com/Landoop/stream-reactor/releases/download/1.2.3/kafka-connect-mqtt-1.2.3-2.1.0-all.tar.gz
 ```
 
 Once it is successfully downloaded, uncompress it using this `tar` command and remove the file. 
 
 ```
-mkdir kafka-connect-mqtt-1.2.1-2.1.0-all && tar xvf kafka-connect-mqtt-1.2.1-2.1.0-all.tar.gz -C kafka-connect-mqtt-1.2.1-2.1.0-all
-rm kafka-connect-mqtt-1.2.1-2.1.0-all.tar.gz
+mkdir kafka-connect-mqtt-1.2.3-2.1.0-all && tar xvf kafka-connect-mqtt-1.2.3-2.1.0-all.tar.gz -C kafka-connect-mqtt-1.2.3-2.1.0-all
+rm kafka-connect-mqtt-1.2.3-2.1.0-all.tar.gz
 ```
 
 Now let's restart Kafka connect in order to pick up the new connector. 
@@ -234,12 +213,12 @@ In the `scripts` folder, create a file `start-mqtt.sh` and add the code below.
 
 echo "removing MQTT Source Connector"
 
-curl -X "DELETE" "$DOCKER_HOST_IP:8083/connectors/mqtt-truck-position-source"
+curl -X "DELETE" "$DOCKER_HOST_IP:28013/connectors/mqtt-truck-position-source"
 
 
 echo "creating MQTT Source Connector"
 
-curl -X "POST" "$DOCKER_HOST_IP:8083/connectors" \
+curl -X "POST" "$DOCKER_HOST_IP:28013/connectors" \
      -H "Content-Type: application/json" \
      -d '{
   "name": "mqtt-truck-position-source",
@@ -267,7 +246,7 @@ Also create a separate script `stop-mqtt.sh` for just stopping the connector and
 
 echo "removing MQTT Source Connector"
 
-curl -X "DELETE" "$DOCKER_HOST_IP:8083/connectors/mqtt-source"
+curl -X "DELETE" "$DOCKER_HOST_IP: 28013/connectors/mqtt-source"
 ```
 
 
