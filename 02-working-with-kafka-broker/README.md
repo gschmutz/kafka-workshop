@@ -11,6 +11,7 @@ In this workshop you will learn how to create topics, how to produce messages, h
 ## Working with built-in Command Line Utilities 
 
 ### Connect to a Kafka Broker 
+
 The environment contains of a Kafka cluster with 3 brokers, all running on the Docker host of course. So it's of course not meant to really fault-tolerant but to demonstrate how to work with a Kafka cluster. 
 
 To work with Kafka you need the command line utilities. They are available on each broker. 
@@ -18,16 +19,16 @@ The `kafka-topics` utility is used to create, alter, describe, and delete topics
 
 So let's connect into one of the broker through a terminal window. 
 
-Open a terminal window on the Docker Host and run a `docker exec` command to start a shell in the `broker-1` docker container 
+Open a terminal window on the Docker Host and run a `docker exec` command to start a shell in the `kafka-1` docker container 
 
 ```
-docker exec -ti broker-1 bash
+docker exec -ti kafka-1 bash
 ```
 
 if we just execute the `kafka-topics` command without any options, a help page is shown
 
 ```
-root@broker-1:/# kafka-topics
+root@kafka-1:/# kafka-topics
 Create, delete, describe, or change a topic.
 Option                                   Description
 ------                                   -----------
@@ -188,21 +189,21 @@ Now let's see the topic in use. The most basic way to test it is through the com
 In a new terminal window, first let's run the consumer on the topic `test-topic` we have created before
 
 ```
-kafka-console-consumer --bootstrap-server broker-1:9092,broker-2:9093 \
+kafka-console-consumer --bootstrap-server kafka-1:9092,kafka-2:9093 \
                        --topic test-topic
 ```
 After it is started, the consumer just waits for newly produced messages. 
 
-In an another terminal, again connect into `broker-1` using a `docker exec` 
+In an another terminal, again connect into `kafka-1` using a `docker exec` 
 
 ```
-docker exec -ti broker-1 bash
+docker exec -ti kafka-1 bash
 ```
 
 and run the following command to start the producer.   
  
 ```
-kafka-console-producer --broker-list broker-1:9092,broker-2:9093 \
+kafka-console-producer --broker-list kafka-1:9092,kafka-2:9093 \
                        --topic test-topic
 ```
 
@@ -222,7 +223,7 @@ On the `>` prompt enter a few messages, execute each single message by hitting t
 You should see the messages being consumed by the consumer. 
 
 ```
-root@broker-1:/# kafka-console-consumer --bootstrap-server broker-1:9092,broker-2:9093 --topic test-topic
+root@kafka-1:/# kafka-console-consumer --bootstrap-server kafka-1:9092,kafka-2:9093 --topic test-topic
 aaa
 bbb
 ccc
@@ -238,7 +239,7 @@ You can also echo a longer message and pipe it into the console producer, as he 
 
 ```
 echo "This is my first message!" | kafka-console-producer \
-                  --broker-list broker-1:9092,broker-2:9093 \
+                  --broker-list kafka-1:9092,kafka-2:9093 \
                   --topic test-topic
 ```
 
@@ -248,7 +249,7 @@ And of course you can send messages inside a bash for loop:
 for i in 1 2 3 4 5 6 7 8 9 10
 do
    echo "This is message $i"| kafka-console-producer \
-                  --broker-list broker-1:9092,broker-2:9093 \
+                  --broker-list kafka-1:9092,kafka-2:9093 \
                   --topic test-topic \
                   --batch-size 1 &
 done 
@@ -265,7 +266,7 @@ A message produced to Kafka always consists of a key and a value, the value bein
 We can check that by re-consuming the messages we have created so far, specifying the option `--from-beginning` together with the option `print.key` and `key.separator` in the console consumer. For that stop the old consumer and restart it again using the following command
 
 ```
-kafka-console-consumer --bootstrap-server broker-1:9092,broker-2:9093 \
+kafka-console-consumer --bootstrap-server kafka-1:9092,kafka-2:9093 \
 							--topic test-topic \
 							--property print.key=true \
 							--property key.separator=, \
@@ -277,7 +278,7 @@ We can see that the keys are all `null` because so far we have only created the 
 For producing messages also with a key, use the options `parse.key` and `key.separator`. 
 
 ```
-kafka-console-producer --broker-list broker-1:9092,broker-2:9093 \
+kafka-console-producer --broker-list kafka-1:9092,kafka-2:9093 \
 							--topic test-topic \
 							--property parse.key=true \
 							--property key.separator=,
@@ -295,7 +296,7 @@ kafka-topics --zookeeper zookeeper-1:2181 --delete --topic test-topic
 
 ## Working with the Kafkacat utility
 
-[Kafkacat](https://docs.confluent.io/current/app-development/kafkacat-usage.html#kafkacat-usage) is a command line utility that you can use to test and debug Apache Kafka deployments. You can use kafkacat to produce, consume, and list topic and partition information for Kafka. Described as “netcat for Kafka”, it is a swiss-army knife of tools for inspecting and creating data in Kafka.
+[Kafkacat](https://docs.confluent.io/current/app-development/kafkacat-usage.html#kafkacat-usage) is a command line utility that you can use to test and debug Apache Kafka deployments. You can use `kafkacat` to produce, consume, and list topic and partition information for Kafka. Described as “netcat for Kafka”, it is a swiss-army knife of tools for inspecting and creating data in Kafka.
 
 It is similar to the `kafka-console-producer` and `kafka-console-consumer` you have learnt and used above, but much more powerful and also simpler to use. 
 
