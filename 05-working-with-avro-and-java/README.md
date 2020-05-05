@@ -297,7 +297,7 @@ public class Notification extends org.apache.avro.specific.SpecificRecordBase im
 
 You can see that the code is based on the information in the Avro schema. We will use this class when we produce as well as consume Avro messages to/from Kafka.
 
-## Create a Kafka Producer using Avro for serialization
+## Create a Kafka Producer using Avro for serialisation
 
 First create a new Java Package `com.trivadis.kafkaws.producer` in the folder **src/main/java**.
 
