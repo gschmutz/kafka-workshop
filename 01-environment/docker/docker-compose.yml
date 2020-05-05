@@ -1,122 +1,161 @@
-#
-# Docker Compose with the following services:
-#  Zookeeper
-#  Kafka Broker 1-3
-#  Schema Registry
-#  Kafka Connect 1 - 2
-#  Kafka Rest Proxy
-#  KSQL server
-#  Schema Registry UI
-#  Kafka Connect UI
-#  Kafka Manager
-#  Zoonavigator
-#  Kafdrop
-#  Streamsets
-#  Apache NiFi
-#
-
-version: '2'
+# =====================================================
+# Platform: default
+# =====================================================
+version: '3.0'
+# enforce some dependencies
+# enforce some dependencies
+# enforce some dependencies
 services:
+  #  ================================== Zookeeper ========================================== #}
   zookeeper-1:
-    image: confluentinc/cp-zookeeper:5.3.1
-    hostname: zookeeper-1
+    image: confluentinc/cp-zookeeper:5.4.0
     container_name: zookeeper-1
+    hostname: zookeeper-1
     ports:
-      - "2181:2181"
+      - 2181:2181
     environment:
+      ZOOKEEPER_SERVER_ID: 1
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
-    restart: always
-
-  broker-1:
-    image: confluentinc/cp-kafka:5.3.1
-    hostname: broker-1
-    container_name: broker-1
+      ZOOKEEPER_INIT_LIMIT: 5
+      ZOOKEEPER_SYNC_LIMIT: 2
+    restart: unless-stopped
+  zoonavigator:
+    image: elkozmon/zoonavigator-web:latest
+    container_name: zoonavigator
+    hostname: zoonavigator
+    labels:
+      com.mdps.service.webui.url: http://${PUBLIC_IP}:28100
+    ports:
+      - 28100:8010
+    environment:
+      WEB_HTTP_PORT: 8010
+      API_HOST: zoonavigator-api
+      API_PORT: 9010
+    depends_on:
+      - zoonavigator-api
+    restart: unless-stopped
+  zoonavigator-api:
+    image: elkozmon/zoonavigator-api:latest
+    container_name: zoonavigator-api
+    labels:
+      com.mdps.service.restapi.url: http://${PUBLIC_IP}:28101
+    ports:
+      - 28101:9010
+    environment:
+      API_HTTP_PORT: 9010
+    restart: unless-stopped
+  #  ================================== Kafka ========================================== #}
+  kafka-1:
+    image: confluentinc/cp-kafka:5.4.0
+    container_name: kafka-1
+    hostname: kafka-1
     depends_on:
       - zookeeper-1
     ports:
-      - "9092:9092"
+      - 9092:9092
+      - 29092:29092
     environment:
       KAFKA_BROKER_ID: 1
-      KAFKA_BROKER_RACK: 'r1'
-      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper-1:2181'
-      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://${PUBLIC_IP}:9092'
+      KAFKA_BROKER_RACK: r1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper-1:2181
+      KAFKA_LISTENERS: LISTENER_INTERNAL://kafka-1:19092,LISTENER_DOCKERHOST://kafka-1:29092,LISTENER_EXTERNAL://kafka-1:9092
+      KAFKA_ADVERTISED_LISTENERS: LISTENER_INTERNAL://kafka-1:19092,LISTENER_DOCKERHOST://localhost:29092,LISTENER_EXTERNAL://${PUBLIC_IP:-127.0.0.1}:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: LISTENER_INTERNAL:PLAINTEXT,LISTENER_DOCKERHOST:PLAINTEXT,LISTENER_EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: LISTENER_INTERNAL
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
-      KAFKA_DELETE_TOPIC_ENABLE: 'true'
-      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'false'
-      KAFKA_JMX_PORT: 9994
-    restart: always
-
-  broker-2:
-    image: confluentinc/cp-kafka:5.3.1
-    hostname: broker-2
-    container_name: broker-2
+      KAFKA_DELETE_TOPIC_ENABLE: 'True'
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'False'
+      KAFKA_JMX_PORT: 9094
+      KAFKA_JMX_OPTS: -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.rmi.port=9094
+      KAFKA_JMX_HOSTNAME: kafka-1
+    restart: unless-stopped
+  kafka-2:
+    image: confluentinc/cp-kafka:5.4.0
+    container_name: kafka-2
+    hostname: kafka-2
     depends_on:
       - zookeeper-1
     ports:
-      - "9093:9093"
+      - 9093:9093
+      - 29093:29093
     environment:
       KAFKA_BROKER_ID: 2
-      KAFKA_BROKER_RACK: 'r1'
-      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper-1:2181'
-      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://${PUBLIC_IP}:9093'
+      KAFKA_BROKER_RACK: r2
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper-1:2181
+      KAFKA_LISTENERS: LISTENER_INTERNAL://kafka-2:19093,LISTENER_DOCKERHOST://kafka-2:29093,LISTENER_EXTERNAL://kafka-2:9093
+      KAFKA_ADVERTISED_LISTENERS: LISTENER_INTERNAL://kafka-2:19093,LISTENER_DOCKERHOST://localhost:29093,LISTENER_EXTERNAL://${PUBLIC_IP:-127.0.0.1}:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: LISTENER_INTERNAL:PLAINTEXT,LISTENER_DOCKERHOST:PLAINTEXT,LISTENER_EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: LISTENER_INTERNAL
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
-      KAFKA_DELETE_TOPIC_ENABLE: 'true'
-      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'false'
-      KAFKA_JMX_PORT: 9993
-    restart: always
-
-  broker-3:
-    image: confluentinc/cp-kafka:5.3.1
-    hostname: broker-3
-    container_name: broker-3
+      KAFKA_DELETE_TOPIC_ENABLE: 'True'
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'False'
+      KAFKA_JMX_PORT: 9095
+      KAFKA_JMX_OPTS: -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.rmi.port=9095
+      KAFKA_JMX_HOSTNAME: kafka-2
+    restart: unless-stopped
+  kafka-3:
+    image: confluentinc/cp-kafka:5.4.0
+    container_name: kafka-3
+    hostname: kafka-3
     depends_on:
       - zookeeper-1
     ports:
-      - "9094:9094"
+      - 9094:9094
+      - 29094:29094
     environment:
       KAFKA_BROKER_ID: 3
-      KAFKA_BROKER_RACK: 'r1'
-      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper-1:2181'
-      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://${PUBLIC_IP}:9094'
+      KAFKA_BROKER_RACK: r3
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper-1:2181
+      KAFKA_LISTENERS: LISTENER_INTERNAL://kafka-3:19094,LISTENER_DOCKERHOST://kafka-3:29094,LISTENER_EXTERNAL://kafka-3:9094
+      KAFKA_ADVERTISED_LISTENERS: LISTENER_INTERNAL://kafka-3:19094,LISTENER_DOCKERHOST://localhost:29094,LISTENER_EXTERNAL://${PUBLIC_IP:-127.0.0.1}:9094
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: LISTENER_INTERNAL:PLAINTEXT,LISTENER_DOCKERHOST:PLAINTEXT,LISTENER_EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: LISTENER_INTERNAL
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
-      KAFKA_DELETE_TOPIC_ENABLE: 'true'
-      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'false'
-      KAFKA_JMX_PORT: 9992
-    restart: always
-      
+      KAFKA_DELETE_TOPIC_ENABLE: 'True'
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'False'
+      KAFKA_JMX_PORT: 9096
+      KAFKA_JMX_OPTS: -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.rmi.port=9096
+      KAFKA_JMX_HOSTNAME: kafka-3
+    restart: unless-stopped
+  #  ================================== Schema Registry ========================================== #}
   schema-registry-1:
-    image: confluentinc/cp-schema-registry:5.3.1
+    image: confluentinc/cp-schema-registry:5.4.0
     hostname: schema-registry-1
     container_name: schema-registry-1
+    labels:
+      com.mdps.service.restapi.url: http://${PUBLIC_IP}:8081
     depends_on:
       - zookeeper-1
-      - broker-1
+      - kafka-1
     ports:
-      - "28030:8081"
+      - 8081:8081
     environment:
       SCHEMA_REGISTRY_HOST_NAME: schema-registry-1
-      SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL: 'zookeeper-1:2181'
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: kafka-1:19092
+      SCHEMA_REGISTRY_MASTER_ELIGIBILITY: 'true'
+      SCHEMA_REGISTRY_KAFKASTORE_TOPIC_REPLICATION_FACTOR: 1
       SCHEMA_REGISTRY_ACCESS_CONTROL_ALLOW_ORIGIN: '*'
-      SCHEMA_REGISTRY_ACCESS_CONTROL_ALLOW_METHODS: 'GET,POST,PUT,OPTIONS'
-    restart: always
-      
-  connect-1:
-    image: confluentinc/cp-kafka-connect:5.3.1
-    hostname: connect-1
-    container_name: connect-1
+      SCHEMA_REGISTRY_ACCESS_CONTROL_ALLOW_METHODS: GET,POST,PUT,OPTIONS
+    restart: unless-stopped
+  #  ================================== Kafka Connect ========================================== #}
+  kafka-connect-1:
+    image: confluentinc/cp-kafka-connect:5.4.0
+    container_name: kafka-connect-1
+    labels:
+      com.mdps.service.restapi.url: http://${PUBLIC_IP}:8083
     depends_on:
       - zookeeper-1
-      - broker-1
+      - kafka-1
       - schema-registry-1
     ports:
-      - "28013:8083"
+      - 8083:8083
     environment:
-      CONNECT_BOOTSTRAP_SERVERS: 'broker-1:9092'
-      CONNECT_REST_ADVERTISED_HOST_NAME: connect-1
+      CONNECT_BOOTSTRAP_SERVERS: kafka-1:19092
+      CONNECT_REST_ADVERTISED_HOST_NAME: kafka-connect-1
       CONNECT_REST_PORT: 8083
       CONNECT_GROUP_ID: compose-connect-group
       CONNECT_CONFIG_STORAGE_TOPIC: docker-connect-configs
@@ -127,34 +166,34 @@ services:
       CONNECT_STATUS_STORAGE_TOPIC: docker-connect-status
       CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: 3
       CONNECT_KEY_CONVERTER: io.confluent.connect.avro.AvroConverter
-      CONNECT_KEY_CONVERTER_SCHEMA_REGISTRY_URL: 'http://schema-registry-1:8081'
+      CONNECT_KEY_CONVERTER_SCHEMA_REGISTRY_URL: http://schema-registry-1:8081
       CONNECT_VALUE_CONVERTER: io.confluent.connect.avro.AvroConverter
-      CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: 'http://schema-registry-1:8081'
+      CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: http://schema-registry-1:8081
       CONNECT_INTERNAL_KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
       CONNECT_INTERNAL_VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
-      CONNECT_ZOOKEEPER_CONNECT: 'zookeeper-1:2181'
-      CONNECT_PLUGIN_PATH: "/usr/share/java,/etc/kafka-connect/custom-plugins"
+      CONNECT_ZOOKEEPER_CONNECT: zookeeper-1:2181
+      CONNECT_PLUGIN_PATH: /usr/share/java,/etc/kafka-connect/custom-plugins
       CONNECT_LOG4J_ROOT_LOGLEVEL: INFO
       CLASSPATH: /usr/share/java/monitoring-interceptors/monitoring-interceptors-4.0.0.jar
       AWS_ACCESS_KEY_ID: V42FCGRVMK24JJ8DHUYG
       AWS_SECRET_ACCESS_KEY: bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza
     volumes:
-      - ./kafka-connect:/etc/kafka-connect/custom-plugins
-    restart: always
-
-  connect-2:
-    image: confluentinc/cp-kafka-connect:5.3.1
-    hostname: connect-2
-    container_name: connect-2
+      - ./plugins/kafka-connect:/etc/kafka-connect/custom-plugins
+    restart: unless-stopped
+  kafka-connect-2:
+    image: confluentinc/cp-kafka-connect:5.4.0
+    container_name: kafka-connect-2
+    labels:
+      com.mdps.service.restapi.url: http://${PUBLIC_IP}:8084
     depends_on:
       - zookeeper-1
-      - broker-1
+      - kafka-1
       - schema-registry-1
     ports:
-      - "28014:8084"
+      - 8084:8084
     environment:
-      CONNECT_BOOTSTRAP_SERVERS: 'broker-1:9092'
-      CONNECT_REST_ADVERTISED_HOST_NAME: connect-2
+      CONNECT_BOOTSTRAP_SERVERS: kafka-1:19092
+      CONNECT_REST_ADVERTISED_HOST_NAME: kafka-connect-2
       CONNECT_REST_PORT: 8084
       CONNECT_GROUP_ID: compose-connect-group
       CONNECT_CONFIG_STORAGE_TOPIC: docker-connect-configs
@@ -165,264 +204,299 @@ services:
       CONNECT_STATUS_STORAGE_TOPIC: docker-connect-status
       CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: 3
       CONNECT_KEY_CONVERTER: io.confluent.connect.avro.AvroConverter
-      CONNECT_KEY_CONVERTER_SCHEMA_REGISTRY_URL: 'http://schema-registry-1:8081'
+      CONNECT_KEY_CONVERTER_SCHEMA_REGISTRY_URL: http://schema-registry-1:8081
       CONNECT_VALUE_CONVERTER: io.confluent.connect.avro.AvroConverter
-      CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: 'http://schema-registry-1:8081'
+      CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: http://schema-registry-1:8081
       CONNECT_INTERNAL_KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
       CONNECT_INTERNAL_VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
-      CONNECT_ZOOKEEPER_CONNECT: 'zookeeper-1:2181'
-      CONNECT_PLUGIN_PATH: "/usr/share/java,/etc/kafka-connect/custom-plugins"
+      CONNECT_ZOOKEEPER_CONNECT: zookeeper-1:2181
+      CONNECT_PLUGIN_PATH: /usr/share/java,/etc/kafka-connect/custom-plugins
       CONNECT_LOG4J_ROOT_LOGLEVEL: INFO
       CLASSPATH: /usr/share/java/monitoring-interceptors/monitoring-interceptors-4.0.0.jar
       AWS_ACCESS_KEY_ID: V42FCGRVMK24JJ8DHUYG
       AWS_SECRET_ACCESS_KEY: bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza
     volumes:
-      - ./kafka-connect:/etc/kafka-connect/custom-plugins
-    restart: always
-
+      - ./plugins/kafka-connect:/etc/kafka-connect/custom-plugins
+    restart: unless-stopped
+  #  ================================== ksqlDB ========================================== #}
   ksqldb-server-1:
-    image: confluentinc/ksqldb-server:0.6.0
-#    image: confluentinc/cp-ksql-server:5.3.1
+    image: confluentinc/ksqldb-server:0.8.0
     hostname: ksqldb-server-1
     container_name: ksqldb-server-1
+    labels:
+      com.mdps.service.restapi.url: http://${PUBLIC_IP}:8088
     ports:
-      - "28031:8088"
+      - 8088:8088
     depends_on:
-      - broker-1
+      - kafka-1
       - schema-registry-1
     environment:
-      KSQL_CONFIG_DIR: "/etc/ksql-server"
-      KSQL_APPLICATION_ID: "geo-ksql"
-      KSQL_KSQL_EXTENSION_DIR: "/etc/ksql-server/ext"
-      KSQL_BOOTSTRAP_SERVERS: "broker-1:9092,broker-2:9093"
+      KSQL_CONFIG_DIR: /etc/ksql
+      KSQL_LOG4J_OPTS: -Dlog4j.configuration=file:/etc/ksql/log4j-rolling.properties
+      KSQL_BOOTSTRAP_SERVERS: kafka-1:19092
       KSQL_HOST_NAME: ksqldb-server-1
+      KSQL_APPLICATION_ID: kafka-demo
       KSQL_LISTENERS: http://0.0.0.0:8088
-      KSQL_KSQL_SCHEMA_REGISTRY_URL: "http://schema-registry-1:8081"
-      KSQL_KSQL_LOGGING_PROCESSING_STREAM_AUTO_CREATE: "true"
-      KSQL_KSQL_LOGGING_PROCESSING_TOPIC_AUTO_CREATE: "true"
-      KSQL_KSQL_CONNECT_URL: http://connect-1:8083,http://connect-2:8084
-      KSQL_CACHE_MAX_BYTES_BUFFERING: 0
+      KSQL_KSQL_SCHEMA_REGISTRY_URL: http://schema-registry-1:8081
+      KSQL_KSQL_LOGGING_PROCESSING_STREAM_AUTO_CREATE: 'true'
+      KSQL_KSQL_LOGGING_PROCESSING_TOPIC_AUTO_CREATE: 'true'
+      KSQL_KSQL_SERVICE_ID: kafka-demo
     volumes:
-      - $PWD/ksql:/etc/ksql-server/ext      
-    restart: always
-
+      - ./plugins/ksql:/etc/ksql/ext
+    restart: unless-stopped
   ksqldb-server-2:
-    image: confluentinc/ksqldb-server:0.6.0
-#    image: confluentinc/cp-ksql-server:5.3.1
+    image: confluentinc/ksqldb-server:0.8.0
     hostname: ksqldb-server-2
     container_name: ksqldb-server-2
+    labels:
+      com.mdps.service.restapi.url: http://${PUBLIC_IP}:8089
     ports:
-      - "28032:8088"
+      - 8089:8088
     depends_on:
-      - broker-1
+      - kafka-1
       - schema-registry-1
     environment:
-      KSQL_CONFIG_DIR: "/etc/ksql-server"
-      KSQL_APPLICATION_ID: "geo-ksql"
-      KSQL_KSQL_EXTENSION_DIR: "/etc/ksql-server/ext"
-      KSQL_BOOTSTRAP_SERVERS: "broker-1:9092,broker-2:9093"
+      KSQL_CONFIG_DIR: /etc/ksql
+      KSQL_LOG4J_OPTS: -Dlog4j.configuration=file:/etc/ksql/log4j-rolling.properties
+      KSQL_BOOTSTRAP_SERVERS: kafka-1:19092
       KSQL_HOST_NAME: ksqldb-server-2
+      KSQL_APPLICATION_ID: kafka-demo
       KSQL_LISTENERS: http://0.0.0.0:8088
-      KSQL_KSQL_SCHEMA_REGISTRY_URL: "http://schema-registry-1:8081"
-      KSQL_KSQL_LOGGING_PROCESSING_STREAM_AUTO_CREATE: "true"
-      KSQL_KSQL_LOGGING_PROCESSING_TOPIC_AUTO_CREATE: "true"
-      KSQL_KSQL_CONNECT_URL: http://connect-1:8083,http://connect-2:8084
-      KSQL_CACHE_MAX_BYTES_BUFFERING: 0
+      KSQL_KSQL_SCHEMA_REGISTRY_URL: http://schema-registry-1:8081
+      KSQL_KSQL_LOGGING_PROCESSING_STREAM_AUTO_CREATE: 'true'
+      KSQL_KSQL_LOGGING_PROCESSING_TOPIC_AUTO_CREATE: 'true'
+      KSQL_KSQL_SERVICE_ID: kafka-demo
     volumes:
-      - $PWD/ksql:/etc/ksql-server/ext      
-    restart: always
-
+      - ./plugins/ksql:/etc/ksql/ext
+    restart: unless-stopped
   ksqldb-cli:
-    image: confluentinc/ksqldb-cli:0.6.0
-#    image: confluentinc/cp-ksql-cli:5.3.1
+    image: confluentinc/ksqldb-cli:0.8.0
     container_name: ksqldb-cli
     depends_on:
       - ksqldb-server-1
-      - ksqldb-server-2
     entrypoint: /bin/sh
     tty: true
-
+  #  ================================== Confluent REST Proxy ========================================== #}
   kafka-rest-1:
-    image: confluentinc/cp-kafka-rest:5.3.1
-    hostname: rest-proxy
+    image: confluentinc/cp-kafka-rest:5.4.0
     container_name: kafka-rest-1
+    hostname: kafka-rest-1
+    labels:
+      com.mdps.service.restapi.url: http://${PUBLIC_IP}:18086
     depends_on:
-      - broker-1
+      - kafka-1
       - schema-registry-1
     ports:
-      - "28012:8086"
+      - 18086:8086
     environment:
-      KAFKA_REST_ZOOKEEPER_CONNECT: '${DOCKER_HOST_IP}:2181'
-      KAFKA_REST_LISTENERS: 'http://0.0.0.0:8086'
-      KAFKA_REST_SCHEMA_REGISTRY_URL: 'http://schema-registry-1:8081'
-      KAFKA_REST_HOST_NAME: 'rest-proxy'
-    restart: always
-
+      KAFKA_REST_BOOTSTRAP_SERVERS: PLAINTEXT://kafka-1:19092
+      KAFKA_REST_LISTENERS: http://0.0.0.0:8086
+      KAFKA_REST_SCHEMA_REGISTRY_URL: http://schema-registry-1:8081
+      KAFKA_REST_HOST_NAME: kafka-rest-1
+    restart: unless-stopped
+  #  ================================== Schema Registry UI ========================================== #}
   schema-registry-ui:
-    image: landoop/schema-registry-ui
-    hostname: schema-registry-ui
+    image: landoop/schema-registry-ui:latest
     container_name: schema-registry-ui
+    hostname: schema-registry-ui
+    labels:
+      com.mdps.service.webui.url: http://${PUBLIC_IP}:28102
     depends_on:
-      - broker-1
+      - kafka-1
       - schema-registry-1
     ports:
-      - "28039:8000"
+      - 28102:8000
     environment:
-      SCHEMAREGISTRY_URL: 'http://${PUBLIC_IP}:28030'
-    restart: always
-
-  kafka-connect-ui:
-    image: landoop/kafka-connect-ui
-    hostname: kafka-connect-ui
-    container_name: kafka-connect-ui
-    ports:
-      - "28038:8000"
-    environment:
-      CONNECT_URL: "http://${PUBLIC_IP}:28013/,http://${PUBLIC_IP}:28014/"
-      PROXY: "true"
+      SCHEMAREGISTRY_URL: http://${PUBLIC_IP}:8081
+    restart: unless-stopped
+  #  ================================== Kafka Topics UI ========================================== #}
+  kafka-topics-ui:
+    image: landoop/kafka-topics-ui:latest
+    container_name: kafka-topics-ui
+    hostname: kafka-topics-ui
+    labels:
+      com.mdps.service.webui.url: http://${PUBLIC_IP}:28141
     depends_on:
-      - connect-1
-    restart: always
-
-  kafka-manager:
-    image: trivadisbds/kafka-manager
-    hostname: kafka-manager
-    container_name: kafka-manager
+      - kafka-1
+      - kafka-rest-1
+    ports:
+      - 28141:8000
+    environment:
+      KAFKA_REST_PROXY_URL: http://kafka-rest-1:8086
+      LAZY_LOAD_TOPIC_META: 'false'
+      PROXY: 'true'
+    restart: unless-stopped
+  #  ================================== Kafka Connect UI ========================================== #}
+  kafka-connect-ui:
+    image: landoop/kafka-connect-ui:latest
+    container_name: kafka-connect-ui
+    hostname: kafka-connect-ui
+    labels:
+      com.mdps.service.webui.url: http://${PUBLIC_IP}:28103
+    ports:
+      - 28103:8000
+    environment:
+      CONNECT_URL: http://${PUBLIC_IP}:8083/,http://${PUBLIC_IP}:8084/
+      PROXY: 'true'
+    depends_on:
+      - kafka-connect-1
+    restart: unless-stopped
+  #  ================================== Cluster Manager for Apache Kafka (CMAK) ========================================== #}
+  cmak:
+    image: trivadis/cmak:latest
+    container_name: cmak
+    hostname: cmak
+    labels:
+      com.mdps.service.webui.url: http://${PUBLIC_IP}:28104
     depends_on:
       - zookeeper-1
-      - broker-1
-      - broker-2
-      - broker-3
+      - kafka-1
     ports:
-      - "28044:9000"
+      - 28104:9000
     environment:
-      ZK_HOSTS: 'zookeeper-1:2181'
-      APPLICATION_SECRET: 'letmein'
-    restart: always
-
-  kafkahq:
-    image: tchiotludo/kafkahq
-    container_name: kafkahq
+      ZK_HOSTS: zookeeper-1:2181
+      APPLICATION_SECRET: abc123!
+    restart: unless-stopped
+  #  ================================== Apache Kafka HQ (AKHQ) ========================================== #}
+  akhq:
+    image: tchiotludo/akhq:latest
+    container_name: akhq
+    hostname: akhq
+    labels:
+      com.mdps.service.webui.url: http://${PUBLIC_IP}:28107
     ports:
-      - 28042:8080
+      - 28107:8080
     environment:
-      KAFKAHQ_CONFIGURATION: |
-        kafkahq:
+      AKHQ_CONFIGURATION: |
+        akhq:
           connections:
             docker-kafka-server:
               properties:
-                bootstrap.servers: "broker-1:9092,broker-2:9093"
+                bootstrap.servers: "kafka-1:19092"
               schema-registry:
                 url: "http://schema-registry-1:8081"
               connect:
-                url: "http://connect-1:8083"
+                url: "http://kafka-connect-1:8083"
     depends_on:
-      - broker-1
-    restart: always
-
-  web:
-    image: elkozmon/zoonavigator-web:0.5.1
-    container_name: zoonavigator-web
+      - kafka-1
+    restart: unless-stopped
+  #  ================================== StreamSets DataCollector ========================================== #}
+  streamsets-1:
+    image: trivadis/streamsets-kafka-hadoop-aws:latest
+    container_name: streamsets-1
+    hostname: streamsets-1
+    labels:
+      com.mdps.service.webui.name: StreamSets Data Collector UI
+      com.mdps.service.webui.url: http://${PUBLIC_IP}:18630
+      com.mdps.service.restapi.name: StreamSets Data Collector REST API
+      com.mdps.service.restapi.url: http://${PUBLIC_IP}:18630/collector/restapi
     ports:
-     - "28047:8010"
+      - 18630:18630
     environment:
-      WEB_HTTP_PORT: 8010
-      API_HOST: "api"
-      API_PORT: 28048
-    depends_on:
-     - api
-    restart: always
-  api:
-    image: elkozmon/zoonavigator-api:0.5.1
-    container_name: zoonavigator-api
-    environment:
-      API_HTTP_PORT: 28048
-    restart: always
-
-  mosquitto-1:
-    image: eclipse-mosquitto:latest
-    container_name: mosquitto-1
-    hostname: mosquitto-1
-    ports: 
-      - "28100:1883"
-      - "28023:9001"
+      SDC_OFFSET_DIRECTORY: /data/custom-offset-el
+      SDC_JAVA_OPTS: -Xmx2g -Xms2g
+      SDC_JAVA8_OPTS: -XX:+UseG1GC
+      SDC_CONF_MONITOR_MEMORY: 'true'
+      SDC_CONF_PIPELINE_MAX_RUNNERS_COUNT: 50
     volumes:
-      - ./conf/mqtt/mosquitto-1.conf:/mosquitto/config/mosquitto.conf
-
-  mqtt-ui:
-    image: vergissberlin/hivemq-mqtt-web-client
-    hostname: mqtt-ui
-    container_name: mqtt-ui
-    restart: always
+      - ./data-transfer:/data-transfer
+#      - ./streamsets-extras/streamsets-libs-extras/streamsets-datacollector-jdbc-lib/postgresql-42.2.6.jar:/opt/streamsets-datacollector-latest/streamsets-libs-extras/streamsets-datacollector-jdbc-lib/lib/postgresql-42.2.6.jar:Z
+#      - ./streamsets-extras/libs-common-lib:/opt/streamsets-datacollector-latest/libs-common-lib:Z
+#      - ./streamsets-extras/user-libs:/opt/streamsets-datacollector-user-libs:Z
+    ulimits:
+      nofile:
+        soft: 32768
+        hard: 32768
+    restart: unless-stopped
+  #  ================================== Zeppelin ========================================== #}
+  zeppelin:
+    image: trivadis/apache-zeppelin:0.8.2-spark2.4-hadoop2.8
+    container_name: zeppelin
+    hostname: zeppelin
+    labels:
+      com.mdps.service.webui.name: Apache Zeppelin UI
+      com.mdps.service.webui.url: http://${PUBLIC_IP}:28080
     ports:
-      - "28082:80"
-
-  streamsets:
-    image: trivadisbds/streamsets-kafka-nosql
-    hostname: streamsets
-    container_name: streamsets
+      - 28080:8080
+#      - "4040:4040"
+#      - "42331:42331"
+    env_file:
+      - ./conf/hadoop.env
+    environment:
+      CORE_CONF_fs_s3a_endpoint: http://minio:9000
+      CORE_CONF_fs_s3a_path_style_access: 'true'
+      ZEPPELIN_ADDR: 0.0.0.0
+      ZEPPELIN_PORT: '8080'
+      ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT: 120000
+      ZEPPELIN_INTERPRETER_DEP_MVNREPO: https://repo.maven.apache.org/maven2
+      SPARK_MASTER: spark://spark-master:7077
+      # set spark-master for Zeppelin interpreter
+      MASTER: spark://spark-master:7077
+      SPARK_DRIVER_HOST: zeppelin
+      SPARK_DRIVER_BINDADDRESS: 0.0.0.0
+      PYSPARK_PYTHON: python3
+# no longer necessary with 0.8.2 of Zepplin
+#      - SPARK_SUBMIT_OPTIONS="--packages org.apache.commons:commons-lang3:3.5"
+      # enableV4 to make it work with AWS Frankfurt region
+      SPARK_SUBMIT_OPTIONS: --conf spark.driver.extraJavaOptions=-Dcom.amazonaws.services.s3.enableV4 --conf spark.executor.extraJavaOptions=-Dcom.amazonaws.services.s3.enableV4
+    volumes:
+      - ./conf/spark/spark-defaults-memory.conf:/spark/conf/spark-defaults.conf
+      - ./container-volume/spark/logs/:/var/log/spark/logs
+      - ./conf/s3cfg:/root/.s3cfg
+      - ./conf/zeppelin/shiro.ini:/opt/zeppelin/conf/shiro.ini
+      - ./conf/zeppelin/interpreter-setting.json:/opt/zeppelin/interpreter/spark/interpreter-setting.json
+      - ./data-transfer:/data-transfer
+    restart: unless-stopped
+  #  ================================== Jupyter ========================================== #}
+  jupyter:
+    image: jupyter/all-spark-notebook:7a0c7325e470
+    container_name: jupyter
+    hostname: jupyter
+    labels:
+      com.mdps.service.webui.name: Jupyter UI
+      com.mdps.service.webui.url: http://${PUBLIC_IP}:28888
     ports:
-      - "28029:18630"
-    restart: always
-
-  nifi:
-    image: apache/nifi
-    hostname: nifi
-    container_name: nifi
-    ports:
-      - "28054:8080"
-    restart: always
-
+      - 28888:8888
+    environment:
+      JUPYTER_ENABLE_LAB: 'true'
+      JUPYTER_TOKEN: abc123!
+      GRANT_SUDO: 'true'
+      TINI_SUBREAPER: 'true'
+    restart: unless-stopped
+  #  ================================== Minio ========================================== #}
   minio:
-    hostname: minio
-    image: minio/minio
+    image: minio/minio:latest
     container_name: minio
+    hostname: minio
+    labels:
+      com.mdps.service.webui.name: MinIO UI
+      com.mdps.service.webui.url: http://${PUBLIC_IP}:9000
     ports:
-      - '28083:9000'
+      - 9000:9000
     environment:
       MINIO_ACCESS_KEY: V42FCGRVMK24JJ8DHUYG
       MINIO_SECRET_KEY: bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza
     command: server /data
-    restart: always
-    
-  zeppelin:
-    image: trivadis/apache-zeppelin:0.8.2-hadoop2.7-spark2.4.4
-    container_name: zeppelin
-    hostname: zeppelin
+    restart: unless-stopped
+  #  ================================== Mosquitto ========================================== #}
+  mosquitto-1:
+    image: eclipse-mosquitto:latest
+    hostname: mosquitto-1
+    container_name: mosquitto-1
     ports:
-      - "28055:8080"
-    environment:
-      # AWS Credentials
-      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
-      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
-
-      ZEPPELIN_ADDR: "0.0.0.0"
-      ZEPPELIN_PORT: "8080"
-      ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT: 120000
-      SPARK_MASTER: "spark://spark-master:7077"
-
-      # set spark-master for Zeppelin interpreter
-      MASTER: "spark://spark-master:7077"
-      SPARK_DRIVER_HOST: zeppelin
-      SPARK_DRIVER_BINDADDRESS: "0.0.0.0"
-      PYSPARK_PYTHON: "python3"
-      SPARK_SUBMIT_OPTIONS: "--conf spark.driver.extraJavaOptions=-Dcom.amazonaws.services.s3.enableV4 --conf spark.executor.extraJavaOptions=-Dcom.amazonaws.services.s3.enableV4"
+      - 1883:1883
+      - 9001:9001
     volumes:
-      - ./conf/zeppelin/shiro.ini:/opt/zeppelin/conf/shiro.ini
-      - ./conf/zeppelin/interpreter-setting.json:/opt/zeppelin/interpreter/spark/interpreter-setting.json
-      - ./data-transfer:/data-transfer
-    restart: always
-
-  #  Container UI ===============================================
-    
-  portainer:
-    image: portainer/portainer
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-#      - data_portainer:/data
-#    environment:
-#      - VIRTUAL_HOST=monitor.bioatlas.se
-#      - VIRTUAL_PORT=9000
+      - ./conf/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf
+    restart: unless-stopped
+  #  ================================== MQTT UI ========================================== #}
+  mqtt-ui:
+    image: vergissberlin/hivemq-mqtt-web-client:latest
+    container_name: mqtt-ui
+    hostname: mqtt-ui
+    labels:
+      com.mdps.service.webui.name: HiveMQ UI
+      com.mdps.service.webui.url: http://${PUBLIC_IP}:28136
     ports:
-      - 28071:9000   
-    restart: always
+      - 28136:80
+    restart: unless-stopped

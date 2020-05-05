@@ -1,1 +1,0 @@
-Folder holding the various Kafka Connect connector implementations
