@@ -189,7 +189,7 @@ Now let's see the topic in use. The most basic way to test it is through the com
 In a new terminal window, first let's run the consumer on the topic `test-topic` we have created before
 
 ```
-kafka-console-consumer --bootstrap-server kafka-1:19092,kafka-2:19093 \
+kafka-console-consumer --bootstrap-server kafka-1:9092,kafka-2:9093 \
                        --topic test-topic
 ```
 After it is started, the consumer just waits for newly produced messages. 
@@ -203,7 +203,7 @@ docker exec -ti kafka-1 bash
 and run the following command to start the producer.   
  
 ```
-kafka-console-producer --broker-list kafka-1:19092,kafka-2:19093 \
+kafka-console-producer --broker-list kafka-1:9092,kafka-2:9093 \
                        --topic test-topic
 ```
 
@@ -223,7 +223,7 @@ On the `>` prompt enter a few messages, execute each single message by hitting t
 You should see the messages being consumed by the consumer. 
 
 ```
-root@kafka-1:/# kafka-console-consumer --bootstrap-server kafka-1:19092,kafka-2:19093 --topic test-topic
+root@kafka-1:/# kafka-console-consumer --bootstrap-server kafka-1:9092,kafka-2:9093 --topic test-topic
 aaa
 bbb
 ccc
@@ -239,7 +239,7 @@ You can also echo a longer message and pipe it into the console producer, as he 
 
 ```
 echo "This is my first message!" | kafka-console-producer \
-                  --broker-list kafka-1:19092,kafka-2:19093 \
+                  --broker-list kafka-1:9092,kafka-2:9093 \
                   --topic test-topic
 ```
 
@@ -249,7 +249,7 @@ And of course you can send messages inside a bash for loop:
 for i in 1 2 3 4 5 6 7 8 9 10
 do
    echo "This is message $i"| kafka-console-producer \
-                  --broker-list kafka-1:19092,kafka-2:19093 \
+                  --broker-list kafka-1:9092,kafka-2:9093 \
                   --topic test-topic \
                   --batch-size 1 &
 done 
@@ -266,7 +266,7 @@ A message produced to Kafka always consists of a key and a value, the value bein
 We can check that by re-consuming the messages we have created so far, specifying the option `--from-beginning` together with the option `print.key` and `key.separator` in the console consumer. For that stop the old consumer and restart it again using the following command
 
 ```
-kafka-console-consumer --bootstrap-server kafka-1:19092,kafka-2:19093 \
+kafka-console-consumer --bootstrap-server kafka-1:9092,kafka-2:9093 \
 							--topic test-topic \
 							--property print.key=true \
 							--property key.separator=, \
@@ -278,7 +278,7 @@ We can see that the keys are all `null` because so far we have only created the 
 For producing messages also with a key, use the options `parse.key` and `key.separator`. 
 
 ```
-kafka-console-producer --broker-list kafka-1:19092,kafka-2:19093 \
+kafka-console-producer --broker-list kafka-1:9092,kafka-2:9093 \
 							--topic test-topic \
 							--property parse.key=true \
 							--property key.separator=,
