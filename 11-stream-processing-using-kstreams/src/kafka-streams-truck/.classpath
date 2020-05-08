@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+  <classpathentry kind="src" path="src/main/java" including="**/*.java"/>
+  <classpathentry kind="src" path="src/main/resources" excluding="**/*.java"/>
+  <classpathentry kind="output" path="target/classes"/>
+  <classpathentry kind="var" path="M2_REPO/javax/ws/rs/javax.ws.rs-api/2.1.1/javax.ws.rs-api-2.1.1.jar"/>
+  <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
+  <classpathentry kind="var" path="M2_REPO/org/slf4j/slf4j-log4j12/1.7.26/slf4j-log4j12-1.7.26.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/slf4j/slf4j-api/1.7.26/slf4j-api-1.7.26.jar"/>
+  <classpathentry kind="var" path="M2_REPO/log4j/log4j/1.2.17/log4j-1.2.17.jar"/>
+  <classpathentry kind="var" path="M2_REPO/io/confluent/kafka-streams-avro-serde/5.3.0/kafka-streams-avro-serde-5.3.0.jar"/>
+  <classpathentry kind="var" path="M2_REPO/io/confluent/kafka-avro-serializer/5.3.0/kafka-avro-serializer-5.3.0.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/apache/avro/avro/1.9.0/avro-1.9.0.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/apache/commons/commons-compress/1.18/commons-compress-1.18.jar"/>
+  <classpathentry kind="var" path="M2_REPO/io/confluent/kafka-schema-registry-client/5.3.0/kafka-schema-registry-client-5.3.0.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/apache/kafka/kafka-clients/5.3.0-ccs/kafka-clients-5.3.0-ccs.jar"/>
+  <classpathentry kind="var" path="M2_REPO/com/github/luben/zstd-jni/1.4.0-1/zstd-jni-1.4.0-1.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/lz4/lz4-java/1.6.0/lz4-java-1.6.0.jar"/>
+  <classpathentry kind="var" path="M2_REPO/io/confluent/common-config/5.3.0/common-config-5.3.0.jar"/>
+  <classpathentry kind="var" path="M2_REPO/io/confluent/common-utils/5.3.0/common-utils-5.3.0.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/apache/zookeeper/zookeeper/3.4.14/zookeeper-3.4.14.jar"/>
+  <classpathentry kind="var" path="M2_REPO/com/github/spotbugs/spotbugs-annotations/3.1.9/spotbugs-annotations-3.1.9.jar"/>
+  <classpathentry kind="var" path="M2_REPO/com/google/code/findbugs/jsr305/3.0.2/jsr305-3.0.2.jar"/>
+  <classpathentry kind="var" path="M2_REPO/jline/jline/0.9.94/jline-0.9.94.jar"/>
+  <classpathentry kind="var" path="M2_REPO/junit/junit/3.8.1/junit-3.8.1.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/apache/yetus/audience-annotations/0.5.0/audience-annotations-0.5.0.jar"/>
+  <classpathentry kind="var" path="M2_REPO/io/netty/netty/3.10.6.Final/netty-3.10.6.Final.jar"/>
+  <classpathentry kind="var" path="M2_REPO/com/101tec/zkclient/0.10/zkclient-0.10.jar"/>
+  <classpathentry kind="var" path="M2_REPO/com/fasterxml/jackson/core/jackson-databind/2.9.9/jackson-databind-2.9.9.jar"/>
+  <classpathentry kind="var" path="M2_REPO/com/fasterxml/jackson/core/jackson-annotations/2.9.0/jackson-annotations-2.9.0.jar"/>
+  <classpathentry kind="var" path="M2_REPO/com/fasterxml/jackson/core/jackson-core/2.9.8/jackson-core-2.9.8.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/apache/kafka/kafka-streams/2.3.0/kafka-streams-2.3.0.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/apache/kafka/connect-json/2.3.0/connect-json-2.3.0.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/apache/kafka/connect-api/2.3.0/connect-api-2.3.0.jar"/>
+  <classpathentry kind="var" path="M2_REPO/com/fasterxml/jackson/datatype/jackson-datatype-jdk8/2.9.9/jackson-datatype-jdk8-2.9.9.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/rocksdb/rocksdbjni/5.18.3/rocksdbjni-5.18.3.jar"/>
+  <classpathentry kind="var" path="M2_REPO/commons-cli/commons-cli/1.4/commons-cli-1.4.jar"/>
+  <classpathentry kind="var" path="M2_REPO/org/apache/commons/commons-lang3/3.7/commons-lang3-3.7.jar"/>
+</classpath>
