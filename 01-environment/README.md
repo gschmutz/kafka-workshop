@@ -1,4 +1,4 @@
-# Kafka Streaming Platform on Docker
+# Kafka Data Platform on Docker
 
 The environment for this course is completely based on docker containers. 
 
@@ -18,10 +18,10 @@ These steps are necessary after the starting the docker environment.
 
 ### Add entry to local `/etc/hosts` File
 
-To simplify working with the Streaming Platform and for the links below to work, add the following entry to your local `/etc/hosts` file. 
+To simplify working with the Data Platform and for the links below to work, add the following entry to your local `/etc/hosts` file. 
 
 ```
-40.91.195.92	streamingplatform
+40.91.195.92	dataplatform
 ```
 
 Replace the IP address by the public IP address of the docker host. 
@@ -31,18 +31,18 @@ The following service are available as part of the platform:
 
 Type | Service | Url
 ------|------- | -------------
-Development | StreamSets Data Collector | <http://streamingplatform:28029>
-Development | Apache NiFi | <http://streamingplatform:28054/nifi>
-Development | Apache Zeppelin | <http://streamingplatform:28055>
-Governance | Schema Registry UI  | <http://streamingplatform:28039>
-Governance | Schema Registry Rest API  | <http://streamingplatform:28030>
-Management | Kafka Connect UI | <http://streamingplatform:28038>
-Management | Kafka Manager  | <http://streamingplatform:28044>
-Management | Kafkahq  | <http://streamingplatform:28042>
-Management | Zoonavigator  | <http://streamingplatform:28047>
-Management | Mino | <http://streamingplatform:28083>
-Management | Kafka Rest Service | <http://streamingplatform:28012>
-Management | Kafka Connect Rest Service | <http://streamingplatform:28013>
-Management | MQTT UI | <http://streamingplatform:28082>
-Management | Portainer | <http://streamingplatform:28071>
+Development | StreamSets Data Collector | <http://dataplatform:18630>
+Development | Apache NiFi | <http://dataplatform:18080/nifi>
+Development | Apache Zeppelin | <http://dataplatform:28080>
+Governance | Schema Registry UI  | <http://dataplatform:28102>
+Governance | Schema Registry Rest API  | <http://dataplatform:8081>
+Management | Kafka Connect UI | <http://dataplatform:28103>
+Management | Cluster Manager for Apache Kafka (CMAK)  | <http://dataplatform:28104>
+Management | AKHQ  | <http://dataplatform:28107>
+Management | Zoonavigator  | <http://dataplatform:28107>
+Management | Mino | <http://dataplatform:9000>
+Management | Kafka Rest Service | <http://dataplatform:18086>
+Management | Kafka Connect Rest Service | <http://dataplatform:8083>
+Management | MQTT UI | <http://dataplatform:28136>
+Management | Portainer | <http://dataplatform:28137>
 

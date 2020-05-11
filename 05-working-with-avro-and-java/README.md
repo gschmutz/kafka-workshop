@@ -324,8 +324,8 @@ public class KafkaProducerAvro {
 
     private final static String TOPIC = "test-java-avro-topic";
     private final static String BOOTSTRAP_SERVERS =
-            "streamingplatform:9092,streamingplatform:9093,streamingplatform:9094";
-    private final static String SCHEMA_REGISTRY_URL = "http://streamingplatform:28030";
+            "dataplatform:9092, dataplatform:9093, dataplatform:9094";
+    private final static String SCHEMA_REGISTRY_URL = "http://dataplatform:8081";
     
     private static Producer<Long, Notification> createProducer() {
         Properties props = new Properties();
@@ -409,7 +409,7 @@ docker exec -ti streamingplatform_schema_registry_1 bash
 And then invoke the `kafka-avro-console-consumer` similar to the "normal" consumer seen so far. 
 
 ```
-kafka-avro-console-consumer --bootstrap-server broker-1:9092 --topic test-java-avro-topic
+kafka-avro-console-consumer --bootstrap-server kafka-1:19092 --topic test-java-avro-topic
 ```
 
 You should see an output similar to the one below. 
@@ -437,7 +437,7 @@ The Avro Serializer and Deserializer automatically register the Avro schema, if 
 
 The Streamingplatform also contains a tool made by a company called Landoop which allows us to see what's in the registry. 
 
-In a browser, navigate to <http://streamingplatform:28039> and you should see the home page of the Schema Registry UI. 
+In a browser, navigate to <http://dataplatform:28039> and you should see the home page of the Schema Registry UI. 
 
 ![Alt Image Text](./images/schema-registry-ui-welcome.png "Schema Registry UI")
 
@@ -476,8 +476,8 @@ import io.confluent.kafka.serializers.KafkaAvroSerializerConfig;
 public class KafkaConsumerAvro {
 	private final static String TOPIC = "test-java-avro-topic";
     private final static String BOOTSTRAP_SERVERS =
-            "streamingplatform:9092,streamingplatform:9093,streamingplatform:9094";
-    private final static String SCHEMA_REGISTRY_URL = "http://streamingplatform:28030";
+            "dataplatform:9092, dataplatform:9093, dataplatform:9094";
+    private final static String SCHEMA_REGISTRY_URL = "http://dataplatform:8081";
   
     private static Consumer<Long, Notification> createConsumer() {
         final Properties props = new Properties();
@@ -553,7 +553,7 @@ Add the following definition to the `pom.xml`.
 				<version>3.2.0</version>
 				<configuration>
 					<schemaRegistryUrls>
-						<param>http://streamingplatform:28030</param>
+						<param>http://dataplatform:8081</param>
 					</schemaRegistryUrls>
 					<subjects>
 						<tweet-value>src/main/avro/Notification-v1.avsc</tweet-value>
