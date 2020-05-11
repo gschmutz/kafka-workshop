@@ -372,7 +372,7 @@ public class TruckFilterTopology {
 		final Serde<String> stringSerde = Serdes.String();
 		final Serde<Long> longSerde = Serdes.Long();
 		
-	    final String bootstrapServers = args.length > 0 ? args[0] : "streamingplatform:9092";
+	    final String bootstrapServers = args.length > 0 ? args[0] : "dataplatform:9092";
 	    final Properties streamsConfiguration = new Properties();
 	    
 	    // Give the Streams application a unique name.  The name must be unique in the Kafka cluster

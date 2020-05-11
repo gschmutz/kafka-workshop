@@ -126,13 +126,13 @@ After successful creation, start a `kafka-console-consumer` or `kafkacat` to con
 Use either
 
 ```
-kafka-console-consumer --bootstrap-server broker-1:9092 --topic truck_position
+kafka-console-consumer --bootstrap-server kafka-1:19092 --topic truck_position
 ```
 
 or 
 
 ```
-kafkacat -b streamingplatform -t truck_position
+kafkacat -b dataplatform -t truck_position
 ```
 
 ## Using Kafka Connect to bridge between MQTT and Kafka
@@ -269,4 +269,4 @@ A soon as the connector starts getting the messages from MQTT, they should start
 
 ### Monitor connector in Kafka Connect UI
 
-Navigate to the [Kafka Connect UI](http://streamingplatform:28038) to see the connector running.
+Navigate to the [Kafka Connect UI](http://dataplatform:28103) to see the connector running.

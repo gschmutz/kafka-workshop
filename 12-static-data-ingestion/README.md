@@ -6,7 +6,7 @@ Let's simulate some rather static data about the drivers of our truck fleet.
 
 ## Create a Postgresql instance
 
-For that let's add a Postgresql database to our streaming platform. Add the following two service definition to the `docker-compose.yml` file. 
+For that let's add a Postgresql database to our streaming platform. Add the following two service definition to the `docker-compose.override.yml` file. 
 
 ```
   adminer:
@@ -14,7 +14,7 @@ For that let's add a Postgresql database to our streaming platform. Add the foll
     ports:
       - 18080:8080
 
-  db:
+  postgresql:
     image: mujz/pagila
     environment:
       - POSTGRES_PASSWORD=sample
@@ -35,7 +35,7 @@ The images for PostgreSQL as well as a simple Admin tool will be downloaded and 
 Now let's connect to the database as user `sample`. 
 
 ```
-docker exec -ti streamingplatform_db_1 bash
+docker exec -ti postgresql bash
 psql -d sample -U sample
 ```
 
@@ -86,7 +86,7 @@ kafka-topics --zookeeper zookeeper-1:2181 --create --topic truck_driver --partit
 Eventhough we have no messages yet, let's create a consumer wich reads the new topic from the beginning. 
 
 ```
-kafka-console-consumer --bootstrap-server broker-1:9092 --topic truck_driver --from-beginning
+kafka-console-consumer --bootstrap-server kafka-1:19092 --topic truck_driver --from-beginning
 ```
 
 Keep it running, we will come back to it in a minute!

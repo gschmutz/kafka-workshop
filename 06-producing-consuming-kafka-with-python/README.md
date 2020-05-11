@@ -97,7 +97,7 @@ To consume text messages through python, use the following code segment. Make su
 from confluent_kafka import Consumer, KafkaError
 
 c = Consumer({
-    'bootstrap.servers': 'kafka-1:19092,kafka-2:19093',
+    'bootstrap.servers': 'dataplatform:9092, dataplatform:9093',
     'group.id': 'test-consumer-group',
     'default.topic.config': {
         'auto.offset.reset': 'largest'

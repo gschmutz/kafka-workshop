@@ -59,7 +59,7 @@ console.log(Kafka.features);
 console.log(Kafka.librdkafkaVersion);
 
 var producer = new Kafka.Producer({
-  'metadata.broker.list': 'streamingplatform:9092,streamingplatform:9093'
+  'metadata.broker.list': 'dataplatform:9092, dataplatform:9093'
 });
 
 // Connect to the broker manually
@@ -105,7 +105,7 @@ var Kafka = require('node-rdkafka');
 
 var consumer = new Kafka.KafkaConsumer({
   'group.id': 'kafka',
-  'metadata.broker.list': 'streamingplatform:9092',
+  'metadata.broker.list': 'dataplatform:9092',
   'enable.auto.commit': false
 }, {});
 

@@ -145,7 +145,7 @@ docker exec -ti docker_broker-1_1 bash
 ```
 
 ```
-kafka-console-consumer --bootstrap-server broker-1:9092 \
+kafka-console-consumer --bootstrap-server kafka-1:19092 \
      --topic dangerous_driving_ksql
 ```
 
