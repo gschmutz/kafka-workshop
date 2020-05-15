@@ -152,7 +152,7 @@ In that `kafka-connect` folder we need to copy the artefacts of the Kafka connec
 Navigate into the `kafka-connect` folder 
 
 ```
-cd kafka-connect
+cd plugins/kafka-connect
 ```
 
 and download the `kafka-connect-mqtt-1.2.3-2.1.0-all.tar.gz` file from the [Landoop Stream-Reactor Project](https://github.com/Landoop/stream-reactor/tree/master/kafka-connect-mqtt) project.
