@@ -159,7 +159,7 @@ In that `kafka-connect` folder we need to copy the artefacts of the Kafka connec
 Navigate into the `kafka-connect` folder 
 
 ```
-cd kafka-connect
+cd plugins/kafka-connect
 ```
 
 and download the `kafka-connect-mqtt-1.2.3-2.1.0-all.tar.gz` file from the [Landoop Stream-Reactor Project](https://github.com/Landoop/stream-reactor/tree/master/kafka-connect-mqtt) project.
@@ -178,13 +178,13 @@ rm kafka-connect-mqtt-1.2.3-2.1.0-all.tar.gz
 Now let's restart Kafka connect in order to pick up the new connector. 
 
 ```
-docker-compose restart connect-1 connect-2
+docker-compose restart kafka-connect-1 kafka-connect-2
 ```
 
 The connector has now been added to the Kafka cluster. You can confirm that by watching the log file of the two containers:
 
 ```
-docker-compose logs -f connect-1 connect-2
+docker-compose logs -f kafka-connect-1 kafka-connect-2
 ```
 
 After some time you should see an output similar to the one below with a message that the MQTT connector has been added and later that the connector finished starting successfully ...
