@@ -7,7 +7,7 @@ The following diagram shows the setup of the data flow we will be implementing.
 
 We will not be using any real-life data, but have a program simulating some drivers and their trucks.
 
-Our **Streaming Platform** does already provide all the services we need in this workshop, such as an **MQTT broker** and of course **Apache Kafka**. 
+Our **Data Platform** does already provide all the services we need in this workshop, such as an **MQTT broker** and of course **Apache Kafka**. 
 
 The services related to mqtt are `mosquitto-1` an easy to use MQTT broker, belonging to the [Eclipse project](https://mosquitto.org/) and `mqtt-ui`, a UI to browse into any MQTT broker. 
 
@@ -71,7 +71,7 @@ The consumed messages will show up in the terminal.
 
 #### Using HiveMQ Web UI  
 
-To start consuming using the MQTT UI ([HiveMQ Web UI](https://www.hivemq.com/docs/3.4/web-ui/introduction.html)), navigate to <http://streamingplatform:28136> and connect using `streamingplatform` for the **Host** field, `28023 ` for the **Port** field and then click on **Connect**: 
+To start consuming using the MQTT UI ([HiveMQ Web UI](https://www.hivemq.com/docs/3.4/web-ui/introduction.html)), navigate to <http://dataplatform:28136> and connect using `dataplatform` for the **Host** field, `9001 ` for the **Port** field and then click on **Connect**: 
 
 ![Alt Image Text](./images/mqtt-ui-connect.png "MQTT UI Connect")
 	
