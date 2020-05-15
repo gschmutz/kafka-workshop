@@ -14,24 +14,31 @@ The services related to mqtt are `mosquitto-1` an easy to use MQTT broker, belon
 ```
   mosquitto-1:
     image: eclipse-mosquitto:latest
-    container_name: mosquitto-1
     hostname: mosquitto-1
-    ports: 
-      - "28100:1883"
-      - "28023:9001"
+    container_name: mosquitto-1
+    ports:
+      - 1883:1883
+      - 9001:9001
     volumes:
-      - ./conf/mosquitto-1.conf:/mosquitto/config/mosquitto.conf
+      - ./data-transfer:/data-transfer
+      - ./conf/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf
+    restart: unless-stopped
 
   mqtt-ui:
-    image: vergissberlin/hivemq-mqtt-web-client
-    hostname: mqtt-ui
+    image: vergissberlin/hivemq-mqtt-web-client:latest
     container_name: mqtt-ui
-    restart: always
+    hostname: mqtt-ui
+    labels:
+      com.mdps.service.webui.name: HiveMQ UI
+      com.mdps.service.webui.url: http://${PUBLIC_IP}:28136
     ports:
-      - "28082:80"
+      - 28136:80
+    volumes:
+      - ./data-transfer:/data-transfer
+    restart: unless-stopped
 ```
 
-The configuration of mosquitto can be found in the  `./conf/mqtt/mosquitto-1.conf` file, which is volume mapped into the `mosquitto-1` container:
+The configuration of mosquitto can be found in the  `./conf/mosquittto/mosquitto.conf` file, which is volume mapped into the `mosquitto-1` container:
 
 ```
 persistence true
@@ -57,14 +64,14 @@ In this workshop we show two options for consuming from MQTT
 To start consuming using through a command line, perform the following docker command:
 
 ```
-docker run -it --rm efrecon/mqtt-client sub -h $DOCKER_HOST_IP -p 28100 -t "truck/+/position" -v
+docker run -it --rm efrecon/mqtt-client sub -h $DOCKER_HOST_IP -p 1883 -t "truck/+/position" -v
 ```
 
 The consumed messages will show up in the terminal.
 
 #### Using HiveMQ Web UI  
 
-To start consuming using the MQTT UI ([HiveMQ Web UI](https://www.hivemq.com/docs/3.4/web-ui/introduction.html)), navigate to <http://streamingplatform:28082> and connect using `streamingplatform` for the **Host** field, `28023 ` for the **Port** field and then click on **Connect**: 
+To start consuming using the MQTT UI ([HiveMQ Web UI](https://www.hivemq.com/docs/3.4/web-ui/introduction.html)), navigate to <http://streamingplatform:28136> and connect using `streamingplatform` for the **Host** field, `28023 ` for the **Port** field and then click on **Connect**: 
 
 ![Alt Image Text](./images/mqtt-ui-connect.png "MQTT UI Connect")
 	
@@ -85,7 +92,7 @@ The simulator can produce data either to a **Kafka** or **MQTT**. These two opti
 Producing truck events to the MQTT broker on port 1883 is as simple as running the `trivadis/iot-truck-simulator` docker image.
 
 ```
-docker run trivadis/iot-truck-simulator '-s' 'MQTT' '-h' $DOCKER_HOST_IP '-p' '28100' '-f' 'CSV'
+docker run trivadis/iot-truck-simulator '-s' 'MQTT' '-h' $DOCKER_HOST_IP '-p' '1883' '-f' 'CSV'
 ```
 
 As soon as messages are produced to MQTT, you should see them either on the CLI or in the MQTT UI (Hive MQ) as shown below.
@@ -119,7 +126,7 @@ Make sure to exit from the container after the topics have been created successf
 exit
 ```
 
-If you don't like to work with the CLI, you can also create the Kafka topics using the [Kafka Manager GUI](http://streamingplatform:28044). 
+If you don't like to work with the CLI, you can also create the Kafka topics using the [CMAK GUI](http://dataplatform:28104). 
 
 After successful creation, start a `kafka-console-consumer` or `kafkacat` to consume messages from the  `truck_position` topic. 
 
@@ -213,12 +220,12 @@ In the `scripts` folder, create a file `start-mqtt.sh` and add the code below.
 
 echo "removing MQTT Source Connector"
 
-curl -X "DELETE" "$DOCKER_HOST_IP:28013/connectors/mqtt-truck-position-source"
+curl -X "DELETE" "$DOCKER_HOST_IP:8083/connectors/mqtt-truck-position-source"
 
 
 echo "creating MQTT Source Connector"
 
-curl -X "POST" "$DOCKER_HOST_IP:28013/connectors" \
+curl -X "POST" "$DOCKER_HOST_IP:8083/connectors" \
      -H "Content-Type: application/json" \
      -d '{
   "name": "mqtt-truck-position-source",
@@ -246,7 +253,7 @@ Also create a separate script `stop-mqtt.sh` for just stopping the connector and
 
 echo "removing MQTT Source Connector"
 
-curl -X "DELETE" "$DOCKER_HOST_IP: 28013/connectors/mqtt-source"
+curl -X "DELETE" "$DOCKER_HOST_IP: 8083/connectors/mqtt-source"
 ```
 
 
