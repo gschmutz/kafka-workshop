@@ -209,7 +209,7 @@ For creating an instance of the connector over the API, you can either use a RES
 Create a folder scripts and navigate into the folder. 
 
 ```
-mkdir scripts
+mkdir -p scripts
 cd scripts
 ```
 

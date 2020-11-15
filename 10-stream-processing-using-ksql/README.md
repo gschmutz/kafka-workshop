@@ -8,7 +8,7 @@ For this workshop we will be using ksqlDB.
 
 ## Connect to ksqlDB Engine
 
-In order to use KSQL, we need to connect to the KSQL engine using the KSQL CLI. An instance of a KSQL server has been started with our Streaming Platform and can be reached on port 8088.
+In order to use KSQL, we need to connect to the KSQL engine using the KSQL CLI. An instance of a KSQL server has been started with the Data Platform and can be reached on port 8088.
 
 ```
 docker exec -it ksqldb-cli ksql http://ksqldb-server-1:8088
@@ -105,7 +105,7 @@ docker exec -ti docker_broker-1_1 bash
 And perform the following `kafka-topics` command creating a new `dangerous_driving_ksql` topic in Kafka.
 
 ```
-kafka-topics --zookeeper zookeeper:2181 --create --topic dangerous_driving_ksql --partitions 8 --replication-factor 2
+kafka-topics --zookeeper zookeeper-1:2181 --create --topic dangerous_driving_ksql --partitions 8 --replication-factor 2
 ```
 
 Now let's publish to that topic from ksqlDB. For that we can create a new Stream. Instead of creating it on an existing topic as we have done before, we use the `CREATE STREAM ... AS SELECT ...` variant. 
