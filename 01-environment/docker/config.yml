@@ -4,7 +4,7 @@
       platys:
         platform-name: 'kafka-workshop'
         platform-stack: 'trivadis/platys-modern-data-platform'
-        platform-stack-version: '1.9.0-preview'
+        platform-stack-version: '1.10.0'
         structure: 'flat'
 
       # ===== Apache Zookeeper ========
@@ -233,6 +233,19 @@
       # ===== Code Server ========
       CODE_SERVER_enable: false
       CODE_SERVER_volume_map_platform_root: false
+
+      #
+      # ===== Wetty ========
+      #
+      WETTY_enable: true
+
+      #
+      # ===== Markdown Viewer ========
+      #
+      MARKDOWN_VIEWER_enable: true
+      MARKDOWN_VIEWER_use_port_80: true
+      MARKDOWN_VIEWER_use_public_ip: true
+
 
       # ===== Container Mgmt ========
       PORTAINER_enable: false
