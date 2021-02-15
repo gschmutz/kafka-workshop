@@ -1,1 +1,0 @@
-Contains the notebooks of zeppelin db service, if flag ZEPPELIN_volume_map_data is set to true.
