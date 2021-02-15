@@ -12,7 +12,10 @@
       ZOOKEEPER_volume_map_data: false
       ZOOKEEPER_nodes: 1            # either 1 or 3
 
-      ZOOKEEPER_navigator_enable: true
+      #
+      # ===== Apache Zookeeper Navigator ========
+      #
+      ZOOKEEPER_NAVIGATOR_enable: true
       
       # ===== Apache Kafka ========
       KAFKA_enable: true
