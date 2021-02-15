@@ -18,20 +18,50 @@ Keep **Linux/Unix** for the **Select a platform** and click on **OS Only** and s
 Scroll down to **Launch script** and add the following script 
 
 ```
+export GITHUB_PROJECT=kafka-workshop
+export GITHUB_OWNER=gschmutz
+export DATAPLATFORM_HOME=01-environment/docker
+export DOCKER_COMPOSE_VERSION=1.25.3
+export PLATYS_VERSION=2.4.0
+export NETWORK_NAME=eth0
+export USERNAME=ubuntu
+export PASSWORD=ubuntu
+
+# Prepare Environment Variables 
+export PUBLIC_IP=$(curl ipinfo.io/ip)
+export DOCKER_HOST_IP=$(ip addr show ${NETWORK_NAME} | grep "inet\b" | awk '{print $2}' | cut -d/ -f1)
+
+# allow login by password
+sudo sed -i "s/.*PasswordAuthentication.*/PasswordAuthentication yes/g" /etc/ssh/sshd_config
+echo "${USERNAME}:${PASSWORD}"|chpasswd
+sudo service sshd restart
+
+# add alias "dataplatform" to /etc/hosts
+echo "$DOCKER_HOST_IP     dataplatform" | sudo tee -a /etc/hosts
+
 # Install Docker
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
 add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable edge"
 apt-get install -y docker-ce
-sudo usermod -aG docker ubuntu
+sudo usermod -aG docker $USERNAME
 
 # Install Docker Compose
-curl -L "https://github.com/docker/compose/releases/download/1.24.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+curl -L "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
 chmod +x /usr/local/bin/docker-compose
 ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
 
-# Prepare Environment Variables
-export PUBLIC_IP=$(curl ipinfo.io/ip)
-export DOCKER_HOST_IP=$(ip addr show eth0 | grep "inet\b" | awk '{print $2}' | cut -d/ -f1)
+# Install Platys
+sudo curl -L "https://github.com/TrivadisPF/platys/releases/download/${PLATYS_VERSION}/platys_${PLATYS_VERSION}_linux_x86_64.tar.gz" -o /tmp/platys.tar.gz
+tar zvxf /tmp/platys.tar.gz 
+sudo mv platys /usr/local/bin/
+sudo chown root:root /usr/local/bin/platys
+sudo rm platys.tar.gz 
+
+# Install various Utilities
+sudo apt-get install -y curl jq kafkacat
+
+# needed for elasticsearch
+sudo sysctl -w vm.max_map_count=262144   
 
 # Install various Utilities
 sudo apt-get install -y curl jq kafkacat
@@ -40,10 +70,11 @@ sudo apt-get install -y curl jq kafkacat
 sudo sysctl -w vm.max_map_count=262144   
 
 # Get the project
-cd /home/ubuntu 
-git clone https://github.com/gschmutz/kafka-workshop.git
-chown -R ubuntu:ubuntu kafka-workshop
-cd kafka-workshop/01-environment/docker
+cd /home/${USERNAME} 
+git clone https://github.com/${GITHUB_OWNER}/${GITHUB_PROJECT}
+chown -R ${USERNAME}:${USERNAME} ${GITHUB_PROJECT}
+
+cd /home/${USERNAME}/${GITHUB_PROJECT}/${DATAPLATFORM_HOME}
 
 # Prepare Environment Variables into .bash_profile file
 printf "export PUBLIC_IP=$PUBLIC_IP\n" >> /home/$USERNAME/.bash_profile
