@@ -33,6 +33,9 @@ ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
 export PUBLIC_IP=$(curl ipinfo.io/ip)
 export DOCKER_HOST_IP=$(ip addr show eth0 | grep "inet\b" | awk '{print $2}' | cut -d/ -f1)
 
+# Install various Utilities
+sudo apt-get install -y curl jq kafkacat
+
 # needed for elasticsearch
 sudo sysctl -w vm.max_map_count=262144   
 
@@ -41,6 +44,13 @@ cd /home/ubuntu
 git clone https://github.com/gschmutz/kafka-workshop.git
 chown -R ubuntu:ubuntu kafka-workshop
 cd kafka-workshop/01-environment/docker
+
+# Prepare Environment Variables into .bash_profile file
+printf "export PUBLIC_IP=$PUBLIC_IP\n" >> /home/$USERNAME/.bash_profile
+printf "export DOCKER_HOST_IP=$DOCKER_HOST_IP\n" >> /home/$USERNAME/.bash_profile
+printf "export DATAPLATFORM_HOME=$PWD\n" >> /home/$USERNAME/.bash_profile
+printf "\n" >> /home/$USERNAME/.bash_profile
+sudo chown ${USERNAME}:${USERNAME} /home/$USERNAME/.bash_profile
 
 # Startup Environment
 sudo -E docker-compose up -d
