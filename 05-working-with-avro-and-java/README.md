@@ -31,7 +31,7 @@ Copy the following block right after the `<version>` tag, before the closing `</
 
 ```xml
    <properties>
-       <kafka.version>2.2.0</kafka.version>
+       <kafka.version>2.7.0</kafka.version>
        <confluent.version>5.1.0</confluent.version>
        <avro.version>1.8.2</avro.version>
        <java.version>1.8</java.version>
