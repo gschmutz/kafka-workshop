@@ -21,13 +21,13 @@ So let's connect into one of the broker through a terminal window. You can use t
 
 Open a terminal window on the Docker Host and run a `docker exec` command to start a shell in the `kafka-1` docker container 
 
-```
+```bash
 docker exec -ti kafka-1 bash
 ```
 
 if we just execute the `kafka-topics` command without any options, a help page is shown
 
-```
+```bash
 root@kafka-1:/# kafka-topics
 Create, delete, describe, or change a topic.
 Option                                   Description
@@ -153,7 +153,7 @@ We can see that there are some technical topics, `_schemas` being the one, where
 
 Now let's create a new topic. For that we again use the **kafka-topics** utility but this time with the `--create` option. We will create a test topic with 6 partitions and replicated 2 times. The `--if-not-exists` option is handy to avoid errors, if a topic already exists. 
 
-```
+```bash
 kafka-topics --create \
 			--if-not-exists \
 			--zookeeper zookeeper-1:2181 \
@@ -168,11 +168,11 @@ Re-Run the command to list the topics. You should see the new topic you have jus
 
 You can use the `--describe` option to
 
-```
+```bash
 kafka-topics --describe --zookeeper zookeeper-1:2181 --topic test-topic
 ```
 
-```
+```bash
 Topic:test-topic	PartitionCount:6	ReplicationFactor:2	Configs:
 	Topic: test-topic	Partition: 0	Leader: 3	Replicas: 3,2	Isr: 3,2
 	Topic: test-topic	Partition: 1	Leader: 1	Replicas: 1,3	Isr: 1,3
@@ -188,7 +188,7 @@ Now let's see the topic in use. The most basic way to test it is through the com
 
 In a new terminal window, first let's run the consumer on the topic `test-topic` we have created before
 
-```
+```bash
 kafka-console-consumer --bootstrap-server kafka-1:19092,kafka-2:19093 \
                        --topic test-topic
 ```
@@ -196,13 +196,13 @@ After it is started, the consumer just waits for newly produced messages.
 
 In an another terminal, again connect into `kafka-1` using a `docker exec` 
 
-```
+```bash
 docker exec -ti kafka-1 bash
 ```
 
 and run the following command to start the producer.   
  
-```
+```bash
 kafka-console-producer --broker-list kafka-1:19092,kafka-2:19093 \
                        --topic test-topic
 ```
@@ -212,7 +212,7 @@ The console producer reads from stdin, and takes a broker list instead of a zook
 On the `>` prompt enter a few messages, execute each single message by hitting the **Enter** key.<br>
 **Hint:** Try to enter them as quick as possible.
 
-```
+```bash
 >aaa
 >bbb
 >ccc
@@ -222,7 +222,7 @@ On the `>` prompt enter a few messages, execute each single message by hitting t
 
 You should see the messages being consumed by the consumer. 
 
-```
+```bash
 root@kafka-1:/# kafka-console-consumer --bootstrap-server kafka-1:19092,kafka-2:19093 --topic test-topic
 aaa
 bbb
@@ -237,7 +237,7 @@ You can stop the consumer by hitting **Ctrl-C**. If you want to consume from the
 
 You can also echo a longer message and pipe it into the console producer, as he is reading the next message from the command line:
 
-```
+```bash
 echo "This is my first message!" | kafka-console-producer \
                   --broker-list kafka-1:19092,kafka-2:19093 \
                   --topic test-topic
@@ -245,7 +245,7 @@ echo "This is my first message!" | kafka-console-producer \
 
 And of course you can send messages inside a bash for loop:
 
-```
+```bash
 for i in 1 2 3 4 5 6 7 8 9 10
 do
    echo "This is message $i"| kafka-console-producer \
@@ -265,7 +265,7 @@ A message produced to Kafka always consists of a key and a value, the value bein
 
 We can check that by re-consuming the messages we have created so far, specifying the option `--from-beginning` together with the option `print.key` and `key.separator` in the console consumer. For that stop the old consumer and restart it again using the following command
 
-```
+```bash
 kafka-console-consumer --bootstrap-server kafka-1:19092,kafka-2:19093 \
 							--topic test-topic \
 							--property print.key=true \
@@ -277,7 +277,7 @@ We can see that the keys are all `null` because so far we have only created the 
 
 For producing messages also with a key, use the options `parse.key` and `key.separator`. 
 
-```
+```bash
 kafka-console-producer --broker-list kafka-1:19092,kafka-2:19093 \
 							--topic test-topic \
 							--property parse.key=true \
@@ -290,7 +290,7 @@ Enter your messages so that a key and messages are separated by a comma, i.e. `k
 
 A Kafka topic can be dropped using the `kafka-topics` utility with the `--delete` option. 
 
-```
+```bash
 kafka-topics --zookeeper zookeeper-1:2181 --delete --topic test-topic
 ```
 
@@ -317,19 +317,19 @@ You can install **kafkacat** directly on the Ubuntu environment. First let's ins
 
 Install the Confluent public key, which is used to sign the packages in the APT repository:
 
-```
+```bash
 wget -qO - https://packages.confluent.io/deb/5.2/archive.key | sudo apt-key add -
 ```
 
 Add the repository to the `/etc/apt/sources.list`:
 
-```
+```bash
 sudo add-apt-repository "deb [arch=amd64] https://packages.confluent.io/deb/5.2 stable main"
 ```
 
 Run apt-get update and install the 2 dependencies as well as **kafkacat**
  
-```
+```bash
 sudo apt-get update
 sudo apt-get install librdkafka-dev libyajl-dev
 sudo apt-get install kafkacat
@@ -339,7 +339,7 @@ sudo apt-get install kafkacat
 
 To install **Kafkacat** on a Macbook, just run the following command:
 
-```
+```bash
 brew install kafkacat
 ```
 
@@ -347,7 +347,7 @@ brew install kafkacat
 
 There is also a Docker container from Confluent which can be used to run **Kafkacat**
 
-```
+```bash
 docker run --tty --network kafkaworkshop_default edenhill/kafkacat:1.5.0 kafkacat
 ```
 
@@ -363,7 +363,7 @@ An other option for Windows is to run it as a Docker container as shown above.
 
 **kafkacat** has many options. If you just enter `kafkacat` without any options, all the options with a short description is shown on the console. Additionally Kafkacat will show the version which is installed. This is current **1.5.0** if installed on Mac and **1.3.1** if on Ubuntu. **1.4.0** is interesting, because support for Kafka Headers has been added and with **1.5.0** there is also support for consuming Avro messages.
 
-```
+```bash
 gus@gusmacbook ~> kafkacat
 Error: -b <broker,..> missing
 
@@ -527,43 +527,43 @@ Now let's use it to Produce and Consume messages.
 
 The simplest way to consume a topic is just specifying the broker and the topic. By default all messages from the beginning of the topic will be shown 
 
-```
+```bash
 kafkacat -b streamingplatform -t test-topic
 ```
 
 If you want to start at the end of the topic, i.e. only show new messages, add the `-o` option. 
 
-```
+```bash
 kafkacat -b streamingplatform -t test-topic -o end
 ```
 
 To show only the last message (one for each partition), set the `-o` option to `-1`. `-2` would show the last 2 messages.
 
-```
+```bash
 kafkacat -b streamingplatform -t test-topic -o -1
 ```
 
 To show only the last message from exactly one partition, add the `-p` option
 
-```
+```bash
 kafkacat -b streamingplatform -t test-topic -p1 -o -1
 ```
 
 You can use the `-f` option to format the output. Here we show the partition (`%p`) as well as key (`%k`) and value (`%s`):
 
-```
+```bash
 kafkacat -b streamingplatform -t test-topic -f 'Part-%p => %k:%s\n'
 ```
 
 If there are keys which are Null, then you can use `-Z` to actually show NULL in the output:
 
-```
+```bash
 kafkacat -b streamingplatform -t test-topic -f 'Part-%p => %k:%s\n' -Z
 ```
 
 There is also the option `-J` to have the output emitted as JSON.
 
-```
+```bash
 kafkacat -b streamingplatform -t test-topic -J
 ```
 
@@ -571,13 +571,13 @@ kafkacat -b streamingplatform -t test-topic -J
 
 Producing messages with **Kafkacat** is as easy as consuming. Just add the `-P` option to switch to Producer mode.
 
-```
+```bash
 kafkacat -b streamingplatform -t test-topic -P
 ```
 
 To produce with key, specify the delimiter to split key and message, using the `-K` option. 
 
-```
+```bash
 kafkacat -b streamingplatform -t test-topic -P -K , -X topic.partitioner=murmur2_random
 ```
 
@@ -589,7 +589,7 @@ In his [blog article](https://rmoff.net/2018/05/10/quick-n-easy-population-of-re
 
 Taking his example, you can send 10 orders to test-topic.
 
-```
+```bash
 curl -s "https://api.mockaroo.com/api/d5a195e0?count=20&key=ff7856d0"| \
 	kafkacat -b streamingplatform -t test-topic -P
 ```
