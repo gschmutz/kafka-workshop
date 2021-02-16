@@ -31,7 +31,7 @@ Copy the following block right after the <version> tag, before the closing </pro
 
 ```
    <properties>
-       <kafka.version>2.2.0</kafka.version>
+       <kafka.version>2.7.0</kafka.version>
        <java.version>1.8</java.version>
        <slf4j-version>1.7.5</slf4j-version>
        
