@@ -10,13 +10,13 @@ First let's create the topic we will use throughout this workshop.
 
 Connect to the `broker-1` container:
 
-```
+```bash
 docker exec -ti broker-1 bash
 ```
 
 And create a new topic. 
 
-```
+```bash
 kafka-topics --create \
     --zookeeper zookeeper-1:2181 \
     --replication-factor 3 \
@@ -30,13 +30,13 @@ Note that the replication factor is set to 3, and the topic name is `failsafe-te
 
 Start a consumer using `kafkacat` on the topic `failsafe-test-topic`. Use the `-o end` switch to read only from the end. 
 
-```
+```bash
 kafkacat -b localhost -t failsafe-test-topic -o end
 ```
 
 or if using docker
 
-```
+```bash
 docker run --tty --network kafkaworkshop_default edenhill/kafkacat:1.5.0 kafkacat -b broker-1 -t failsafe-test-topic -o end
 ```
 
@@ -44,7 +44,7 @@ docker run --tty --network kafkaworkshop_default edenhill/kafkacat:1.5.0 kafkaca
 
 Start the producer using `kafkacat` and produce 3 messages
 
-```
+```bash
 cas@cas ~> kafkacat -P -b localhost -t failsafe-test-topic
 Hello World!
 Hello Events!
@@ -53,7 +53,7 @@ Hello Kafka!
 
 in the consumer console started above you should see the 3 messages
 
-```
+```bash
 cas@cas ~> kafkacat -b localhost -t failsafe-test-topic -o end
 Hello World!
 Hello Events!
@@ -64,7 +64,7 @@ Hello Kafka!
 
 Start two more consumers in their own terminal window and send more messages from the producer.
 
-```
+```bash
 cas@cas ~> kafkacat -P -b localhost -t failsafe-test-topic
 Hello World!
 Hello Events!
@@ -75,7 +75,8 @@ message new 3
 ```
 
 #### Consumer Console 1st
-```
+
+```bash
 cas@cas ~> kafkacat -b localhost -t failsafe-test-topic -o end
 Hello World!
 Hello Events!
@@ -86,7 +87,8 @@ message new 3
 ```
 
 #### Consumer Console 2nd
-```
+
+```bash
 cas@cas ~> kafkacat -b localhost -t failsafe-test-topic -o end
 message new 1
 message new 2
@@ -94,7 +96,8 @@ message new 3
 ```
 
 #### Consumer Console 3rd
-```
+
+```bash
 cas@cas ~> kafkacat -b localhost -t failsafe-test-topic -o end
 message new 1
 message new 2
@@ -111,7 +114,7 @@ Now let’s start the console consumers to use the same consumer group. This way
 
 Let's start each of the 3 consumers using the same `test-group` consumer group:
 
-```
+```bash
 kafkacat -b localhost -t failsafe-test-topic -G test-group failsafe-test-topic 
 ```
 
@@ -119,7 +122,7 @@ kafkacat -b localhost -t failsafe-test-topic -G test-group failsafe-test-topic
 
 #### Producer Console
 
-```
+```bash
 cas@cas ~> kafkacat -P -b localhost -t failsafe-test-topic
 message new 1
 message new 2
@@ -129,20 +132,23 @@ message new 5
 ```
 
 #### Consumer Console 1st
-```
+
+```bash
 cas@cas ~> kafkacat -b localhost -t failsafe-test-topic -o end
 message 2
 ```
 
 #### Consumer Console 2nd
-```
+
+```bash
 cas@cas ~> kafkacat -b localhost -t failsafe-test-topic -o end
 message 1
 message 3
 ```
 
 #### Consumer Console 3rd
-```
+
+```bash
 cas@cas ~> kafkacat -b localhost -t failsafe-test-topic -o end
 message 4
 message 5
@@ -176,19 +182,19 @@ We are going to lists which broker owns (leader of) which partition, and list re
 
 Connect to the `broker-1` container:
 
-```
+```bash
 docker exec -ti broker-1 bash
 ```
 
 And create the topic. 
 
-```
+```bash
 kafka-topics --describe \
     --topic failsafe-test-topic \
     --zookeeper zookeeper-1:2181
 ```    
 
-```
+```bash
 Topic:failsafe-test-topic	PartitionCount:8	ReplicationFactor:3	Configs:
 	Topic: failsafe-test-topic	Partition: 0	Leader: 3	Replicas: 3,2,1	Isr: 3,2,1
 	Topic: failsafe-test-topic	Partition: 1	Leader: 1	Replicas: 1,3,2	Isr: 1,3,2
@@ -206,13 +212,13 @@ Notice how each broker gets a share of the partitions as leaders and followers. 
 
 Let’s kill the 2nd broker, and then test the failover.
 
-```
+```bash
 docker stop broker-2
 ```
 
 Now that the first Kafka broker has stopped, let’s use Kafka topics describe to see that new leaders were elected!
 
-```
+```bash
 Topic:failsafe-test-topic	PartitionCount:8	ReplicationFactor:3	Configs:
 	Topic: failsafe-test-topic	Partition: 0	Leader: 3	Replicas: 3,2,1	Isr: 3,1
 	Topic: failsafe-test-topic	Partition: 1	Leader: 1	Replicas: 1,3,2	Isr: 1,3
