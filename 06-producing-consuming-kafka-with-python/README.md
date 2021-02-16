@@ -8,7 +8,7 @@ You can perform this part of the workshop using either the Python installation o
 
 To use Python inside the Apache Zeppelin container, use docker exec to connect into the container:
 
-```
+```bash
 docker exec -ti zeppelin bash
 ```
 
@@ -16,19 +16,19 @@ docker exec -ti zeppelin bash
 
 If you are using the Python environment on the virtual machine, you first have to install PIP. 
 
-```
+```bash
 sudo apt install python-pip
 ```
 
 After that you can install the self-contained binaries of the Confluent Python client using 
 
-```
+```bash
 pip install confluent-kafka
 ```
 
 To install support for Avro, also perform the following step:
 
-```
+```bash
 pip install confluent-kafka[avro]
 ``` 
 
@@ -40,7 +40,7 @@ Now lets write a simple program in Python which produces a message to the Kafka 
 
 First we will produce messages. In order to see the results, run `kafkacat` in a separate terminal window and print the partition, key and value of each message:
 
-```
+```bash
 kafkacat -b dataplatform -t test-topic -f "P-%p: %k=%s\n" -Z 
 ``` 
 
@@ -50,7 +50,7 @@ The following code segments assume that they are run inside the Zeppelin docker 
 
 The following code block will generate a message with a NULL key. The messages are part 
 
-```
+```python
 from confluent_kafka import Producer
 
 p = Producer({'bootstrap.servers': 'kafka-1:19092,kafka-2:19093'})
@@ -82,7 +82,7 @@ p.flush()
 
 To also produce a key, you have to also use the parameter `key` together with the parameter `value`.
 
-```
+```python
     p.produce('test-topic'
              , key="1"
              , value = data.encode('utf-8')
@@ -93,7 +93,7 @@ To also produce a key, you have to also use the parameter `key` together with th
 
 To consume text messages through python, use the following code segment. Make sure that you use a unique `group.id`. 
 
-```
+```python
 from confluent_kafka import Consumer, KafkaError
 
 c = Consumer({
@@ -128,7 +128,7 @@ c.close()
 
 When started, this code block will consume messages in an endless loop, so if you use it in the same Zeppelin notebook, you will have to run the producer externally, i.e. using Kafkacat in order to see some messages. 
 
-```
+```bash
 kafkacat -P -b dataplatform -t test-topic
 ```
 
@@ -140,7 +140,7 @@ The Confluent Python client also supports working with Avro formatted messages. 
 
 In order to separate the Avro tests from the other tests, lets create a new topic:
 
-```
+```bash
 kafka-topics --create \
 			--if-not-exists \
 			--zookeeper zookeeper:2181 \
@@ -151,13 +151,13 @@ kafka-topics --create \
 
 Make sure that you change the **kafkacat** command to consume from the new topic.
 
-```
+```bash
 kafkacat -b dataplatform -t test-avro-topic -f "P-%p: %k=%s\n" -Z 
 ``` 
 
 The following Python code produces an Avro message 
 
-```
+```python
 from confluent_kafka import avro
 from confluent_kafka.avro import AvroProducer
 
@@ -221,39 +221,39 @@ The Schema Registry provides a REST API which is documented in the [Confluent do
 
 To list all the schemas which are registered through the REST API, perform the following command 
 
-```
+```bash
 curl http://dataplatform:8081/subjects
 ```
 
 You should get back the two subjects:
 
-```
+```bash
 $ curl http://dataplatform:8081/subjects
 ["test-avro-topic-value","test-avro-topic-key"]~
 ```
 
 You can ask for the versions available for a given subject by using the following command
 
-```
+```bash
 curl http://dataplatform:8081/subjects/test-avro-topic-value/versions
 ```
 
 and you should see that there is currently just one version available
 
-```
+```bash
 $ curl http://dataplatform:8081/subjects/test-avro-topic-value/versions
 [1]
 ```
 
 To get the schema definition for that schema, use the following command
 
-```
+```bash
 curl http://dataplatform:8081/subjects/test-avro-topic-value/versions/1
 ```
 
 and the schema is returned as shown below
 
-```
+```bash
 $ curl http://dataplatform:8081/subjects/test-avro-topic-value/versions/1
 
 {"subject":"test-avro-topic-value","version":1,"id":1,"schema":"{\"type\":\"record\",
@@ -274,7 +274,7 @@ You should see the two schemas registered. If you click on one of them, the Avro
 
 But what about the output of Kafkacat? We can see that the message is shown, although not very readable. 
 
-```
+```bash
 > kafkacat -b dataplatform -t test-avro-topic -f "P-%p: %k=%s\n" -Z
 % Auto-selecting Consumer mode (use -P or -C to override)
 P-5:10011001
@@ -289,13 +289,13 @@ This is even more problematic if the Avro message is much larger with much more 
 
 On the Streaming Platform, this is part of the schema registry docker container. Let's connect to the docker container:
 
-```
+```bash
 docker exec -ti schema-registry bash
 ```
 
 and run the `kafka-avro-console-consumer`
 
-```
+```bash
 kafka-avro-console-consumer --bootstrap-server kafka-1:19092,kafka-2:19093 --topic test-avro-topic
 ```
 

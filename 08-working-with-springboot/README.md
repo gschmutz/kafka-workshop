@@ -6,13 +6,13 @@ We will use the topic `test-spring-in` to consume from and the topic `test-sprin
 
 Connect to the `broker-1` container
 
-```
+```bash
 docker exec -ti broker-1 bash
 ```
 
 and execute the necessary `kafka-topics` commands 
 
-```
+```bash
 kafka-topics --create \
 --replication-factor 3 \
 --partitions 8 \
@@ -28,7 +28,7 @@ kafka-topics --create \
 
 Cross check that the topic has been created.
 
-```
+```bash
 kafka-topics --list --zookeeper zookeeper-1:2181
 ```
 
