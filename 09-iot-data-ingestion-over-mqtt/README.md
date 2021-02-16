@@ -11,7 +11,7 @@ Our **Data Platform** does already provide all the services we need in this work
 
 The services related to mqtt are `mosquitto-1` an easy to use MQTT broker, belonging to the [Eclipse project](https://mosquitto.org/) and `mqtt-ui`, a UI to browse into any MQTT broker. 
 
-```
+```bash
   mosquitto-1:
     image: eclipse-mosquitto:latest
     hostname: mosquitto-1
@@ -40,7 +40,7 @@ The services related to mqtt are `mosquitto-1` an easy to use MQTT broker, belon
 
 The configuration of mosquitto can be found in the  `./conf/mosquittto/mosquitto.conf` file, which is volume mapped into the `mosquitto-1` container:
 
-```
+```bash
 persistence true
 persistence_location /mosquitto/data/
 log_dest file /mosquitto/log/mosquitto.log
@@ -63,7 +63,7 @@ In this workshop we show two options for consuming from MQTT
 
 To start consuming using through a command line, perform the following docker command:
 
-```
+```bash
 docker run -it --rm efrecon/mqtt-client sub -h $DOCKER_HOST_IP -p 1883 -t "truck/+/position" -v
 ```
 
@@ -91,7 +91,7 @@ The simulator can produce data either to a **Kafka** or **MQTT**. These two opti
 
 Producing truck events to the MQTT broker on port 1883 is as simple as running the `trivadis/iot-truck-simulator` docker image.
 
-```
+```bash
 docker run trivadis/iot-truck-simulator '-s' 'MQTT' '-h' $DOCKER_HOST_IP '-p' '1883' '-f' 'CSV'
 ```
 
@@ -105,18 +105,19 @@ The Kafka cluster is configured with `auto.topic.create.enable` set to `false`. 
 
 We can easily get access to the `kafka-topics` CLI by navigating into one of the containers for the 3 Kafka Brokers. Let's use `broker-1`
 
-```
+```bash
 docker exec -ti broker-1 bash
 ```
 
 First let's see all existing topics
 
-```
+```bash
 kafka-topics --zookeeper zookeeper-1:2181 --list
 ```
 
 Now let's create the topic `truck_position` in Kafka, where the message from MQTT should be integrated with. 
-```
+
+```bash
 kafka-topics --zookeeper zookeeper-1:2181 --create --topic truck_position --partitions 8 --replication-factor 2
 ```
 
@@ -132,13 +133,13 @@ After successful creation, start a `kafka-console-consumer` or `kafkacat` to con
 
 Use either
 
-```
+```bash
 kafka-console-consumer --bootstrap-server kafka-1:19092 --topic truck_position
 ```
 
 or 
 
-```
+```bash
 kafkacat -b dataplatform -t truck_position
 ```
 
@@ -158,38 +159,38 @@ In that `kafka-connect` folder we need to copy the artefacts of the Kafka connec
 
 Navigate into the `kafka-connect` folder 
 
-```
+```bash
 cd plugins/kafka-connect
 ```
 
 and download the `kafka-connect-mqtt-1.2.3-2.1.0-all.tar.gz` file from the [Landoop Stream-Reactor Project](https://github.com/Landoop/stream-reactor/tree/master/kafka-connect-mqtt) project.
 
-```
+```bash
 wget https://github.com/Landoop/stream-reactor/releases/download/1.2.3/kafka-connect-mqtt-1.2.3-2.1.0-all.tar.gz
 ```
 
 Once it is successfully downloaded, uncompress it using this `tar` command and remove the file. 
 
-```
+```bash
 mkdir kafka-connect-mqtt-1.2.3-2.1.0-all && tar xvf kafka-connect-mqtt-1.2.3-2.1.0-all.tar.gz -C kafka-connect-mqtt-1.2.3-2.1.0-all
 rm kafka-connect-mqtt-1.2.3-2.1.0-all.tar.gz
 ```
 
 Now let's restart Kafka connect in order to pick up the new connector. 
 
-```
+```bash
 docker-compose restart kafka-connect-1 kafka-connect-2
 ```
 
 The connector has now been added to the Kafka cluster. You can confirm that by watching the log file of the two containers:
 
-```
+```bash
 docker-compose logs -f kafka-connect-1 kafka-connect-2
 ```
 
 After some time you should see an output similar to the one below with a message that the MQTT connector has been added and later that the connector finished starting successfully ...
 
-```
+```bash
 ...
 connect-2             | [2019-06-08 18:01:02,590] INFO Registered loader: PluginClassLoader{pluginLocation=file:/etc/kafka-connect/custom-plugins/kafka-connect-mqtt-1.2.1-2.1.0-all/} (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader)
 connect-2             | [2019-06-08 18:01:02,591] INFO Added plugin 'com.datamountaineer.streamreactor.connect.mqtt.source.MqttSourceConnector' (org.apache.kafka.connect.runtime.isolation.DelegatingClassLoader)
@@ -208,14 +209,14 @@ For creating an instance of the connector over the API, you can either use a RES
 
 Create a folder scripts and navigate into the folder. 
 
-```
+```bash
 mkdir -p scripts
 cd scripts
 ```
 
 In the `scripts` folder, create a file `start-mqtt.sh` and add the code below.  
 
-```
+```bash
 #!/bin/bash
 
 echo "removing MQTT Source Connector"
@@ -248,7 +249,7 @@ The script first removes the MQTT connector, if it already exists and then creat
 
 Also create a separate script `stop-mqtt.sh` for just stopping the connector and add the following code:
 
-```
+```bash
 #!/bin/bash
 
 echo "removing MQTT Source Connector"
@@ -259,7 +260,7 @@ curl -X "DELETE" "$DOCKER_HOST_IP: 8083/connectors/mqtt-source"
 
 Make sure that the both scripts are executable
 
-```
+```bash
 sudo chmod +x start-mqtt.sh
 sudo chmod +x stop-mqtt.sh
 ```
@@ -268,7 +269,7 @@ sudo chmod +x stop-mqtt.sh
 
 Finally let's start the connector by running the `start-mqtt` script.
 
-```
+```bash
 ./scripts/start-mqtt.sh
 ```
 
