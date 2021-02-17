@@ -8,10 +8,10 @@ For the exercise we will be using the `kafkacat` command line utility we have le
 
 First let's create the topic we will use throughout this workshop.
 
-Connect to the `broker-1` container:
+Connect to the `kafka-1kafka-` container:
 
 ```bash
-docker exec -ti broker-1 bash
+docker exec -ti kafka-1 bash
 ```
 
 And create a new topic. 
@@ -37,7 +37,7 @@ kafkacat -b localhost -t failsafe-test-topic -o end
 or if using docker
 
 ```bash
-docker run --tty --network kafkaworkshop_default edenhill/kafkacat:1.5.0 kafkacat -b broker-1 -t failsafe-test-topic -o end
+docker run --tty --network kafkaworkshop_default edenhill/kafkacat:1.5.0 kafkacat -b kafka-1 -t failsafe-test-topic -o end
 ```
 
 ## Start Kafka Producer that uses Replicated Topic
@@ -180,10 +180,10 @@ We killed one consumer, sent more messages, and saw Kafka spread the load to rem
 ### Describe Topic
 We are going to lists which broker owns (leader of) which partition, and list replicas and ISRs of each partition. ISRs are replicas that are up to date. Remember there are 8 partitions.
 
-Connect to the `broker-1` container:
+Connect to the `kafka-1` container:
 
 ```bash
-docker exec -ti broker-1 bash
+docker exec -ti kafka-1 bash
 ```
 
 And create the topic. 
@@ -213,7 +213,7 @@ Notice how each broker gets a share of the partitions as leaders and followers. 
 Let’s kill the 2nd broker, and then test the failover.
 
 ```bash
-docker stop broker-2
+docker stop kafka-2
 ```
 
 Now that the first Kafka broker has stopped, let’s use Kafka topics describe to see that new leaders were elected!
@@ -230,7 +230,7 @@ Topic:failsafe-test-topic	PartitionCount:8	ReplicationFactor:3	Configs:
 	Topic: failsafe-test-topic	Partition: 7	Leader: 1	Replicas: 1,3,2	Isr: 1,3
 ```
 
-You can see that `broker-2` is no longer a leader for any of the partitions. 
+You can see that `kafka-2` is no longer a leader for any of the partitions. 
 
 Let’s prove that failover worked by sending two more messages from the producer console. Notice if the consumers still get the messages.
 
