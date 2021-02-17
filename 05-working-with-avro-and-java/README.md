@@ -176,7 +176,7 @@ log4j.throwableRenderer=org.apache.log4j.EnhancedThrowableRenderer
 ### Creating the necessary Kafka Topic 
 We will use the topic `test-java-topic` in the Producer and Consumer code below. Due to the fact that `auto.topic.create.enable` is set to `false`, we have to manually create the topic. 
 
-Connect to the `broker-1` container
+In a terminal window, connect to the `broker-1` container
 
 ```
 docker exec -ti broker-1 bash
