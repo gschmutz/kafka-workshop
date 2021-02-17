@@ -16,7 +16,7 @@ You can either use the GUI to edit your pom.xml or click on the last tab **pom.x
 
 You will see the still rather empty definition.
 
-```
+```xml
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.trivadis.kafkastreams</groupId>
@@ -438,40 +438,7 @@ public class TruckFilterTopology {
 
 With these 2 classes in place, we can run the TruckFilterTopology as an Application from within the IDE. 
 
-After some time you should start seeing the output of the `peek` operation on the `positionsTruck` stream:
-
-
-```
-[2019-10-09 20:23:58,263] INFO [main] stream-thread [kafka-streams-truck-filter-5e4fbe7a-bb03-48cc-8aea-60333b52cac8-StreamThread-1] Creating restore consumer client (org.apache.kafka.streams.processor.internals.StreamThread)
-[2019-10-09 20:23:58,301] INFO [main] stream-thread [kafka-streams-truck-filter-5e4fbe7a-bb03-48cc-8aea-60333b52cac8-StreamThread-1] Creating shared producer client (org.apache.kafka.streams.processor.internals.StreamThread)
-[2019-10-09 20:23:58,344] INFO [main] stream-thread [kafka-streams-truck-filter-5e4fbe7a-bb03-48cc-8aea-60333b52cac8-StreamThread-1] Creating consumer client (org.apache.kafka.streams.processor.internals.StreamThread)
-[2019-10-09 20:23:58,376] INFO [kafka-streams-truck-filter-5e4fbe7a-bb03-48cc-8aea-60333b52cac8-StreamThread-1] stream-thread [kafka-streams-truck-filter-5e4fbe7a-bb03-48cc-8aea-60333b52cac8-StreamThread-1] Starting (org.apache.kafka.streams.processor.internals.StreamThread)
-[2019-10-09 20:23:58,376] INFO [kafka-streams-truck-filter-5e4fbe7a-bb03-48cc-8aea-60333b52cac8-StreamThread-1] stream-thread [kafka-streams-truck-filter-5e4fbe7a-bb03-48cc-8aea-60333b52cac8-StreamThread-1] State transition from CREATED to STARTING (org.apache.kafka.streams.processor.internals.StreamThread)
-[2019-10-09 20:23:58,519] INFO [kafka-streams-truck-filter-5e4fbe7a-bb03-48cc-8aea-60333b52cac8-StreamThread-1] stream-thread [kafka-streams-truck-filter-5e4fbe7a-bb03-48cc-8aea-60333b52cac8-StreamThread-1] State transition from STARTING to PARTITIONS_REVOKED (org.apache.kafka.streams.processor.internals.StreamThread)
-[2019-10-09 20:23:58,520] INFO [kafka-streams-truck-filter-5e4fbe7a-bb03-48cc-8aea-60333b52cac8-StreamThread-1] stream-thread [kafka-streams-truck-filter-5e4fbe7a-bb03-48cc-8aea-60333b52cac8-StreamThread-1] partition revocation took 0 ms.
-	suspended active tasks: []
-	suspended standby tasks: [] (org.apache.kafka.streams.processor.internals.StreamThread)
-[2019-10-09 20:23:58,543] INFO [kafka-streams-truck-filter-5e4fbe7a-bb03-48cc-8aea-60333b52cac8-StreamThread-1] stream-thread [kafka-streams-truck-filter-5e4fbe7a-bb03-48cc-8aea-60333b52cac8-StreamThread-1] State transition from PARTITIONS_REVOKED to PARTITIONS_ASSIGNED (org.apache.kafka.streams.processor.internals.StreamThread)
-[2019-10-09 20:23:58,572] INFO [kafka-streams-truck-filter-5e4fbe7a-bb03-48cc-8aea-60333b52cac8-StreamThread-1] stream-thread [kafka-streams-truck-filter-5e4fbe7a-bb03-48cc-8aea-60333b52cac8-StreamThread-1] partition assignment took 29 ms.
-	current active tasks: [0_0, 0_1, 0_2, 0_3, 0_4, 0_5, 0_6, 0_7]
-	current standby tasks: []
-	previous active tasks: []
- (org.apache.kafka.streams.processor.internals.StreamThread)
-[2019-10-09 20:23:58,661] INFO [kafka-streams-truck-filter-5e4fbe7a-bb03-48cc-8aea-60333b52cac8-StreamThread-1] stream-thread [kafka-streams-truck-filter-5e4fbe7a-bb03-48cc-8aea-60333b52cac8-StreamThread-1] State transition from PARTITIONS_ASSIGNED to RUNNING (org.apache.kafka.streams.processor.internals.StreamThread)
-    "truck/76/position0:TruckPosition [timestamp=1570645425202, truckId=76, driverId=18, routeId=1198242881, eventType=Normal, latitude=39.75, longitude=-91.2, correlationId=6145548374146107541]
-    "truck/41/position0:TruckPosition [timestamp=1570645426682, truckId=41, driverId=16, routeId=1325562373, eventType=Normal, latitude=41.69, longitude=-93.36, correlationId=6145548374146107541]
-    "truck/35/position0:TruckPosition [timestamp=1570645424833, truckId=35, driverId=26, routeId=160779139, eventType=Normal, latitude=39.77, longitude=-92.94, correlationId=6145548374146107541]
-    "truck/60/position0:TruckPosition [timestamp=1570645425332, truckId=60, driverId=22, routeId=1927624662, eventType=Normal, latitude=41.69, longitude=-93.36, correlationId=6145548374146107541]
-    "truck/41/position0:TruckPosition [timestamp=1570645430032, truckId=41, driverId=16, routeId=1325562373, eventType=Normal, latitude=41.71, longitude=-93.04, correlationId=6145548374146107541]
-    "truck/26/position0:TruckPosition [timestamp=1570645426163, truckId=26, driverId=24, routeId=1594289134, eventType=Normal, latitude=34.89, longitude=-91.74, correlationId=6145548374146107541]
-    "truck/70/position0:TruckPosition [timestamp=1570645425572, truckId=70, driverId=27, routeId=1090292248, eventType=Normal, latitude=37.31, longitude=-94.31, correlationId=6145548374146107541]
-    "truck/41/position0:TruckPosition [timestamp=1570645433642, truckId=41, driverId=16, routeId=1325562373, eventType=Normal, latitude=41.75, longitude=-92.74, correlationId=6145548374146107541]
-    "truck/44/position0:TruckPosition [timestamp=1570645426692, truckId=44, driverId=19, routeId=1962261785, eventType=Normal, latitude=35.31, longitude=-93.12, correlationId=6145548374146107541]
-    "truck/74/position0:TruckPosition [timestamp=1570645425662, truckId=74, driverId=23, routeId=160405074, eventType=Normal, latitude=38.96, longitude=-92.22, correlationId=6145548374146107541]
-    "truck/41/position0:TruckPosition [timestamp=1570645437402, truckId=41, driverId=16, routeId=1325562373, eventType=Normal, latitude=41.78, longitude=-92.4, correlationId=6145548374146107541]
-    "truck/61/position0:TruckPosition [timestamp=1570645427242, truckId=61, driverId=11, routeId=1565885487, eventType=Normal, latitude=40.76, longitude=-88.77, correlationId=6145548374146107541]
-    "truck/64/position0:TruckPosition [timestamp=1570645426012, truckId=64, driverId=12, routeId=371182829, eventType=Normal, latitude=37.7, longitude=-92.61, correlationId=6145548374146107541]
-```
+After some time you should start seeing the output of the `peek` operation on the `positionsTruck` stream.
 
 Now let's see that we actually produce data on that new topic by running a `kafka-console-consumer` or alternatively a `kafkacat`.
 
