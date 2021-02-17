@@ -6,6 +6,7 @@
 .metadata/**
 **/.idea/**
 **/*.iml
+**/.DS_Store
 org.springframework.ide.eclipse.boot.dash:Cloud Foundry.prefs
 .metadata/.plugins/org.eclipse.core.runtime/.settings/org.springframework.ide.eclipse.imports.prefs
 .metadata/.plugins/org.eclipse.core.runtime/.settings/org.springsource.ide.eclipse.commons.ui.prefs
