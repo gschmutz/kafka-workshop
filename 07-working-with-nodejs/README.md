@@ -6,7 +6,7 @@ In this workshop we will learn how to use the [node-rdkafka](https://github.com/
 
 
 ### Install Node.JS
-
+kafka-1
 ```
 sudo apt install nodejs
 ```
@@ -26,10 +26,10 @@ npm install node-rdkafka
 ### Creating the necessary Kafka Topic 
 We will use the topic `test-node-topic` in the Producer and Consumer code below. Due to the fact that `auto.topic.create.enable` is set to `false`, we have to manually create the topic. 
 
-Connect to the `broker-1` container
+Connect to the `kafka-11` container
 
 ```
-docker exec -ti broker-1 bash
+docker exec -ti kafka-11 bash
 ```
 
 and execute the necessary kafka-topics command. 

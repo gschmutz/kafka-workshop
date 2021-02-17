@@ -103,10 +103,10 @@ As soon as messages are produced to MQTT, you should see them either on the CLI 
 
 The Kafka cluster is configured with `auto.topic.create.enable` set to `false`. Therefore we first have to create all the necessary topics, using the `kafka-topics` command line utility of Apache Kafka. 
 
-We can easily get access to the `kafka-topics` CLI by navigating into one of the containers for the 3 Kafka Brokers. Let's use `broker-1`
+We can easily get access to the `kafka-topics` CLI by navigating into one of the containers for the 3 Kafka Brokers. Let's use `kafka-11`
 
 ```bash
-docker exec -ti broker-1 bash
+docker exec -ti kafka-11 bash
 ```
 
 First let's see all existing topics
@@ -278,3 +278,4 @@ A soon as the connector starts getting the messages from MQTT, they should start
 ### Monitor connector in Kafka Connect UI
 
 Navigate to the [Kafka Connect UI](http://dataplatform:28103) to see the connector running.
+kafka-1

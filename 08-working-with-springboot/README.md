@@ -4,10 +4,10 @@ In this workshop we will learn how to use the Spring Kafka abstraction from with
 ## Creating the necessary Kafka Topics
 We will use the topic `test-spring-in` to consume from and the topic `test-spring-out` to produce to from the Spring Boot application. Due to the fact that `auto.topic.create.enable` is set to `false`, we have to manually create the topic. 
 
-Connect to the `broker-1` container
+Connect to the `kafka-11` container
 
 ```bash
-docker exec -ti broker-1 bash
+docker exec -ti kafka-11 bash
 ```
 
 and execute the necessary `kafka-topics` commands 
@@ -248,3 +248,4 @@ In another terminal window, write to the input topic:
 ```bash
 kafkacat -P -b ${PUBLIC_IP} -t test-spring-in
 ```
+kafka-1

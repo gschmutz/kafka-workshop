@@ -176,10 +176,10 @@ log4j.throwableRenderer=org.apache.log4j.EnhancedThrowableRenderer
 ### Creating the necessary Kafka Topic 
 We will use the topic `test-java-topic` in the Producer and Consumer code below. Due to the fact that `auto.topic.create.enable` is set to `false`, we have to manually create the topic. 
 
-In a terminal window, connect to the `broker-1` container
+In a terminal window, connect to the `kafka-1` container
 
 ```
-docker exec -ti broker-1 bash
+docker exec -ti kafka-1 bash
 ```
 
 and execute the necessary kafka-topics command. 
@@ -204,7 +204,7 @@ This finishes the setup steps and our new project is ready to be used. Next we w
 
 First create a new Folder `avro` under the existing folder **src/main/**.
 
-Create a new File `Notification-v1.avsc` in the folder  **src/main/avro** just created above.
+Create a new File `Notificatiokafka-n-v1.avsc` in the folder  **src/main/avro** just created above.
 
 Add the following Avro schema to the empty file.  
 
