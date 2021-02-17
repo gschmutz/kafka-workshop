@@ -3,13 +3,10 @@
 04-producing-consuming-kafka-with-java/src/java-kafka/.project
 04-producing-consuming-kafka-with-java/src/java-kafka/.settings/org.eclipse.jdt.core.prefs
 04-producing-consuming-kafka-with-java/src/java-kafka/.settings/org.eclipse.m2e.core.prefs
-.metadata/.lock
-.metadata/.log
-.metadata/.plugins/org.eclipse.core.resources/.root/.indexes/properties.index
-.metadata/.plugins/org.eclipse.core.runtime/.settings/org.eclipse.egit.core.prefs
-.metadata/.plugins/org.eclipse.core.runtime/.settings/org.eclipse.jdt.ui.prefs
-.metadata/.plugins/org.eclipse.core.runtime/.settings/org.eclipse.ui.ide.prefs
-.metadata/.plugins/org.eclipse.core.runtime/.settings/org.springframework.ide.eclipse.boot.dash:Cloud Foundry.prefs
+.metadata/**
+**/.idea/**
+**/*.iml
+org.springframework.ide.eclipse.boot.dash:Cloud Foundry.prefs
 .metadata/.plugins/org.eclipse.core.runtime/.settings/org.springframework.ide.eclipse.imports.prefs
 .metadata/.plugins/org.eclipse.core.runtime/.settings/org.springsource.ide.eclipse.commons.ui.prefs
 .metadata/.plugins/org.eclipse.m2e.logback.configuration/0.log
@@ -19,3 +16,4 @@
 /.metadata/
 **/.settings/**
 **/target/**
+04-producing-consuming-kafka-with-java/src/java-kafka/.idea/compiler.xml
