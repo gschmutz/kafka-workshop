@@ -224,7 +224,7 @@ Copy the following block right after the <version> tag, before the closing </pro
 
 In a terminal window, perform the following command to update the Eclipse IDE project settings. 
 
-```
+```bash
 mvn eclipse:eclipse
 ```
 
@@ -238,7 +238,7 @@ In the code we are using the [Log4J Logging Framework](https://logging.apache.or
 
 Create a new file `log4j.properties` in the folder **src/main/resources** and add the following configuration properties. 
 
-```
+```bash
 log4j.rootLogger=OFF, stdout
 
 log4j.appender.stdout=org.apache.log4j.ConsoleAppender
@@ -265,19 +265,19 @@ We will use the topic `dangerous_driving_kstreams` in the Kafka Streams code bel
 
 Connect to the `broker-1` container
 
-```
+```bash
 docker exec -ti broker-1 bash
 ```
 
 and execute the necessary `kafka-topics` command. 
 
-```
+```bash
 kafka-topics --zookeeper zookeeper-1:2181 --create --topic dangerous_driving_kstreams --partitions 8 --replication-factor 2
 ```
 
 Cross check that the topic has been created.
 
-```
+```bash
 kafka-topics --list --zookeeper zookeeper-1:2181
 ```
 
@@ -475,11 +475,11 @@ After some time you should start seeing the output of the `peek` operation on th
 
 Now let's see that we actually produce data on that new topic by running a `kafka-console-consumer` or alternatively a `kafkacat`.
 
-```
+```bash
 docker exec -ti borker-1 bash
 ```
 
-```
+```bash
 kafka-console-consumer --bootstrap-server broker-1:9092 \
      --topic dangerous_driving_kstreams
 ```
