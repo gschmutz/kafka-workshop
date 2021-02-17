@@ -542,7 +542,7 @@ public class KafkaConsumerAvro {
 
 ## Register in Schema Registry using Maven
 
-To register an Avro schema automatically, you can use the following Maven plugin. 
+In the test above, the Avro schema has been registered in the schema registry when starting the Producer for the first time. To register an Avro schema through Maven automatically, you can use the following Maven plugin. 
 
 Add the following definition to the `pom.xml`.
 
