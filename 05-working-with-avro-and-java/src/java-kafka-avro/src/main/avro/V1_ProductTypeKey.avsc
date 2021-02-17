@@ -1,7 +1,0 @@
-{
-  "type":"record",
-  "name":"ConnectDefault",
-  "namespace":"io.confluent.connect.avro",
-  "fields": [
-  		{ "name":"productTypeId","type":"long"}]
-}

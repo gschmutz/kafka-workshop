@@ -15,7 +15,7 @@ public class KafkaConsumerAuto {
 
     private final static String TOPIC = "test-java-topic";
     private final static String BOOTSTRAP_SERVERS
-            = "localhost:9092,localhost:9093,localhost:9094";
+            = "dataplatform:9092,dataplatform:9093,dataplatform:9094";
     private final static Duration CONSUMER_TIMEOUT = Duration.ofSeconds(1);
 
     private static Consumer<Long, String> createConsumer() {
