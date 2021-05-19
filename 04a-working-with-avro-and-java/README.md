@@ -556,7 +556,7 @@ Add the following definition to the `pom.xml`.
 						<param>http://dataplatform:8081</param>
 					</schemaRegistryUrls>
 					<subjects>
-						<tweet-value>src/main/avro/Notification-v1.avsc</tweet-value>
+						<test-java-avro-topic-value>src/main/avro/Notification-v1.avsc</test-java-avro-topic-value>
 					</subjects>
 				</configuration>
 				<goals>
