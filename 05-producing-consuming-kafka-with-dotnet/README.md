@@ -134,12 +134,12 @@ Add the following additional method for implementing the Kafka producer. We are 
 
 
 ```csharp
-        static void runProducerWithKey(int totalMessages, int waitMsInBetween, int id)
+        static void runProducer(int totalMessages, int waitMsInBetween, int id)
         {
             var config = new ProducerConfig { BootstrapServers = brokerList };
 
             // Create the Kafka Producer
-            using (var producer = new ProducerBuilder<long, string>(config).Build())
+            using (var producer = new ProducerBuilder<Null, string>(config).Build())
             {
                 for (int index = 0; index < totalMessages; index++)
                 {
@@ -151,7 +151,7 @@ Add the following additional method for implementing the Kafka producer. We are 
                     try
                         {
                             // send the message to Kafka
-                            var task =  producer.ProduceAsync(topicName, new Message<long, string> { Key = id, Value = value});    
+                            var task =  producer.ProduceAsync(topicName, new Message<Null, string> { Value = value});    
                             if (task.IsFaulted) {
                                 
                             } else {
@@ -164,8 +164,8 @@ Add the following additional method for implementing the Kafka producer. We are 
                         {
                             Console.WriteLine($"failed to deliver message: {e.Message} [{e.Error.Code}]");
                         }
-                        
-                        Thread.Sleep(waitMsInBetween);                        
+
+                        Thread.Sleep(waitMsInBetween);
                 }
            
             }  
