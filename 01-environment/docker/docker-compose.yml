@@ -226,7 +226,7 @@ services:
       - -c
       - |
         echo "Installing Connectors"
-        for i in $$(echo "None" | sed "s/,/ /g")
+        for i in $$(echo "confluentinc/kafka-connect-jdbc:10.0.0,confluentinc/kafka-connect-mqtt:1.3.0" | sed "s/,/ /g")
         do
           confluent-hub install --no-prompt --component-dir /etc/kafka-connect/addl-plugins --verbose "$$i"
         done
