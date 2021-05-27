@@ -4,39 +4,15 @@ Let's simulate some rather static data about the drivers of our truck fleet.
 
 ![Alt Image Text](./images/joining-static-data-with-ksql-overview.png "Schema Registry UI")
 
-## Create a Postgresql instance
-
-For that let's add a Postgresql database to our streaming platform. Add the following two service definition to the `docker-compose.override.yml` file. 
-
-```
-  adminer:
-    image: adminer
-    ports:
-      - 18080:8080
-
-  postgresql:
-    image: mujz/pagila
-    environment:
-      - POSTGRES_PASSWORD=sample
-      - POSTGRES_USER=sample
-      - POSTGRES_DB=sample
-```
-
-Re-Sync the Streaming Platform with the definition in the docker compose file.
- 
-```
-docker-compose up -d
-```
-
-The images for PostgreSQL as well as a simple Admin tool will be downloaded and started. 
+A Postgresql database is already part of our streaming platform. 
 
 ## Create the driver table and load some data
 
-Now let's connect to the database as user `sample`. 
+Let's connect to the database as user `sample`. 
 
 ```
 docker exec -ti postgresql bash
-psql -d sample -U sample
+psql -d demodb -U demo
 ```
 
 On the command prompt, create the table `driver`.
@@ -74,7 +50,7 @@ Now let's create a new topic `truck_driver`, a compacted topic which will hold t
 First connect to one of the Kafka brokers.
 
 ```
-docker exec -ti streamingplatform_broker-1_1 bash
+docker exec -ti kafka-1 bash
 ```
 
 And then perform the `kafka-topics --create` command:
@@ -121,7 +97,7 @@ curl -X "POST" "$DOCKER_HOST_IP:8083/connectors" \
   "config": {
     "connector.class": "JdbcSourceConnector",
     "tasks.max": "1",
-    "connection.url":"jdbc:postgresql://postgresql/sample?user=sample&password=sample",
+    "connection.url":"jdbc:postgresql://postgresql/demodb?user=demo&password=abc123!",
     "mode": "timestamp",
     "timestamp.column.name":"last_update",
     "table.whitelist":"driver",
