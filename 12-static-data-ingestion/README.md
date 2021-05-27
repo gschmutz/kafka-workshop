@@ -95,7 +95,7 @@ curl -X "POST" "$DOCKER_HOST_IP:8083/connectors" \
      -d $'{
   "name": "jdbc-driver-source",
   "config": {
-    "connector.class": "JdbcSourceConnector",
+    "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
     "tasks.max": "1",
     "connection.url":"jdbc:postgresql://postgresql/demodb?user=demo&password=abc123!",
     "mode": "timestamp",
@@ -103,7 +103,7 @@ curl -X "POST" "$DOCKER_HOST_IP:8083/connectors" \
     "table.whitelist":"driver",
     "validate.non.null":"false",
     "topic.prefix":"truck_",
-    "key.converter":"org.apache.kafka.connect.storage.StringConverter",
+    "key.converter":"org.apache.kafka.connect.converters.LongConverter",
     "key.converter.schemas.enable": "false",
     "value.converter":"org.apache.kafka.connect.json.JsonConverter",
     "value.converter.schemas.enable": "false",
