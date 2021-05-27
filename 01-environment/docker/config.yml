@@ -192,12 +192,12 @@
       MYSQL_enable: false
       SQLSERVER_enable: false
 
-      POSTGRESQL_enable: false
+      POSTGRESQL_enable: true
       POSTGRESQL_volume_map_data: false
       TIMESCALEDB_enable: false
       TIMESCALEDB_volume_map_data: false
 
-      ADMINER_enable: false
+      ADMINER_enable: true
 
       # ===== Event Store ========
       AXON_enable: false

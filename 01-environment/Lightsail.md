@@ -63,12 +63,6 @@ sudo apt-get install -y curl jq kafkacat
 # needed for elasticsearch
 sudo sysctl -w vm.max_map_count=262144   
 
-# Install various Utilities
-sudo apt-get install -y curl jq kafkacat
-
-# needed for elasticsearch
-sudo sysctl -w vm.max_map_count=262144   
-
 # Get the project
 cd /home/${USERNAME} 
 git clone https://github.com/${GITHUB_OWNER}/${GITHUB_PROJECT}
