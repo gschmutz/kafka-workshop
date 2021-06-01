@@ -145,6 +145,7 @@ log4j.appender.out.layout.ConversionPattern=[%30.30t] %-30.30c{1} %-5p %m%n
 log4j.throwableRenderer=org.apache.log4j.EnhancedThrowableRenderer
 ```
 ### Creating the necessary Kafka Topic 
+
 We will use the topic `test-java-topic` in the Producer and Consumer code below. Due to the fact that `auto.topic.create.enable` is set to `false`, we have to manually create the topic. 
 
 Connect to the `kafka-1` container
@@ -226,7 +227,8 @@ Kafka provides a synchronous send method to send a record to a topic. Let’s us
                 long time = System.currentTimeMillis();
 
                 ProducerRecord<Long, String> record
-                        = new ProducerRecord<>(TOPIC, "[" + id + "] Hello Kafka " + LocalDateTime.now());
+                        = new ProducerRecord<>(TOPIC, key,
+                        			"[" + id + "] Hello Kafka " + index + " => " + LocalDateTime.now());
 
                 RecordMetadata metadata = producer.send(record).get();
 
@@ -258,7 +260,7 @@ Next you define the main method.
 The `main()` method accepts 3 parameters, the number of messages to produce, the time in ms to wait in-between sending each message and the ID of the producer.
 
 
-Now run it using the `mvn exec:java` command. It will generate 1000 messages, waiting 10ms in-between sending each message and use 0 for the ID. 
+Now run it using the `mvn exec:java` command. It will generate 1000 messages, waiting 100ms in-between sending each message and use 0 for the ID, which will set the key to `null`. 
 
 ```
 mvn exec:java@producer -Dexec.args="1000 100 0"
@@ -314,6 +316,8 @@ Part-5 => :[0] Hello Kafka 40
 
 ### Using the Id field as the key
 
+If we specify an id <> 0 when runnning the producer, the id is used as the key
+
 ```java
     private static void runProducer(int sendMessageCount, int waitMsInBetween, long id) throws Exception {
         Long key = (id > 0) ? id : null;
@@ -323,8 +327,7 @@ Part-5 => :[0] Hello Kafka 40
                 long time = System.currentTimeMillis();
 
                 ProducerRecord<Long, String> record
-                        = new ProducerRecord<>(TOPIC, key,
-                                "[" + id + "] Hello Kafka " + LocalDateTime.now());
+                        = new ProducerRecord<>(TOPIC, key, "[" + id + "] Hello Kafka " + index + " => " + LocalDateTime.now());
 
                 RecordMetadata metadata = producer.send(record).get();
 
@@ -340,6 +343,13 @@ Part-5 => :[0] Hello Kafka 40
         }
     }
 ```
+
+So let's run it for id=`10`
+
+```
+mvn exec:java@producer -Dexec.args="1000 100 10"
+```
+
 
 ### Changing to Asynchronous mode
 

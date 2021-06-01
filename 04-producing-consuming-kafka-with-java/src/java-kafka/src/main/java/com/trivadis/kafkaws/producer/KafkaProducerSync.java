@@ -37,7 +37,7 @@ public class KafkaProducerSync {
 
                 ProducerRecord<Long, String> record
                         = new ProducerRecord<>(TOPIC, key,
-                                "[" + id + "] Hello Kafka " + LocalDateTime.now());
+                                "[" + id + "] Hello Kafka " + index + " => " + LocalDateTime.now());
 
                 RecordMetadata metadata = producer.send(record).get();
 

@@ -40,7 +40,7 @@ public class KafkaProducerASync {
 
                 ProducerRecord<Long, String> record
                         = new ProducerRecord<>(TOPIC, key,
-                                "[" + id + "] Hello Kafka " + LocalDateTime.now());
+                        "[" + id + "] Hello Kafka " + index + " => " + LocalDateTime.now());
 
                 producer.send(record, (metadata, exception) -> {
                     long elapsedTime = System.currentTimeMillis() - time;

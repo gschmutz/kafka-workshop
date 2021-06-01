@@ -210,7 +210,6 @@ kafka-console-producer --broker-list kafka-1:19092,kafka-2:19093 \
 The console producer reads from stdin, and takes a broker list instead of a zookeeper address. We specify 2 of the 3 brokers of the Streaming Platform.
 
 On the `>` prompt enter a few messages, execute each single message by hitting the **Enter** key.<br>
-**Hint:** Try to enter them as quick as possible.
 
 ```bash
 >aaa
@@ -227,11 +226,11 @@ root@kafka-1:/# kafka-console-consumer --bootstrap-server kafka-1:19092,kafka-2:
 aaa
 bbb
 ccc
-eee
 ddd
+eee
 ```
 
-You can see that they don't arrive in the same order (if you are entering them fast enough on the producer side)
+Messages arrive in the same order because you are just not able to enter them quick enough. 
 
 You can stop the consumer by hitting **Ctrl-C**. If you want to consume from the beginning of the log, use the `--from-beginning` option.
 
