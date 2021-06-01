@@ -566,13 +566,13 @@ Switch the producer to use the method with key (`runProducerWithKey`).
 Start the consumer 3 times by executing the following command in 3 different terminal windows.
 
 ```
-mvn exec:java@consumer -Dexec.args="0"
+dotnet run -p ./consumer/consumer.csproj
 ```
 
 and then start the producer (using 10 for the ID)
 
 ```
-mvn exec:java@producer -Dexec.args="25 0 10"
+dotnet run -p ./producer/producer.csproj 25 0 10
 ```
 
 #### Producer Output
