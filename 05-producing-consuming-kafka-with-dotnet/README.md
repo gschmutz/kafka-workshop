@@ -336,7 +336,7 @@ add the following two constants for the Broker List and the Topic name.
     {
         const string brokerList = "dataplatform:9092,dataplatform:9093";
         const string topicName = "test-dotnet-topic";
-        const string groupId = "KakfaConsumerAuto";
+        const string groupId = "KafkaConsumerAuto";
 ```
 
 Replace the code of the ```static void Main``` method by the following block:
