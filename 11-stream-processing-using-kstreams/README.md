@@ -50,7 +50,7 @@ Copy the following block right after the <version> tag, before the closing </pro
         <avro.version>1.9.0</avro.version>
         <docker.skip-build>false</docker.skip-build>
         <docker.skip-test>false</docker.skip-test>
-        <java.version>1.8</java.version>
+	        <java.version>1.8</java.version>
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<maven.compiler.source>1.8</maven.compiler.source>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

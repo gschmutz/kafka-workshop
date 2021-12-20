@@ -54,8 +54,9 @@ Before we can use a KSQL SELECT statement, we have to describe the structure of 
 ```
 DROP STREAM truck_position_s;
 
-CREATE STREAM truck_position_s 
-  (ts VARCHAR, 
+CREATE STREAM truck_position_s
+  (mqttTopic VARCHAR KEY, 
+   ts VARCHAR, 
    truckId VARCHAR, 
    driverId BIGINT, 
    routeId BIGINT,

@@ -37,7 +37,7 @@ This finishes the setup steps and our new project is ready to be used. Next we w
 ## Creating the Spring Boot Project
 First, let’s navigate to [Spring Initializr](https://start.spring.io/) to generate our project. Our project will need the Apache Kafka support. 
 
-Select Generate a **Maven Project** with **Java** and Spring Boot **2.1.2**. Specify **com.trivadis.springboot.kafka** for the Group and **kafka-transform** for the Artifact. Set **Kafka** as a Depencency. 
+Select Generate a **Maven Project** with **Java** and Spring Boot **2.5.2**. Specify **com.trivadis.springboot.kafka** for the Group and **kafka-transform** for the Artifact. Set **Kafka** as a Depencency. 
 
 ![Alt Image Text](./images/spring-initializr.png "Spring Initializr")
 
@@ -180,7 +180,7 @@ public class KafkaConfig {
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, LongDeserializer.class);
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, "upperCaser");
+ 
         // disable auto commit
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
         
