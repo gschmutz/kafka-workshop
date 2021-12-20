@@ -12,7 +12,7 @@ import io.confluent.kafka.serializers.KafkaAvroSerializerConfig;
 
 public class KafkaProducerAvro {
 
-    private final static String TOPIC = "test-java-avro-topic";
+    private final static String TOPIC = "test-java-avro-topic1";
     private final static String BOOTSTRAP_SERVERS =
             "dataplatform:9092, dataplatform:9093, dataplatform:9094";
     private final static String SCHEMA_REGISTRY_URL = "http://dataplatform:8081";
@@ -21,6 +21,7 @@ public class KafkaProducerAvro {
         Properties props = new Properties();
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS);
         props.put(ProducerConfig.CLIENT_ID_CONFIG, "KafkaExampleProducer");
+        props.put(KafkaAvroSerializerConfig.AUTO_REGISTER_SCHEMAS, "false");
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, KafkaAvroSerializer.class.getName());
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, KafkaAvroSerializer.class.getName());
         props.put(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, SCHEMA_REGISTRY_URL);   // use constant for "schema.registry.url"
