@@ -4,9 +4,38 @@
       platys:
         platform-name: 'kafka-workshop'
         platform-stack: 'trivadis/platys-modern-data-platform'
-        platform-stack-version: '1.14.0'
+        platform-stack-version: '1.15.0-preview'
         structure: 'flat'
-
+      # ========================================================================
+      # Global configuration, valid for all or a group of services
+      # ========================================================================
+      # Timezone, use a Linux string such as Europe/Zurich or America/New_York
+      use_timezone: ''
+      # the name of the repository to use for private images, which are not on docker hub (currently only Oracle images)
+      private_docker_repository_name: 'trivadis'
+      # the UID to use when using the "user" property in a service to override the user inside the container
+      uid: '1000'
+      data_centers: 'dc1,dc2'
+      data_center_to_use: 0
+      copy_cookbook_data_folder: true
+      # ========================================================================
+      # External Services
+      # ========================================================================
+      external:
+          KAFKA_enable: false
+          KAFKA_bootstrap_servers: 
+          KAFKA_sasl_mechanism: ''
+          KAFKA_security_protocol: '' 
+          SCHEMA_REGISTRY_enable: false
+          SCHEMA_REGISTRY_url: 
+          S3_enable: false
+          S3_endpoint:
+          S3_default_region:
+          S3_path_style_access: false
+      # ========================================================================
+      # Platys Services
+      # ========================================================================
+      
       # ===== Apache Zookeeper ========
       ZOOKEEPER_enable: true
       ZOOKEEPER_volume_map_data: false
