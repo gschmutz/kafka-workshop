@@ -29,37 +29,6 @@ services:
     volumes:
       - ./data-transfer:/data-transfer
     restart: unless-stopped
-  zoonavigator:
-    image: elkozmon/zoonavigator-web:latest
-    container_name: zoonavigator
-    hostname: zoonavigator
-    labels:
-      com.platys.webui.title: Zoonavigator UI
-      com.platys.webui.url: http://${PUBLIC_IP}:28100
-    ports:
-      - 28100:8010
-    depends_on:
-      - zoonavigator-api
-    environment:
-      WEB_HTTP_PORT: 8010
-      API_HOST: zoonavigator-api
-      API_PORT: 9010
-    volumes:
-      - ./data-transfer:/data-transfer
-    restart: unless-stopped
-  zoonavigator-api:
-    image: elkozmon/zoonavigator-api:latest
-    container_name: zoonavigator-api
-    labels:
-      com.platys.restapi.title: Zoonavigator REST API
-      com.platys.restapi.url: http://${PUBLIC_IP}:28101
-    ports:
-      - 28101:9010
-    environment:
-      API_HTTP_PORT: 9010
-    volumes:
-      - ./data-transfer:/data-transfer
-    restart: unless-stopped
 #  ================================== Kafka ========================================== #
   kafka-1:
     image: confluentinc/cp-kafka:6.2.0
