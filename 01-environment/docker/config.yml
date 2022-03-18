@@ -139,8 +139,25 @@
       STREAMSETS_EDGE_volume_map_data: false
 
       # ===== Nifi ========
-      NIFI_enable: false
-
+      NIFI_enable: true     
+      NIFI_run_secure: true
+      NIFI_username: nifi
+      # password must be 12 chars minimum, otherwise a random user and password is generated
+      NIFI_password: 1234567890ACD
+      NIFI_nodes: 1
+      NIFI_create_cluster: false
+      NIFI_election_max_wait: '1 min'
+      NIFI_volume_map_data: false
+      NIFI_volume_map_logs: false
+      NIFI_jvm_heap_init:
+      NIFI_jvm_heap_max:
+      
+      #
+      # ===== Apache NiFi Registry ========
+      #
+      NIFI_REGISTRY_enable: false
+      NIFI_REGISTRY_volume_map_data: false
+      
       # ===== Node Red  ========
       NODERED_enable: false
       NODERED_volume_map_data: false
