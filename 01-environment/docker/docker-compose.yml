@@ -537,6 +537,43 @@ services:
     entrypoint:
       - /pre-docker-entrypoint.sh
     restart: unless-stopped
+  #  ================================== NiFi ========================================== #
+  nifi-1:
+    image: apache/nifi:1.15.3
+    container_name: nifi-1
+    hostname: nifi-1
+    labels:
+      com.platys.name: nifi
+      com.platys.webui.title: Apache NiFi UI Node 18080
+      com.platys.webui.url: https://${PUBLIC_IP}:18080/nifi
+    ports:
+      # HTTP
+      - 18080:18080
+      # Remote Input Socket
+      - 10005:10005/tcp
+    environment:
+      NIFI_WEB_HTTPS_PORT: '18080'
+      NIFI_WEB_HTTPS_HOST: nifi-1
+      NIFI_WEB_PROXY_HOST: ${PUBLIC_IP}:18080,${DOCKER_HOST_IP}18080
+      AUTH: tls
+      KEYSTORE_PATH: /opt/certs/keystore.jks
+      KEYSTORE_TYPE: JKS
+      KEYSTORE_PASSWORD: PTz7kFl1rzX4wUtcDlurwV6gjm7vID9Ibgbe71N355w
+      TRUSTSTORE_PATH: /opt/certs/truststore.jks
+      TRUSTSTORE_TYPE: JKS
+      TRUSTSTORE_PASSWORD: h8I20cJyr50rFwzJRZkBcodLM8ifnDqQK2kORds8TLk
+      NIFI_SECURITY_USER_AUTHORIZER: single-user-authorizer
+      NIFI_SECURITY_USER_LOGIN_IDENTITY_PROVIDER: single-user-provider
+      NIFI_REMOTE_INPUT_SOCKET_PORT: '10005'
+      NIFI_REMOTE_INPUT_HOST: nifi-1
+      NIFI_SENSITIVE_PROPS_KEY: 12345678901234567890A
+      SINGLE_USER_CREDENTIALS_USERNAME: nifi
+      SINGLE_USER_CREDENTIALS_PASSWORD: 1234567890ACD
+    volumes:
+      - ./data-transfer:/data-transfer
+      - ./conf/nifi/keystore.jks:/opt/certs/keystore.jks
+      - ./conf/nifi/truststore.jks:/opt/certs/truststore.jks
+    restart: unless-stopped
   #  ================================== Zeppelin ========================================== #
   zeppelin:
     image: trivadis/apache-zeppelin:0.10.0-spark2.4-hadoop2.8
