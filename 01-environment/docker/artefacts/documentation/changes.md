@@ -2,6 +2,41 @@
 
 See [Upgrade to a new platform stack version](https://github.com/TrivadisPF/platys/blob/master/documentation/upgrade-platform-stack) for how to upgrade to newer version.
 
+## What's new in 1.15.0
+
+The Modern Data Platform version 1.15.0 contains the following bug fixes and enhancements:
+
+### New Services
+
+ * 
+
+### New Cookbook Recipes
+
+ *
+ 
+### Version upgrades
+
+ * Update `Apache NiFi` to `1.15.3` and `Apache NiFi Registry` to `1.15.3`
+ * Update `Trino` to `373`
+ * Update `Starburst Enterprise` to `371-e`
+ * Update `Debezium Server` to `1.9`
+ * Update `DataHub` to `v0.8.29` 
+ * Update `ksqldb` to `0.24.0?
+ 
+### Breaking Changes
+
+ * 
+
+### Enhancements 
+
+ * Add support for Nifi Cluster (setting the new config seeting `NIFI_create_cluster` to `true`
+ * Apache NiFi is now secure by default, so you have to use https to get to the UI and then authenticate using the user and password specified.
+ 
+### Bug Fixes 
+
+ * fix bug in `markdown-renderer` on Apple Silicon (M1)
+
+
 ## What's new in 1.14.0
 
 The Modern Data Platform version 1.14.0 contains the following bug fixes and enhancements:

@@ -1,7 +1,7 @@
 # =======================================================================
 # Platform Name            kafka-workshop
 # Platform Stack:          trivadis/platys-modern-data-platform
-# Platform Stack Version:  1.14.0
+# Platform Stack Version:  1.15.0-preview
 # =======================================================================
 version: '3.5'
 networks:
@@ -152,6 +152,7 @@ services:
   kafka-connect-1:
     image: confluentinc/cp-kafka-connect:7.0.1
     container_name: kafka-connect-1
+    hostname: kafka-connect-1
     labels:
       com.platys.name: kafka-connect
       com.platys.restapi.title: Kafka Connect REST API
@@ -160,9 +161,10 @@ services:
       - 8083:8083
     environment:
       CONNECT_BOOTSTRAP_SERVERS: kafka-1:19092,kafka-2:19093,kafka-3:19094
+      CONNECT_LISTENERS: http://0.0.0.0:8083
       CONNECT_REST_ADVERTISED_HOST_NAME: kafka-connect-1
-      CONNECT_REST_PORT: 8083
-      CONNECT_GROUP_ID: kafka-connect
+      CONNECT_REST_ADVERTISED_PORT: 8083
+      CONNECT_GROUP_ID: kafka-connect-cluster
       CONNECT_CONFIG_STORAGE_TOPIC: _connect-configs
       CONNECT_OFFSET_STORAGE_TOPIC: _connect-offsets
       CONNECT_STATUS_STORAGE_TOPIC: _connect-status
@@ -181,9 +183,6 @@ services:
       CONNECT_LOG4J_APPENDER_STDOUT_LAYOUT_CONVERSIONPATTERN: '[%d] %p %X{connector.context}%m (%c:%L)%n'
       CONNECT_PLUGIN_PATH: /usr/share/java,/etc/kafka-connect/addl-plugins
       CONNECT_CONNECTOR_CLIENT_CONFIG_OVERRIDE_POLICY: All
-      # CONNECT_SECURITY_PROTOCOL: SSL
-      # CONNECT_SASL_MECHANISM: PLAIN
-      # CONNECT_SASL_JAAS_CONFIG: org.apache.kafka.common.security.plain.PlainLoginModule required username="$CLUSTER_API_KEY" password="$CLUSTER_API_SECRET";
       #CLASSPATH: /usr/share/java/monitoring-interceptors/monitoring-interceptors-4.0.0.jar
       AWS_ACCESS_KEY_ID: V42FCGRVMK24JJ8DHUYG
       AWS_SECRET_ACCESS_KEY: bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza
@@ -214,6 +213,7 @@ services:
   kafka-connect-2:
     image: confluentinc/cp-kafka-connect:7.0.1
     container_name: kafka-connect-2
+    hostname: kafka-connect-2
     labels:
       com.platys.name: kafka-connect
       com.platys.restapi.title: Kafka Connect REST API
@@ -222,9 +222,10 @@ services:
       - 8084:8084
     environment:
       CONNECT_BOOTSTRAP_SERVERS: kafka-1:19092,kafka-2:19093,kafka-3:19094
+      CONNECT_LISTENERS: http://0.0.0.0:8084
       CONNECT_REST_ADVERTISED_HOST_NAME: kafka-connect-2
-      CONNECT_REST_PORT: 8084
-      CONNECT_GROUP_ID: kafka-connect
+      CONNECT_REST_ADVERTISED_PORT: 8084
+      CONNECT_GROUP_ID: kafka-connect-cluster
       CONNECT_CONFIG_STORAGE_TOPIC: _connect-configs
       CONNECT_OFFSET_STORAGE_TOPIC: _connect-offsets
       CONNECT_STATUS_STORAGE_TOPIC: _connect-status
@@ -243,9 +244,6 @@ services:
       CONNECT_LOG4J_APPENDER_STDOUT_LAYOUT_CONVERSIONPATTERN: '[%d] %p %X{connector.context}%m (%c:%L)%n'
       CONNECT_PLUGIN_PATH: /usr/share/java,/etc/kafka-connect/addl-plugins
       CONNECT_CONNECTOR_CLIENT_CONFIG_OVERRIDE_POLICY: All
-      # CONNECT_SECURITY_PROTOCOL: SSL
-      # CONNECT_SASL_MECHANISM: PLAIN
-      # CONNECT_SASL_JAAS_CONFIG: org.apache.kafka.common.security.plain.PlainLoginModule required username="$CLUSTER_API_KEY" password="$CLUSTER_API_SECRET";
       #CLASSPATH: /usr/share/java/monitoring-interceptors/monitoring-interceptors-4.0.0.jar
       AWS_ACCESS_KEY_ID: V42FCGRVMK24JJ8DHUYG
       AWS_SECRET_ACCESS_KEY: bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza
@@ -260,7 +258,7 @@ services:
     restart: unless-stopped
   #  ================================== ksqlDB ========================================== #
   ksqldb-server-1:
-    image: confluentinc/ksqldb-server:0.23.1
+    image: confluentinc/ksqldb-server:0.24.0
     hostname: ksqldb-server-1
     container_name: ksqldb-server-1
     labels:
@@ -271,11 +269,7 @@ services:
       - 8088:8088
       - 1095:1095
     environment:
-      KSQL_LOG4J_ROOT_LOGLEVEL: INFO
-      KSQL_LOG4J_OPTS: -Dlog4j.configuration=file:/etc/ksqldb/log4j.properties
-      KSQL_LOG4J_PROCESSING_LOG_BROKERLIST: kafka-1:19092,kafka-2:19093,kafka-3:19094
-      KSQL_LOG4J_PROCESSING_LOG_TOPIC: demo_processing_log
-      KSQL_KSQL_LOGGING_PROCESSING_TOPIC_NAME: demo_processing_log
+      #KSQL_KSQL_LOGGING_PROCESSING_TOPIC_NAME: 'ksql_processing_log'
       KSQL_KSQL_LOGGING_PROCESSING_TOPIC_REPLICATION_FACTOR: 1
       KSQL_KSQL_LOGGING_PROCESSING_TOPIC_AUTO_CREATE: 'true'
       KSQL_KSQL_LOGGING_PROCESSING_STREAM_AUTO_CREATE: 'true'
@@ -292,24 +286,25 @@ services:
       KSQL_KSQL_CONNECT_URL: http://kafka-connect-1:8083,http://kafka-connect-2:8084
       KSQL_KSQL_SCHEMA_REGISTRY_URL: http://schema-registry-1:8081
       KSQL_KSQL_INTERNAL_TOPIC_REPLICAS: 1
+      KSQL_KSQL_SINK_REPLICAS: 1
       KSQL_KSQL_STREAMS_REPLICATION_FACTOR: 1
       KSQL_KSQL_QUERY_PULL_METRICS_ENABLED: 'true'
       KSQL_KSQL_HIDDEN_TOPICS: ^_.*,default_ksql_processing_log
       KSQL_KSQL_SUPPRESS_ENABLED: 'False'
       KSQL_KSQL_SUPPRESS_BUFFER_SIZE_BYTES: '-1'
       KSQL_KSQL_QUERY_PULL_TABLE_SCAN_ENABLED: 'False'
-      KSQL_CONFIG_DIR: /etc/ksql
+      KSQL_CONFIG_DIR: /etc/ksqldb
       KSQL_KSQL_EXTENSION_DIR: /etc/ksqldb/ext/
       KSQL_JMX_OPTS: -Djava.rmi.server.hostname=localhost -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=1095 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.rmi.port=1095
     volumes:
       - ./data-transfer:/data-transfer
-      - ./plugins/ksql:/etc/ksqldb/ext
+      - ./plugins/ksqldb:/etc/ksqldb/ext
       - ./conf/ksqldb/etc/log4j.properties:/etc/ksqldb/log4j.properties
       - ./plugins/kafka-connect/connectors:/etc/kafka-connect/addl-plugins
       - ./plugins/opentelemetry/agents:/tmp
     restart: unless-stopped
   ksqldb-server-2:
-    image: confluentinc/ksqldb-server:0.23.1
+    image: confluentinc/ksqldb-server:0.24.0
     hostname: ksqldb-server-2
     container_name: ksqldb-server-2
     labels:
@@ -320,11 +315,7 @@ services:
       - 8089:8088
       - 1096:1095
     environment:
-      KSQL_LOG4J_ROOT_LOGLEVEL: INFO
-      KSQL_LOG4J_OPTS: -Dlog4j.configuration=file:/etc/ksqldb/log4j.properties
-      KSQL_LOG4J_PROCESSING_LOG_BROKERLIST: kafka-1:19092,kafka-2:19093,kafka-3:19094
-      KSQL_LOG4J_PROCESSING_LOG_TOPIC: demo_processing_log
-      KSQL_KSQL_LOGGING_PROCESSING_TOPIC_NAME: demo_processing_log
+      #KSQL_KSQL_LOGGING_PROCESSING_TOPIC_NAME: 'ksql_processing_log'
       KSQL_KSQL_LOGGING_PROCESSING_TOPIC_REPLICATION_FACTOR: 1
       KSQL_KSQL_LOGGING_PROCESSING_TOPIC_AUTO_CREATE: 'true'
       KSQL_KSQL_LOGGING_PROCESSING_STREAM_AUTO_CREATE: 'true'
@@ -341,18 +332,19 @@ services:
       KSQL_KSQL_CONNECT_URL: http://kafka-connect-1:8083,http://kafka-connect-2:8084
       KSQL_KSQL_SCHEMA_REGISTRY_URL: http://schema-registry-1:8081
       KSQL_KSQL_INTERNAL_TOPIC_REPLICAS: 1
+      KSQL_KSQL_SINK_REPLICAS: 1
       KSQL_KSQL_STREAMS_REPLICATION_FACTOR: 1
       KSQL_KSQL_QUERY_PULL_METRICS_ENABLED: 'true'
       KSQL_KSQL_HIDDEN_TOPICS: ^_.*,default_ksql_processing_log
       KSQL_KSQL_SUPPRESS_ENABLED: 'False'
       KSQL_KSQL_SUPPRESS_BUFFER_SIZE_BYTES: '-1'
       KSQL_KSQL_QUERY_PULL_TABLE_SCAN_ENABLED: 'False'
-      KSQL_CONFIG_DIR: /etc/ksql
+      KSQL_CONFIG_DIR: /etc/ksqldb
       KSQL_KSQL_EXTENSION_DIR: /etc/ksqldb/ext/
       KSQL_JMX_OPTS: -Djava.rmi.server.hostname=localhost -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=1095 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.rmi.port=1095
     volumes:
       - ./data-transfer:/data-transfer
-      - ./plugins/ksql:/etc/ksqldb/ext
+      - ./plugins/ksqldb:/etc/ksqldb/ext
       - ./conf/ksqldb/etc/log4j.properties:/etc/ksqldb/log4j.properties
       - ./plugins/kafka-connect/connectors:/etc/kafka-connect/addl-plugins
       - ./plugins/opentelemetry/agents:/tmp
@@ -360,7 +352,7 @@ services:
   # Access the cli by running:
   # > docker exec -it ksqldb-cli ksql http://ksqldb-server-1:8088
   ksqldb-cli:
-    image: confluentinc/ksqldb-cli:0.23.1
+    image: confluentinc/ksqldb-cli:0.24.0
     container_name: ksqldb-cli
     hostname: ksqldb-cli
     labels:
@@ -381,9 +373,6 @@ services:
       com.platys.name: kafka-rest
       com.platys.restapi.title: Kafka REST Proxy
       com.platys.restapi.url: http://${PUBLIC_IP}:18086
-    depends_on:
-      - kafka-1
-      - schema-registry-1
     ports:
       - 18086:8086
     environment:
@@ -432,9 +421,6 @@ services:
       com.platys.name: kafka-topics-ui
       com.platys.webui.title: Kafka Topics UI
       com.platys.webui.url: http://${PUBLIC_IP}:28141
-    depends_on:
-      - kafka-1
-      - kafka-rest-1
     ports:
       - 28141:8000
     environment:
@@ -472,9 +458,6 @@ services:
       com.platys.name: cmak
       com.platys.webui.title: Cluster Manager for Apache Kafka UI
       com.platys.webui.url: http://${PUBLIC_IP}:28104
-    depends_on:
-      - zookeeper-1
-      - kafka-1
     ports:
       - 28104:9000
     environment:
@@ -508,9 +491,9 @@ services:
                 url: "http://${PUBLIC_IP}:8081"
                 type: "confluent"
               connect:
-                - name: "connect-custer-1"
+                - name: "connect-1"
                   url: "http://kafka-connect-1:8083"
-                - name: "connect-custer-2"
+                - name: "connect-2"
                   url: "http://kafka-connect-2:8084"
     volumes:
       - ./data-transfer:/data-transfer
@@ -816,7 +799,7 @@ services:
       DATAPLATFORM_HOME: ${DATAPLATFORM_HOME}
       PLATYS_PLATFORM_NAME: kafka-workshop
       PLATYS_PLATFORM_STACK: trivadis/platys-modern-data-platform
-      PLATYS_PLATFORM_STACK_VERSION: 1.14.0
+      PLATYS_PLATFORM_STACK_VERSION: 1.15.0-preview
       PLATYS_COPY_COOKBOOK_DATA: 'True'
     volumes:
       - ./artefacts/templates:/templates
