@@ -18,7 +18,7 @@ And create a new topic.
 
 ```bash
 kafka-topics --create \
-    --zookeeper zookeeper-1:2181 \
+    --bootstrap-server kafka-1:19092 \
     --replication-factor 3 \
     --partitions 8 \
     --topic failsafe-test-topic
@@ -191,7 +191,7 @@ And create the topic.
 ```bash
 kafka-topics --describe \
     --topic failsafe-test-topic \
-    --zookeeper zookeeper-1:2181
+    --bootstrap-server kafka-1:19092
 ```    
 
 ```bash

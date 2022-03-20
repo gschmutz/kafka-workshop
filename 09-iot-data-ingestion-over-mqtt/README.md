@@ -112,13 +112,13 @@ docker exec -ti kafka-11 bash
 First let's see all existing topics
 
 ```bash
-kafka-topics --zookeeper zookeeper-1:2181 --list
+kafka-topics --bootstrap-server kafka-1:19092 --list
 ```
 
 Now let's create the topic `truck_position` in Kafka, where the message from MQTT should be integrated with. 
 
 ```bash
-kafka-topics --zookeeper zookeeper-1:2181 --create --topic truck_position --partitions 8 --replication-factor 2
+kafka-topics --bootstrap-server kafka-1:19092 --create --topic truck_position --partitions 8 --replication-factor 2
 ```
 
 Make sure to exit from the container after the topics have been created successfully.

@@ -30,113 +30,119 @@ if we just execute the `kafka-topics` command without any options, a help page i
 ```bash
 root@kafka-1:/# kafka-topics
 Create, delete, describe, or change a topic.
-Option                                   Description
-------                                   -----------
---alter                                  Alter the number of partitions,
-                                           replica assignment, and/or
-                                           configuration for the topic.
---bootstrap-server <String: server to    REQUIRED: The Kafka server to connect
-  connect to>                              to. In case of providing this, a
-                                           direct Zookeeper connection won't be
-                                           required.
---command-config <String: command        Property file containing configs to be
-  config property file>                    passed to Admin Client. This is used
-                                           only with --bootstrap-server option
-                                           for describing and altering broker
-                                           configs.
---config <String: name=value>            A topic configuration override for the
-                                           topic being created or altered.The
-                                           following is a list of valid
-                                           configurations:
-                                         	cleanup.policy
-                                         	compression.type
-                                         	delete.retention.ms
-                                         	file.delete.delay.ms
-                                         	flush.messages
-                                         	flush.ms
-                                         	follower.replication.throttled.
-                                           replicas
-                                         	index.interval.bytes
-                                         	leader.replication.throttled.replicas
-                                         	max.message.bytes
-                                         	message.downconversion.enable
-                                         	message.format.version
-                                         	message.timestamp.difference.max.ms
-                                         	message.timestamp.type
-                                         	min.cleanable.dirty.ratio
-                                         	min.compaction.lag.ms
-                                         	min.insync.replicas
-                                         	preallocate
-                                         	retention.bytes
-                                         	retention.ms
-                                         	segment.bytes
-                                         	segment.index.bytes
-                                         	segment.jitter.ms
-                                         	segment.ms
-                                         	unclean.leader.election.enable
-                                         See the Kafka documentation for full
-                                           details on the topic configs.It is
+Option                                   Description                            
+------                                   -----------                            
+--alter                                  Alter the number of partitions,        
+                                           replica assignment, and/or           
+                                           configuration for the topic.         
+--at-min-isr-partitions                  if set when describing topics, only    
+                                           show partitions whose isr count is   
+                                           equal to the configured minimum.     
+--bootstrap-server <String: server to    REQUIRED: The Kafka server to connect  
+  connect to>                              to.                                  
+--command-config <String: command        Property file containing configs to be 
+  config property file>                    passed to Admin Client. This is used 
+                                           only with --bootstrap-server option  
+                                           for describing and altering broker   
+                                           configs.                             
+--config <String: name=value>            A topic configuration override for the 
+                                           topic being created or altered. The  
+                                           following is a list of valid         
+                                           configurations:                      
+                                         	cleanup.policy                        
+                                         	compression.type                      
+                                         	delete.retention.ms                   
+                                         	file.delete.delay.ms                  
+                                         	flush.messages                        
+                                         	flush.ms                              
+                                         	follower.replication.throttled.       
+                                           replicas                             
+                                         	index.interval.bytes                  
+                                         	leader.replication.throttled.replicas 
+                                         	local.retention.bytes                 
+                                         	local.retention.ms                    
+                                         	max.compaction.lag.ms                 
+                                         	max.message.bytes                     
+                                         	message.downconversion.enable         
+                                         	message.format.version                
+                                         	message.timestamp.difference.max.ms   
+                                         	message.timestamp.type                
+                                         	min.cleanable.dirty.ratio             
+                                         	min.compaction.lag.ms                 
+                                         	min.insync.replicas                   
+                                         	preallocate                           
+                                         	remote.storage.enable                 
+                                         	retention.bytes                       
+                                         	retention.ms                          
+                                         	segment.bytes                         
+                                         	segment.index.bytes                   
+                                         	segment.jitter.ms                     
+                                         	segment.ms                            
+                                         	unclean.leader.election.enable        
+                                         See the Kafka documentation for full   
+                                           details on the topic configs. It is  
                                            supported only in combination with --
-                                           create if --bootstrap-server option
-                                           is used.
---create                                 Create a new topic.
---delete                                 Delete a topic
---delete-config <String: name>           A topic configuration override to be
-                                           removed for an existing topic (see
-                                           the list of configurations under the
-                                           --config option). Not supported with
-                                           the --bootstrap-server option.
---describe                               List details for the given topics.
---disable-rack-aware                     Disable rack aware replica assignment
---exclude-internal                       exclude internal topics when running
-                                           list or describe command. The
-                                           internal topics will be listed by
-                                           default
---force                                  Suppress console prompts
---help                                   Print usage information.
---if-exists                              if set when altering or deleting or
-                                           describing topics, the action will
-                                           only execute if the topic exists.
-                                           Not supported with the --bootstrap-
-                                           server option.
---if-not-exists                          if set when creating topics, the
-                                           action will only execute if the
-                                           topic does not already exist. Not
-                                           supported with the --bootstrap-
-                                           server option.
---list                                   List all available topics.
---partitions <Integer: # of partitions>  The number of partitions for the topic
-                                           being created or altered (WARNING:
-                                           If partitions are increased for a
-                                           topic that has a key, the partition
-                                           logic or ordering of the messages
-                                           will be affected
---replica-assignment <String:            A list of manual partition-to-broker
-  broker_id_for_part1_replica1 :           assignments for the topic being
-  broker_id_for_part1_replica2 ,           created or altered.
-  broker_id_for_part2_replica1 :
-  broker_id_for_part2_replica2 , ...>
---replication-factor <Integer:           The replication factor for each
-  replication factor>                      partition in the topic being created.
---topic <String: topic>                  The topic to create, alter, describe
-                                           or delete. It also accepts a regular
-                                           expression, except for --create
-                                           option. Put topic name in double
-                                           quotes and use the '\' prefix to
+                                           create if --bootstrap-server option  
+                                           is used (the kafka-configs CLI       
+                                           supports altering topic configs with 
+                                           a --bootstrap-server option).        
+--create                                 Create a new topic.                    
+--delete                                 Delete a topic                         
+--delete-config <String: name>           A topic configuration override to be   
+                                           removed for an existing topic (see   
+                                           the list of configurations under the 
+                                           --config option). Not supported with 
+                                           the --bootstrap-server option.       
+--describe                               List details for the given topics.     
+--disable-rack-aware                     Disable rack aware replica assignment  
+--exclude-internal                       exclude internal topics when running   
+                                           list or describe command. The        
+                                           internal topics will be listed by    
+                                           default                              
+--help                                   Print usage information.               
+--if-exists                              if set when altering or deleting or    
+                                           describing topics, the action will   
+                                           only execute if the topic exists.    
+--if-not-exists                          if set when creating topics, the       
+                                           action will only execute if the      
+                                           topic does not already exist.        
+--list                                   List all available topics.             
+--partitions <Integer: # of partitions>  The number of partitions for the topic 
+                                           being created or altered (WARNING:   
+                                           If partitions are increased for a    
+                                           topic that has a key, the partition  
+                                           logic or ordering of the messages    
+                                           will be affected). If not supplied   
+                                           for create, defaults to the cluster  
+                                           default.                             
+--replica-assignment <String:            A list of manual partition-to-broker   
+  broker_id_for_part1_replica1 :           assignments for the topic being      
+  broker_id_for_part1_replica2 ,           created or altered.                  
+  broker_id_for_part2_replica1 :                                                
+  broker_id_for_part2_replica2 , ...>                                           
+--replication-factor <Integer:           The replication factor for each        
+  replication factor>                      partition in the topic being         
+                                           created. If not supplied, defaults   
+                                           to the cluster default.              
+--topic <String: topic>                  The topic to create, alter, describe   
+                                           or delete. It also accepts a regular 
+                                           expression, except for --create      
+                                           option. Put topic name in double     
+                                           quotes and use the '\' prefix to     
                                            escape regular expression symbols; e.
-                                           g. "test\.topic".
---topics-with-overrides                  if set when describing topics, only
-                                           show topics that have overridden
-                                           configs
---unavailable-partitions                 if set when describing topics, only
-                                           show partitions whose leader is not
-                                           available
---under-replicated-partitions            if set when describing topics, only
-                                           show under replicated partitions
---zookeeper <String: hosts>              DEPRECATED, The connection string for
-                                           the zookeeper connection in the form
-                                           host:port. Multiple hosts can be
-                                           given to allow fail-over.
+                                           g. "test\.topic".                    
+--topics-with-overrides                  if set when describing topics, only    
+                                           show topics that have overridden     
+                                           configs                              
+--unavailable-partitions                 if set when describing topics, only    
+                                           show partitions whose leader is not  
+                                           available                            
+--under-min-isr-partitions               if set when describing topics, only    
+                                           show partitions whose isr count is   
+                                           less than the configured minimum.    
+--under-replicated-partitions            if set when describing topics, only    
+                                           show under replicated partitions     
+--version                                Display Kafka version.
 ```
 
 ### List topics in Kafka
@@ -144,7 +150,7 @@ Option                                   Description
 First, let's list the topics available on a given Kafka Cluster. For that we use the `kafka-topics` utility with the `--list` option. 
 
 ```
-kafka-topics --list --zookeeper zookeeper-1:2181
+kafka-topics --list --bootstrap-server kafka-1:19092,kafka-2:19093
 ```
 
 We can see that there are some technical topics, `_schemas` being the one, where the Confluent Schema Registry stores its schemas. 
@@ -156,7 +162,7 @@ Now let's create a new topic. For that we again use the **kafka-topics** utility
 ```bash
 kafka-topics --create \
 			--if-not-exists \
-			--zookeeper zookeeper-1:2181 \
+			--bootstrap-server kafka-1:19092,kafka-2:19093 \
 			--topic test-topic \
 			--partitions 6 \
 			--replication-factor 2
@@ -169,7 +175,7 @@ Re-Run the command to list the topics. You should see the new topic you have jus
 You can use the `--describe` option to
 
 ```bash
-kafka-topics --describe --zookeeper zookeeper-1:2181 --topic test-topic
+kafka-topics --describe --bootstrap-server kafka-1:19092,kafka-2:19093 --topic test-topic
 ```
 
 ```bash
