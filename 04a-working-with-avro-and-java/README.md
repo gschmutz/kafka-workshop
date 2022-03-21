@@ -1,14 +1,10 @@
-# Working with Avro and Java
+# Using Kafka from Java with Avro & Schema Registry
 
 In this workshop we will learn how to produce and consume messages using the [Kafka Java API](https://kafka.apache.org/documentation/#api) using Avro for serializing and deserializing messages.
 
-## Create the project in Eclipse IDE
+## Create the project in your Java IDE
 
-Start the Eclipse IDE if not yet done. 
-
-### Create the project and the project definition (pom.xml)
-
-Create a new [Maven project](../99-misc/97-working-with-eclipse/README.md) and in the last step use `com.trivadis.kafkaws` for the **Group Id** and `java-avro-kafka` for the **Artifact Id**.
+Create a new Maven Project (using the functionality of your IDE) and in the last step use `com.trivadis.kafkaws` for the **Group Id** and `java-avro-kafka` for the **Artifact Id**.
 
 Navigate to the **pom.xml** and double-click on it. The POM Editor will be displayed. 
 
@@ -116,17 +112,7 @@ Copy the following block right after the `<version>` tag, before the closing `</
 	</build>
 ```
 
-In a terminal window, perform the following command to update the Eclipse IDE project settings.
-
-> **Tip:** a quick way to open the terminal at the right place: right-click on the project and select **Show In** | **System Explorer** and then right-click on the folder **java-avro-kafka** and select **Open in Terminal**.
-
-```
-mvn eclipse:eclipse
-```
-
-Refresh the project in Eclipse to re-read the project settings.
-
-### Create log4j settings
+## Create log4j settings
 
 Let's also create the necessary log4j configuration. 
 
@@ -153,7 +139,7 @@ Create a new file `log4j.properties` in the folder **src/main/resources** and ad
 ## ------------------------------------------------------------------------
 
 #
-# The logging properties used for eclipse testing, We want to see INFO output on the console.
+# The logging properties used for testing, We want to see INFO output on the console.
 #
 log4j.rootLogger=INFO, out
 
@@ -173,8 +159,10 @@ log4j.appender.out.layout.ConversionPattern=[%30.30t] %-30.30c{1} %-5p %m%n
 
 log4j.throwableRenderer=org.apache.log4j.EnhancedThrowableRenderer
 ```
-### Creating the necessary Kafka Topic 
-We will use the topic `test-java-topic` in the Producer and Consumer code below. Due to the fact that `auto.topic.create.enable` is set to `false`, we have to manually create the topic. 
+
+## Creating the necessary Kafka Topic 
+
+We will use the topic `test-java-avro-topic` in the Producer and Consumer code below. Due to the fact that `auto.topic.create.enable` is set to `false`, we have to manually create the topic. 
 
 In a terminal window, connect to the `kafka-1` container
 
@@ -192,19 +180,13 @@ kafka-topics --create \
 --zookeeper zookeeper-1:2181
 ```
 
-Cross check that the topic has been created.
-
-```
-kafka-topics --list --zookeeper zookeeper-1:2181
-```
-
 This finishes the setup steps and our new project is ready to be used. Next we will start implementing the **Kafka Producer** which uses Avro for the serialization. 
 
 ## Create an Avro Schema representing the Notification Message
 
 First create a new Folder `avro` under the existing folder **src/main/**.
 
-Create a new File `Notificatiokafka-n-v1.avsc` in the folder  **src/main/avro** just created above.
+Create a new File `Notification-v1.avsc` in the folder  **src/main/avro** just created above.
 
 Add the following Avro schema to the empty file.  
 
@@ -249,14 +231,13 @@ In the `pom.xml`, add the `avro-maven-plugin` plugin to the `<build><plugins>` s
 			</plugin>
 ```
 
-This plugin will make sure, that classes are generated based on the Avro schema, whenever a `mvn compile` is executed. Let's exactly do that on the still rather empty project. But first also execute an `mvn eclipse:eclipse` to regenerate the Eclipse project settings. 
+This plugin will make sure, that classes are generated based on the Avro schema, whenever a `mvn compile` is executed. Let's exactly do that on the still rather empty project. 
 
 ```
-mvn eclipse:eclipse
 mvn compile
 ```
 
-After running this command, refresh the project in Eclipse and you should see a new folder named `target/generated-sources/avro`. Expand into this folder and you should see one generated Java class named `Notification`.
+After running this command, refresh the project and you should see a new folder named `target/generated-sources/avro`. Expand into this folder and you should see one generated Java class named `Notification`.
 
 ![Alt Image Text](./images/avro-generated-sources-folder.png "Schema Registry UI")
 
@@ -403,7 +384,7 @@ You can see that kafkacat shows some special, non-printable characters. This is 
 So let's connect to the schema registry container:
 
 ```
-docker exec -ti streamingplatform_schema_registry_1 bash
+docker exec -ti schema-registry-1 bash
 ```
 
 And then invoke the `kafka-avro-console-consumer` similar to the "normal" consumer seen so far. 

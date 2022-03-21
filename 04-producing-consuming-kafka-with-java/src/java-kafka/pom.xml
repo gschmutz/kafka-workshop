@@ -23,6 +23,13 @@
             <version>${kafka.version}</version>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.12.4</version>
+        </dependency>
+
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
@@ -48,7 +55,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
-                <version>1.6.0</version>
+                <version>3.0.0</version>
                 <executions>
                     <execution>
                         <id>producer</id>
@@ -60,13 +67,31 @@
                         </configuration>						
                     </execution>
                     <execution>
+                        <id>producer-json</id>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                        <configuration>
+                            <mainClass>com.trivadis.kafkaws.producer.KafkaProducerJson</mainClass>
+                        </configuration>
+                    </execution>
+                    <execution>
                         <id>consumer</id>
                         <goals>
                             <goal>java</goal>
                         </goals>
                         <configuration>
-                            <mainClass>com.trivadis.kafkaws.consumer.KafkaConsumerManual</mainClass>
+                            <mainClass>com.trivadis.kafkaws.consumer.KafkaConsumerAuto</mainClass>
                         </configuration>						
+                    </execution>
+                    <execution>
+                        <id>consumer-json</id>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                        <configuration>
+                            <mainClass>com.trivadis.kafkaws.consumer.KafkaConsumerJson</mainClass>
+                        </configuration>
                     </execution>
                 </executions>
 

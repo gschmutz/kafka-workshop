@@ -1,34 +1,35 @@
 package com.trivadis.kafkaws.consumer;
 
-import java.time.Duration;
-import java.util.Collections;
-import java.util.Properties;
-
+import com.trivadis.kafkaws.Notification;
+import com.trivadis.kafkaws.serde.JsonDeserializer;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.LongDeserializer;
-import org.apache.kafka.common.serialization.StringDeserializer;
 
-public class KafkaConsumerAuto {
+import java.time.Duration;
+import java.util.Collections;
+import java.util.Properties;
 
-    private final static String TOPIC = "test-java-topic";
+public class KafkaConsumerJson {
+
+    private final static String TOPIC = "test-java-json-topic";
     private final static String BOOTSTRAP_SERVERS
             = "dataplatform:9092,dataplatform:9093,dataplatform:9094";
     private final static Duration CONSUMER_TIMEOUT = Duration.ofSeconds(1);
 
-    private static Consumer<Long, String> createConsumer() {
+    private static Consumer<Long, Notification> createConsumer() {
         Properties props = new Properties();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS);
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, "KafkaConsumerAuto");
-        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, true);
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, "KafkaConsumerJson");
+        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
         props.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, 10000);
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, LongDeserializer.class.getName());
-        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class.getName());
 
         // Create the consumer using props.
-        Consumer<Long, String> consumer = new KafkaConsumer<>(props);
+        Consumer<Long, Notification> consumer = new KafkaConsumer<>(props, new LongDeserializer(), new JsonDeserializer<Notification>(Notification.class));
 
         // Subscribe to the topic.
         consumer.subscribe(Collections.singletonList(TOPIC));
@@ -38,11 +39,11 @@ public class KafkaConsumerAuto {
     private static void runConsumer(int waitMsInBetween) throws InterruptedException {
         final int giveUp = 100;
 
-        try (Consumer<Long, String> consumer = createConsumer()) {
+        try (Consumer<Long, Notification> consumer = createConsumer()) {
             int noRecordsCount = 0;
 
             while (true) {
-                ConsumerRecords<Long, String> consumerRecords = consumer.poll(CONSUMER_TIMEOUT);
+                ConsumerRecords<Long, Notification> consumerRecords = consumer.poll(CONSUMER_TIMEOUT);
 
                 if (consumerRecords.isEmpty()) {
                     noRecordsCount++;
@@ -63,6 +64,8 @@ public class KafkaConsumerAuto {
                     } catch (InterruptedException e) {
                     }
                 });
+
+                consumer.commitAsync();
             }
         } catch (Exception e) {
             e.printStackTrace();
