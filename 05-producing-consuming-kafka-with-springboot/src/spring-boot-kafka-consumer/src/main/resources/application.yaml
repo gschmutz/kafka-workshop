@@ -1,0 +1,12 @@
+topic:
+  name: test-spring-topic
+
+spring:
+  kafka:
+    bootstrap-servers: ${DATAPLATFORM_IP}:9092
+    consumer:
+      key-deserializer: org.apache.kafka.common.serialization.LongDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
+
+
