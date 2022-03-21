@@ -443,7 +443,7 @@ services:
     ports:
       - 28103:8000
     environment:
-      CONNECT_URL: http://${PUBLIC_IP}:8083,http://${PUBLIC_IP}:8084
+      CONNECT_URL: http://kafka-connect-1:8083,http://kafka-connect-2:8084
       PROXY: 'true'
     volumes:
       - ./data-transfer:/data-transfer
