@@ -209,11 +209,10 @@ docker exec -ti kafka-1 bash
 and run the following command to start the producer.   
  
 ```bash
-kafka-console-producer --broker-list kafka-1:19092,kafka-2:19093 \
-                       --topic test-topic
+kafka-console-producer --bootstrap-server kafka-1:19092,kafka-2:19093 --topic test-topic
 ```
 
-The console producer reads from stdin, and takes a broker list instead of a zookeeper address. We specify 2 of the 3 brokers of the Streaming Platform.
+The console producer reads from stdin, and takes a bootstrap-server list (you should use it instead of the borker-list, which is deprecated). We specify 2 of the 3 brokers of the Streaming Platform.
 
 On the `>` prompt enter a few messages, execute each single message by hitting the **Enter** key.<br>
 
@@ -244,7 +243,7 @@ You can also echo a longer message and pipe it into the console producer, as he 
 
 ```bash
 echo "This is my first message!" | kafka-console-producer \
-                  --broker-list kafka-1:19092,kafka-2:19093 \
+                  --bootstrap-server kafka-1:19092,kafka-2:19093 \
                   --topic test-topic
 ```
 
@@ -254,7 +253,7 @@ And of course you can send messages inside a bash for loop:
 for i in 1 2 3 4 5 6 7 8 9 10
 do
    echo "This is message $i"| kafka-console-producer \
-                  --broker-list kafka-1:19092,kafka-2:19093 \
+                   --bootstrap-server kafka-1:19092,kafka-2:19093 \
                   --topic test-topic \
                   --batch-size 1 &
 done 
@@ -283,7 +282,7 @@ We can see that the keys are all `null` because so far we have only created the 
 For producing messages also with a key, use the options `parse.key` and `key.separator`. 
 
 ```bash
-kafka-console-producer --broker-list kafka-1:19092,kafka-2:19093 \
+kafka-console-producer  --bootstrap-server kafka-1:19092,kafka-2:19093 \
 							--topic test-topic \
 							--property parse.key=true \
 							--property key.separator=,
@@ -296,7 +295,7 @@ Enter your messages so that a key and messages are separated by a comma, i.e. `k
 A Kafka topic can be dropped using the `kafka-topics` utility with the `--delete` option. 
 
 ```bash
-kafka-topics --zookeeper zookeeper-1:2181 --delete --topic test-topic
+kafka-topics  --bootstrap-server kafka-1:19092,kafka-2:19093 --delete --topic test-topic
 ```
 
 ## Working with the Kafkacat utility
