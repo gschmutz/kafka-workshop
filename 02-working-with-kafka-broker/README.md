@@ -52,36 +52,36 @@ Option                                   Description
                                            topic being created or altered. The  
                                            following is a list of valid         
                                            configurations:                      
-                                         	cleanup.policy                        
-                                         	compression.type                      
-                                         	delete.retention.ms                   
-                                         	file.delete.delay.ms                  
-                                         	flush.messages                        
-                                         	flush.ms                              
-                                         	follower.replication.throttled.       
+                                         cleanup.policy                        
+                                         compression.type                      
+                                         delete.retention.ms                   
+                                         file.delete.delay.ms                  
+                                         flush.messages                        
+                                         flush.ms                              
+                                         follower.replication.throttled.       
                                            replicas                             
-                                         	index.interval.bytes                  
-                                         	leader.replication.throttled.replicas 
-                                         	local.retention.bytes                 
-                                         	local.retention.ms                    
-                                         	max.compaction.lag.ms                 
-                                         	max.message.bytes                     
-                                         	message.downconversion.enable         
-                                         	message.format.version                
-                                         	message.timestamp.difference.max.ms   
-                                         	message.timestamp.type                
-                                         	min.cleanable.dirty.ratio             
-                                         	min.compaction.lag.ms                 
-                                         	min.insync.replicas                   
-                                         	preallocate                           
-                                         	remote.storage.enable                 
-                                         	retention.bytes                       
-                                         	retention.ms                          
-                                         	segment.bytes                         
-                                         	segment.index.bytes                   
-                                         	segment.jitter.ms                     
-                                         	segment.ms                            
-                                         	unclean.leader.election.enable        
+                                         index.interval.bytes                  
+                                         leader.replication.throttled.replicas 
+                                         local.retention.bytes                 
+                                         local.retention.ms                    
+                                         max.compaction.lag.ms                 
+                                         max.message.bytes                     
+                                         message.downconversion.enable         
+                                         message.format.version                
+                                         message.timestamp.difference.max.ms   
+                                         message.timestamp.type                
+                                         min.cleanable.dirty.ratio             
+                                         min.compaction.lag.ms                 
+                                         min.insync.replicas                   
+                                         preallocate                           
+                                         remote.storage.enable                 
+                                         retention.bytes                       
+                                         retention.ms                          
+                                         segment.bytes                         
+                                         segment.index.bytes                   
+                                         segment.jitter.ms                     
+                                         segment.ms                            
+                                         unclean.leader.election.enable        
                                          See the Kafka documentation for full   
                                            details on the topic configs. It is  
                                            supported only in combination with --
@@ -164,11 +164,11 @@ Now let's create a new topic. For that we again use the **kafka-topics** utility
 
 ```bash
 kafka-topics --create \
-			--if-not-exists \
-			--bootstrap-server kafka-1:19092,kafka-2:19093 \
-			--topic test-topic \
-			--partitions 6 \
-			--replication-factor 2
+             --if-not-exists \
+             --bootstrap-server kafka-1:19092,kafka-2:19093 \
+             --topic test-topic \
+             --partitions 6 \
+             --replication-factor 2
 ```
 
 Re-Run the command to list the topics. You should see the new topic you have just created. 
@@ -182,13 +182,13 @@ kafka-topics --describe --bootstrap-server kafka-1:19092,kafka-2:19093 --topic t
 ```
 
 ```bash
-Topic:test-topic	PartitionCount:6	ReplicationFactor:2	Configs:
-	Topic: test-topic	Partition: 0	Leader: 3	Replicas: 3,2	Isr: 3,2
-	Topic: test-topic	Partition: 1	Leader: 1	Replicas: 1,3	Isr: 1,3
-	Topic: test-topic	Partition: 2	Leader: 2	Replicas: 2,1	Isr: 2,1
-	Topic: test-topic	Partition: 3	Leader: 3	Replicas: 3,1	Isr: 3,1
-	Topic: test-topic	Partition: 4	Leader: 1	Replicas: 1,2	Isr: 1,2
-	Topic: test-topic	Partition: 5	Leader: 2	Replicas: 2,3	Isr: 2,3
+Topic:test-topicPartitionCount:6ReplicationFactor:2Configs:
+Topic: test-topicPartition: 0Leader: 3Replicas: 3,2Isr: 3,2
+Topic: test-topicPartition: 1Leader: 1Replicas: 1,3Isr: 1,3
+Topic: test-topicPartition: 2Leader: 2Replicas: 2,1Isr: 2,1
+Topic: test-topicPartition: 3Leader: 3Replicas: 3,1Isr: 3,1
+Topic: test-topicPartition: 4Leader: 1Replicas: 1,2Isr: 1,2
+Topic: test-topicPartition: 5Leader: 2Replicas: 2,3Isr: 2,3
 ```
 
 ### Produce and Consume to Kafka topic with command line utility
@@ -246,8 +246,8 @@ You can also echo a longer message and pipe it into the console producer, as he 
 
 ```bash
 echo "This is my first message!" | kafka-console-producer \
-                  --bootstrap-server kafka-1:19092,kafka-2:19093 \
-                  --topic test-topic
+                         --bootstrap-server kafka-1:19092,kafka-2:19093 \
+                         --topic test-topic
 ```
 
 And of course you can send messages inside a bash for loop:
@@ -256,9 +256,9 @@ And of course you can send messages inside a bash for loop:
 for i in 1 2 3 4 5 6 7 8 9 10
 do
    echo "This is message $i"| kafka-console-producer \
-                   --bootstrap-server kafka-1:19092,kafka-2:19093 \
-                  --topic test-topic \
-                  --batch-size 1 &
+          --bootstrap-server kafka-1:19092,kafka-2:19093 \
+          --topic test-topic \
+          --batch-size 1 &
 done 
 ```
 
@@ -274,10 +274,10 @@ We can check that by re-consuming the messages we have created so far, specifyin
 
 ```bash
 kafka-console-consumer --bootstrap-server kafka-1:19092,kafka-2:19093 \
-							--topic test-topic \
-							--property print.key=true \
-							--property key.separator=, \
-							--from-beginning
+                      --topic test-topic \
+                      --property print.key=true \
+                      --property key.separator=, \
+                      --from-beginning
 ```
 
 We can see that the keys are all `null` because so far we have only created the value part of the messages.
@@ -286,9 +286,9 @@ For producing messages also with a key, use the options `parse.key` and `key.sep
 
 ```bash
 kafka-console-producer  --bootstrap-server kafka-1:19092,kafka-2:19093 \
-							--topic test-topic \
-							--property parse.key=true \
-							--property key.separator=,
+                        --topic test-topic \
+                        --property parse.key=true \
+                        --property key.separator=,
 ```
 
 Enter your messages so that a key and messages are separated by a comma, i.e. `key1,value1`.  Do that for a few messages and check that they are shown in the console consumers as key and value. 
@@ -356,6 +356,12 @@ There is also a Docker container from Confluent which can be used to run **Kcat*
 
 ```bash
 docker run --tty --network kafka-workshop edenhill/kcat:1.7.0 kcat
+```
+
+By setting an alias, we can work with the dockerized version of `kcat` as it would be a local command. All further examples assume that this is the case. 
+
+```bash
+alias kcat='docker run --tty --network kafka-workshop edenhill/kcat:1.7.0 kcat'
 ```
 
 Check the [Docker Image description on Docker Hub](https://hub.docker.com/r/confluentinc/cp-kafkacat) to see more options for using **Kafkacat** with Docker. 
@@ -557,52 +563,46 @@ Now let's use it to Produce and Consume messages.
 
 The simplest way to consume a topic is just specifying the broker and the topic. By default all messages from the beginning of the topic will be shown. All the examples below are shown using `kcat`. If you are still on the older version (before `1.7` replace `kcat` with `kafkacat`). 
 
-You can either use a locally installed version of `kcat`
+Replace `kafka-1` by the IP address of the Kafka broker if needed.
 
 ```bash
-kcat -b streamingplatform -t test-topic
+kcat -b kafka-1 -t test-topic
 ```
-or the one using the docker image
-
-```bash
-docker run --tty --network kafka-workshop edenhill/kcat:1.7.0 kcat -b kafka-1:19092 -t test-topic
-```
-
 
 If you want to start at the end of the topic, i.e. only show new messages, add the `-o` option. 
 
 ```bash
-kcat -b streamingplatform -t test-topic -o end
+kcat -b kafka-1 -t test-topic -o end
 ```
 
 To show only the last message (one for each partition), set the `-o` option to `-1`. `-2` would show the last 2 messages.
 
 ```bash
-kcat -b streamingplatform -t test-topic -o -1
+kcat -b kafka-1 -t test-topic -o -1
 ```
 
 To show only the last message from exactly one partition, add the `-p` option
 
 ```bash
-kcat -b streamingplatform -t test-topic -p1 -o -1
+kcat -b kafka-1 -t test-topic -p1 -o -1
 ```
 
 You can use the `-f` option to format the output. Here we show the partition (`%p`) as well as key (`%k`) and value (`%s`):
 
 ```bash
-kcat -b streamingplatform -t test-topic -f 'Part-%p => %k:%s\n'
+kcat -b kafka-1 -t test-topic -f 'Part-%p => %k:%s\n'
 ```
 
 If there are keys which are Null, then you can use `-Z` to actually show NULL in the output:
 
 ```bash
-kcat -b streamingplatform -t test-topic -f 'Part-%p => %k:%s\n' -Z
+kcat -b kafka-1 -t test-topic -f 'Part-%p => %k:%s\n' -Z
 ```
 
 There is also the option `-J` to have the output emitted as JSON.
 
 ```bash
-kcat -b streamingplatform -t test-topic -J
+kcat -b kafka-1 -t test-topic -J
 ```
 
 ### Producing messages using Kafkacat
@@ -610,13 +610,13 @@ kcat -b streamingplatform -t test-topic -J
 Producing messages with **Kafkacat** is as easy as consuming. Just add the `-P` option to switch to Producer mode.
 
 ```bash
-kcat -b streamingplatform -t test-topic -P
+kcat -b kafka-1 -t test-topic -P
 ```
 
 To produce with key, specify the delimiter to split key and message, using the `-K` option. 
 
 ```bash
-kcat -b streamingplatform -t test-topic -P -K , -X topic.partitioner=murmur2_random
+kcat -b kafka-1 -t test-topic -P -K , -X topic.partitioner=murmur2_random
 ```
 
 Find some more example on the [Kafkacat GitHub project](https://github.com/edenhill/kafkacat) or in the [Confluent Documentation](https://docs.confluent.io/current/app-development/kafkacat-usage.html).
@@ -628,8 +628,7 @@ In his [blog article](https://rmoff.net/2018/05/10/quick-n-easy-population-of-re
 Taking his example, you can send 10 orders to test-topic.
 
 ```bash
-curl -s "https://api.mockaroo.com/api/d5a195e0?count=20&key=ff7856d0"| \
-	kcat -b streamingplatform -t test-topic -P
+curl -s "https://api.mockaroo.com/api/d5a195e0?count=20&key=ff7856d0"| kcat -b kafka-1 -t test-topic -P
 ```
 
 ## Using Kafka Manager

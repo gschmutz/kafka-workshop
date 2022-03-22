@@ -142,11 +142,11 @@ In order to separate the Avro tests from the other tests, lets create a new topi
 
 ```bash
 kafka-topics --create \
-			--if-not-exists \
-			--zookeeper zookeeper:2181 \
-			--topic test-avro-topic \
-			--partitions 8 \
-			--replication-factor 3
+             --if-not-exists \
+             --bootstrap-server kafka-1:19092 \
+             --topic test-avro-topic \
+             --partitions 8 \
+             --replication-factor 3
 ```
 
 Make sure that you change the **kafkacat** command to consume from the new topic.
@@ -213,6 +213,7 @@ avroProducer.flush()
 ```
 
 When producing an Avro message, the library will check if the Avro Schema for the key and the value part is already registered and if it is, it checks if the one provided has a change and if yes, if this change is compatible. 
+
 If a schema does not exist at all, then it is registered. You can check the registry through the REST API or the Schema Registry UI. 
 
 ### View schemas using REST API
