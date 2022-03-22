@@ -17,9 +17,12 @@ The environment contains of a Kafka cluster with 3 brokers, all running on the D
 To work with Kafka you need the command line utilities. They are available on each broker. 
 The `kafka-topics` utility is used to create, alter, describe, and delete topics. The `kafka-console-producer` and `kafka-console-consumer` can be used to produce/consume messages to/from a Kafka topic. 
 
-So let's connect into one of the broker through a terminal window. You can use the Web Terminal available on port `3001`, i.e.: <http://dataplatform:3001>.
+So let's connect into one of the broker through a terminal window.
+  
+  * If you have access through Guacamole, then right click on the dashboard and select **Open Terminal**.
+  * if you have a user and password, you can also use a browser-based terminal, by navigating to <http://localhost:3001> and then login with username and password.
 
-Open a terminal window on the Docker Host and run a `docker exec` command to start a shell in the `kafka-1` docker container 
+In the terminal window run a `docker exec` command to start a shell in the `kafka-1` docker container 
 
 ```bash
 docker exec -ti kafka-1 bash
