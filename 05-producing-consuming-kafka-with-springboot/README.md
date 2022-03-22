@@ -12,7 +12,7 @@ First we create an test the Producer microservice.
 
 First, let’s navigate to [Spring Initializr](https://start.spring.io/) to generate our project. Our project will need the Apache Kafka support. 
 
-Select Generate a **Maven Project** with **Java** and Spring Boot **2.5.3**. Enter `com.trivadis.kafkaws` for the **Group**, `spring-boot-kafka-producer` for the **Artifact** field and `Kafka Producer project for Spring Boot` for the **Description** field. 
+Select Generate a **Maven Project** with **Java** and Spring Boot **2.6.4**. Enter `com.trivadis.kafkaws` for the **Group**, `spring-boot-kafka-producer` for the **Artifact** field and `Kafka Producer project for Spring Boot` for the **Description** field. 
 
 ![Alt Image Text](./images/spring-initializr.png "Spring Initializr")
 
@@ -247,7 +247,7 @@ Now let's create an test the Consumer microservice.
 
 Use again the [Spring Initializr](https://start.spring.io/) to generate the project.
 
-Select Generate a **Maven Project** with **Java** and Spring Boot **2.5.3**. Enter `com.trivadis.kafkaws` for the **Group**, `spring-boot-kafka-consumer` for the **Artifact** field and `Kafka Consumer project for Spring Boot` for the **Description** field. 
+Select Generate a **Maven Project** with **Java** and Spring Boot **2.6.4**. Enter `com.trivadis.kafkaws` for the **Group**, `spring-boot-kafka-consumer` for the **Artifact** field and `Kafka Consumer project for Spring Boot` for the **Description** field. 
 
 Click on **Add Dependencies** and search for the  **Spring for Apache Kafka** depencency. 
 
