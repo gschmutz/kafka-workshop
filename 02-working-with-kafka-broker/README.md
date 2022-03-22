@@ -316,11 +316,11 @@ You can run **Kafkacat** as a standalone utility on any **Linux** or **Mac** com
 Officially **Kafkacat** is either supported on **Linux** or **Mac OS-X**. There is no official support for **Windows** yet. There is a Docker image for Kafkacat from Confluent as well.
 We will show how to install it on **Ubunut** and **Mac OS-X**. 
 
-In all the workshops we will assume that **Kafkacat** is installed locally on the Docker Host and that `streamingplatform` alias has been added to `/etc/hosts`. 
+In all the workshops we will assume that **Kcat** (used to be named **Kafkact** before version `1.7`) is installed locally on the Docker Host and that `streamingplatform` alias has been added to `/etc/hosts`. 
 
 #### Ubuntu
 
-You can install **kafkacat** directly on the Ubuntu environment. First let's install the required packages:
+You can install **kafkacat** directly on the Ubuntu environment. Version 1.7 is not yet available and therefore it is still called **kafkacat**. First let's install the required packages:
 
 Install the Confluent public key, which is used to sign the packages in the APT repository:
 
@@ -344,15 +344,15 @@ sudo apt-get install kafkacat
 
 #### Mac OS-X
 
-To install **Kafkacat** on a Macbook, just run the following command:
+To install **Kcat** on a Macbook, just run the following command:
 
 ```bash
-brew install kafkacat
+brew install kcat
 ```
 
 #### Docker Container
 
-There is also a Docker container from Confluent which can be used to run **Kafkacat**
+There is also a Docker container from Confluent which can be used to run **Kcat**
 
 ```bash
 docker run --tty --network kafka-workshop edenhill/kcat:1.7.0 kcat
@@ -368,17 +368,17 @@ An other option for Windows is to run it as a Docker container as shown above.
 
 ### Display Kafkacat options
 
-**kafkacat** has many options. If you just enter `kafkacat` without any options, all the options with a short description is shown on the console. Additionally Kafkacat will show the version which is installed. This is current **1.5.0** if installed on Mac and **1.3.1** if on Ubuntu. **1.4.0** is interesting, because support for Kafka Headers has been added and with **1.5.0** there is also support for consuming Avro messages.
+**kafkacat** has many options. If you just enter `kafkacat` without any options, all the options with a short description is shown on the console. Additionally Kafkacat will show the version which is installed. This is currently **1.7.0** if installed on Mac and **1.6.0** if on Ubuntu. 
 
 ```bash
-gus@gusmacbook ~> kafkacat
+gus@gusmacbook ~> kcat
 Error: -b <broker,..> missing
 
-Usage: kafkacat <options> [file1 file2 .. | topic1 topic2 ..]]
-kafkacat - Apache Kafka producer and consumer tool
-https://github.com/edenhill/kafkacat
-Copyright (c) 2014-2019, Magnus Edenhill
-Version 1.5.0 (JSON, librdkafka 1.2.0 builtin.features=gzip,snappy,ssl,sasl,regex,lz4,sasl_gssapi,sasl_plain,sasl_scram,plugins,zstd,sasl_oauthbearer)
+Usage: kcat <options> [file1 file2 .. | topic1 topic2 ..]]
+kcat - Apache Kafka producer and consumer tool
+https://github.com/edenhill/kcat
+Copyright (c) 2014-2021, Magnus Edenhill
+Version 1.7.0 (JSON, Avro, Transactions, IncrementalAssign, librdkafka 1.8.2 builtin.features=gzip,snappy,ssl,sasl,regex,lz4,sasl_gssapi,sasl_plain,sasl_scram,plugins,zstd,sasl_oauthbearer)
 
 
 General options:
@@ -388,25 +388,33 @@ General options:
   -t <topic>         Topic to consume from, produce to, or list
   -p <partition>     Partition
   -b <brokers,..>    Bootstrap broker(s) (host[:port])
-  -D <delim>         Message delimiter character:
-                     a-z.. | \r | \n | \t | \xNN
+  -D <delim>         Message delimiter string:
+                     a-z | \r | \n | \t | \xNN ..
                      Default: \n
-  -E                 Do not exit on non fatal error
   -K <delim>         Key delimiter (same format as -D)
   -c <cnt>           Limit message count
+  -m <seconds>       Metadata (et.al.) request timeout.
+                     This limits how long kcat will block
+                     while waiting for initial metadata to be
+                     retrieved from the Kafka cluster.
+                     It also sets the timeout for the producer's
+                     transaction commits, init, aborts, etc.
+                     Default: 5 seconds.
   -F <config-file>   Read configuration properties from file,
                      file format is "property=value".
-                     The KAFKACAT_CONFIG=path environment can also be used, but -F takes preceedence.
-                     The default configuration file is $HOME/.config/kafkacat.conf
+                     The KCAT_CONFIG=path environment can also be used, but -F takes precedence.
+                     The default configuration file is $HOME/.config/kcat.conf
   -X list            List available librdkafka configuration properties
   -X prop=val        Set librdkafka configuration property.
                      Properties prefixed with "topic." are
                      applied as topic properties.
+  -X schema.registry.prop=val Set libserdes configuration property for the Avro/Schema-Registry client.
   -X dump            Dump configuration and exit.
   -d <dbg1,...>      Enable librdkafka debugging:
-                     all,generic,broker,topic,metadata,feature,queue,msg,protocol,cgrp,security,fetch,interceptor,plugin,consumer,admin,eos
+                     all,generic,broker,topic,metadata,feature,queue,msg,protocol,cgrp,security,fetch,interceptor,plugin,consumer,admin,eos,mock,assignor,conf
   -q                 Be quiet (verbosity set to 0)
   -v                 Increase verbosity
+  -E                 Do not exit on non-fatal error
   -V                 Print version
   -h                 Print usage help
 
@@ -429,6 +437,12 @@ Producer options:
                      With -l, only one file permitted.
                      Otherwise, the entire file contents will
                      be sent as one single message.
+  -X transactional.id=.. Enable transactions and send all
+                     messages in a single transaction which
+                     is committed when stdin is closed or the
+                     input file(s) are fully read.
+                     If kcat is terminated through Ctrl-C
+                     (et.al) the transaction will be aborted.
 
 Consumer options:
   -o <offset>        Offset to start consuming from:
@@ -462,12 +476,16 @@ Consumer options:
                                        Not including this token skips any
                                        remaining data after the pack-str is
                                        exhausted.
+                       avro       - Avro-formatted with schema in Schema-Registry (requires -r)
+                     E.g.: -s key=i -s value=avro - key is 32-bit integer, value is Avro.
+                       or: -s avro - both key and value are Avro-serialized
+  -r <url>           Schema registry URL (when avro deserializer is used with -s)
   -D <delim>         Delimiter to separate messages on output
   -K <delim>         Print message keys prefixing the message
                      with specified delimiter.
   -O                 Print message offset using -K delimiter
   -c <cnt>           Exit after consuming this number of messages
-  -Z                 Print NULL values and keys as "NULL"instead of empty.
+  -Z                 Print NULL values and keys as "NULL" instead of empty.
                      For JSON (-J) the nullstr is always null.
   -u                 Unbuffered output
 
@@ -503,75 +521,88 @@ Format string tokens:
 JSON message envelope (on one line) when consuming with -J:
  { "topic": str, "partition": int, "offset": int,
    "tstype": "create|logappend|unknown", "ts": int, // timestamp in milliseconds since epoch
+   "broker": int,
    "headers": { "<name>": str, .. }, // optional
    "key": str|json, "payload": str|json,
-   "key_error": str, "payload_error": str } //optional
- (note: key_error and payload_error are only included if deserialization failed)
+   "key_error": str, "payload_error": str, //optional
+   "key_schema_id": int, "value_schema_id": int //optional
+ }
+ notes:
+   - key_error and payload_error are only included if deserialization fails.
+   - key_schema_id and value_schema_id are included for successfully deserialized Avro messages.
 
 Consumer mode (writes messages to stdout):
-  kafkacat -b <broker> -t <topic> -p <partition>
+  kcat -b <broker> -t <topic> -p <partition>
  or:
-  kafkacat -C -b ...
+  kcat -C -b ...
 
 High-level KafkaConsumer mode:
-  kafkacat -b <broker> -G <group-id> topic1 top2 ^aregex\d+
+  kcat -b <broker> -G <group-id> topic1 top2 ^aregex\d+
 
 Producer mode (reads messages from stdin):
-  ... | kafkacat -b <broker> -t <topic> -p <partition>
+  ... | kcat -b <broker> -t <topic> -p <partition>
  or:
-  kafkacat -P -b ...
+  kcat -P -b ...
 
 Metadata listing:
-  kafkacat -L -b <broker> [-t <topic>]
+  kcat -L -b <broker> [-t <topic>]
 
 Query offset by timestamp:
-  kafkacat -Q -b broker -t <topic>:<partition>:<timestamp>
+  kcat -Q -b broker -t <topic>:<partition>:<timestamp>
 ```
 
 Now let's use it to Produce and Consume messages.
 
-### Consuming messages using Kafkacat
+### Consuming messages using Kcat
 
-The simplest way to consume a topic is just specifying the broker and the topic. By default all messages from the beginning of the topic will be shown 
+The simplest way to consume a topic is just specifying the broker and the topic. By default all messages from the beginning of the topic will be shown. All the examples below are shown using `kcat`. If you are still on the older version (before `1.7` replace `kcat` with `kafkacat`). 
+
+You can either use a locally installed version of `kcat`
 
 ```bash
-kafkacat -b streamingplatform -t test-topic
+kcat -b streamingplatform -t test-topic
 ```
+or the one using the docker image
+
+```bash
+docker run --tty --network kafka-workshop edenhill/kcat:1.7.0 kcat -b kafka-1:19092 -t test-topic
+```
+
 
 If you want to start at the end of the topic, i.e. only show new messages, add the `-o` option. 
 
 ```bash
-kafkacat -b streamingplatform -t test-topic -o end
+kcat -b streamingplatform -t test-topic -o end
 ```
 
 To show only the last message (one for each partition), set the `-o` option to `-1`. `-2` would show the last 2 messages.
 
 ```bash
-kafkacat -b streamingplatform -t test-topic -o -1
+kcat -b streamingplatform -t test-topic -o -1
 ```
 
 To show only the last message from exactly one partition, add the `-p` option
 
 ```bash
-kafkacat -b streamingplatform -t test-topic -p1 -o -1
+kcat -b streamingplatform -t test-topic -p1 -o -1
 ```
 
 You can use the `-f` option to format the output. Here we show the partition (`%p`) as well as key (`%k`) and value (`%s`):
 
 ```bash
-kafkacat -b streamingplatform -t test-topic -f 'Part-%p => %k:%s\n'
+kcat -b streamingplatform -t test-topic -f 'Part-%p => %k:%s\n'
 ```
 
 If there are keys which are Null, then you can use `-Z` to actually show NULL in the output:
 
 ```bash
-kafkacat -b streamingplatform -t test-topic -f 'Part-%p => %k:%s\n' -Z
+kcat -b streamingplatform -t test-topic -f 'Part-%p => %k:%s\n' -Z
 ```
 
 There is also the option `-J` to have the output emitted as JSON.
 
 ```bash
-kafkacat -b streamingplatform -t test-topic -J
+kcat -b streamingplatform -t test-topic -J
 ```
 
 ### Producing messages using Kafkacat
@@ -579,13 +610,13 @@ kafkacat -b streamingplatform -t test-topic -J
 Producing messages with **Kafkacat** is as easy as consuming. Just add the `-P` option to switch to Producer mode.
 
 ```bash
-kafkacat -b streamingplatform -t test-topic -P
+kcat -b streamingplatform -t test-topic -P
 ```
 
 To produce with key, specify the delimiter to split key and message, using the `-K` option. 
 
 ```bash
-kafkacat -b streamingplatform -t test-topic -P -K , -X topic.partitioner=murmur2_random
+kcat -b streamingplatform -t test-topic -P -K , -X topic.partitioner=murmur2_random
 ```
 
 Find some more example on the [Kafkacat GitHub project](https://github.com/edenhill/kafkacat) or in the [Confluent Documentation](https://docs.confluent.io/current/app-development/kafkacat-usage.html).
@@ -598,7 +629,7 @@ Taking his example, you can send 10 orders to test-topic.
 
 ```bash
 curl -s "https://api.mockaroo.com/api/d5a195e0?count=20&key=ff7856d0"| \
-	kafkacat -b streamingplatform -t test-topic -P
+	kcat -b streamingplatform -t test-topic -P
 ```
 
 ## Using Kafka Manager
