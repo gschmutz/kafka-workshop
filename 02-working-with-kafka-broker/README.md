@@ -301,26 +301,26 @@ A Kafka topic can be dropped using the `kafka-topics` utility with the `--delete
 kafka-topics  --bootstrap-server kafka-1:19092,kafka-2:19093 --delete --topic test-topic
 ```
 
-## Working with the Kafkacat utility
+## Working with the `kcat` utility
 
-[Kafkacat](https://docs.confluent.io/current/app-development/kafkacat-usage.html#kafkacat-usage) is a command line utility that you can use to test and debug Apache Kafka deployments. You can use `kafkacat` to produce, consume, and list topic and partition information for Kafka. Described as “netcat for Kafka”, it is a swiss-army knife of tools for inspecting and creating data in Kafka.
+[kcat](https://github.com/edenhill/kcat) is a command line utility that you can use to test and debug Apache Kafka deployments. You can use `kafkacat` to produce, consume, and list topic and partition information for Kafka. Described as “netcat for Kafka”, it is a swiss-army knife of tools for inspecting and creating data in Kafka.
 
 It is similar to the `kafka-console-producer` and `kafka-console-consumer` you have learnt and used above, but much more powerful and also simpler to use. 
 
-**Kafkacat** is an open-source utility, available at <https://github.com/edenhill/kafkacat>. It is not part of the Confluent platform and also not part of the Streaming Platform we run in docker. 
+`kcat` is an open-source utility, available at <hhttps://github.com/edenhill/kcat>. It is not part of the Confluent platform and also not part of the Streaming Platform we run in docker. 
 
 You can run **Kafkacat** as a standalone utility on any **Linux** or **Mac** computer and remotely connect to a running Kafka cluster. 
 
-### Installing Kafakcat
+### Installing `kcat`
 
-Officially **Kafkacat** is either supported on **Linux** or **Mac OS-X**. There is no official support for **Windows** yet. There is a Docker image for Kafkacat from Confluent as well.
+Officially `kcat` is either supported on **Linux** or **Mac OS-X**. There is no official support for **Windows** yet. There is a Docker image for `kcat` from Confluent as well.
 We will show how to install it on **Ubunut** and **Mac OS-X**. 
 
 In all the workshops we will assume that **Kcat** (used to be named **Kafkact** before version `1.7`) is installed locally on the Docker Host and that `streamingplatform` alias has been added to `/etc/hosts`. 
 
 #### Ubuntu
 
-You can install **kafkacat** directly on the Ubuntu environment. Version 1.7 is not yet available and therefore it is still called **kafkacat**. First let's install the required packages:
+You can install `kcat` directly on the Ubuntu environment. Version 1.7 is not yet available and therefore it is still called **kafkacat**. First let's install the required packages:
 
 Install the Confluent public key, which is used to sign the packages in the APT repository:
 
@@ -344,7 +344,7 @@ sudo apt-get install kafkacat
 
 #### Mac OS-X
 
-To install **Kcat** on a Macbook, just run the following command:
+To install `kcat` on a Macbook, just run the following command:
 
 ```bash
 brew install kcat
@@ -352,7 +352,7 @@ brew install kcat
 
 #### Docker Container
 
-There is also a Docker container from Confluent which can be used to run **Kcat**
+There is also a Docker container from Confluent which can be used to run `kcat`
 
 ```bash
 docker run --tty --network kafka-workshop edenhill/kcat:1.7.0 kcat
@@ -364,7 +364,7 @@ By setting an alias, we can work with the dockerized version of `kcat` as it wou
 alias kcat='docker run --tty --network kafka-workshop edenhill/kcat:1.7.0 kcat'
 ```
 
-Check the [Docker Image description on Docker Hub](https://hub.docker.com/r/confluentinc/cp-kafkacat) to see more options for using **Kafkacat** with Docker. 
+Check the [Running in Docker](https://github.com/edenhill/kcat#running-in-docker) to see more options for using `kcat` with Docker. 
 
 #### Windows
 
@@ -372,9 +372,9 @@ There is no official support to run Kafkacat on Windows. You might try the follo
 
 An other option for Windows is to run it as a Docker container as shown above. 
 
-### Display Kafkacat options
+### Display kcat options
 
-**kafkacat** has many options. If you just enter `kafkacat` without any options, all the options with a short description is shown on the console. Additionally Kafkacat will show the version which is installed. This is currently **1.7.0** if installed on Mac and **1.6.0** if on Ubuntu. 
+`kcat` has many options. If you just enter `kcat` without any options, all the options with a short description is shown on the console. Additionally kcat will show the version which is installed. This is currently **1.7.0** if installed on Mac and **1.6.0** if on Ubuntu. 
 
 ```bash
 gus@gusmacbook ~> kcat
@@ -605,9 +605,9 @@ There is also the option `-J` to have the output emitted as JSON.
 kcat -b kafka-1 -t test-topic -J
 ```
 
-### Producing messages using Kafkacat
+### Producing messages using `kcat`
 
-Producing messages with **Kafkacat** is as easy as consuming. Just add the `-P` option to switch to Producer mode.
+Producing messages with `kcat` is as easy as consuming. Just add the `-P` option to switch to Producer mode.
 
 ```bash
 kcat -b kafka-1 -t test-topic -P
@@ -619,13 +619,13 @@ To produce with key, specify the delimiter to split key and message, using the `
 kcat -b kafka-1 -t test-topic -P -K , -X topic.partitioner=murmur2_random
 ```
 
-Find some more example on the [Kafkacat GitHub project](https://github.com/edenhill/kafkacat) or in the [Confluent Documentation](https://docs.confluent.io/current/app-development/kafkacat-usage.html).
+Find some more example on the [kcat GitHub project](https://github.com/edenhill/kcat) or in the [Confluent Documentation](https://docs.confluent.io/current/app-development/kafkacat-usage.html).
 
-### Send "realistic" test messages to Kafka using Mockaroo and Kafkacat
+### Send "realistic" test messages to Kafka using Mockaroo and kcat
 
-In his [blog article](https://rmoff.net/2018/05/10/quick-n-easy-population-of-realistic-test-data-into-kafka-with-mockaroo-and-kafkacat/) Robin Moffatt shows an interesting and easy approach to send realistic mock data to Kafka. He is using [Mockaroo](https://mockaroo.com/), a free test data generator and API mocking tool, together with [Kafkacat](https://github.com/edenhill/kafkacat) to produce mock messages. 
+In his [blog article](https://rmoff.net/2018/05/10/quick-n-easy-population-of-realistic-test-data-into-kafka-with-mockaroo-and-kafkacat/) Robin Moffatt shows an interesting and easy approach to send realistic mock data to Kafka. He is using [Mockaroo](https://mockaroo.com/), a free test data generator and API mocking tool, together with [kcat](https://github.com/edenhill/kcat) to produce mock messages. 
 
-Taking his example, you can send 10 orders to test-topic.
+Taking his example, you can send 10 orders to test-topic (it will not work if you use the dockerized version of `kcat`)
 
 ```bash
 curl -s "https://api.mockaroo.com/api/d5a195e0?count=20&key=ff7856d0"| kcat -b kafka-1 -t test-topic -P

@@ -177,10 +177,10 @@ Now run it using the `dotnet run` command. It will generate 1000 messages, waiti
 dotnet run -p ./producer/producer.csproj 1000 100 0
 ```
 
-Use `kafkacat` or `kafka-console-consumer` to consume the messages from the topic `test-dotnet-topic`.
+Use `kcat` or `kafka-console-consumer` to consume the messages from the topic `test-dotnet-topic`.
 
 ```
-docker exec -ti kafkacat kafkacat -b kafka-1 -t test-dotnet-topic -f 'Part-%p => %k:%s\n' -q
+kcat -b kafka-1 -t test-dotnet-topic -f 'Part-%p => %k:%s\n' -q
 ```
 
 ```
