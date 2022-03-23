@@ -12,7 +12,7 @@ import io.confluent.kafka.serializers.KafkaAvroSerializerConfig;
 
 public class KafkaProducerAvro {
 
-    private final static String TOPIC = "test-java-avro-topic1";
+    private final static String TOPIC = "test-java-avro-topic";
     private final static String BOOTSTRAP_SERVERS =
             "dataplatform:9092, dataplatform:9093, dataplatform:9094";
     private final static String SCHEMA_REGISTRY_URL = "http://dataplatform:8081";
@@ -37,6 +37,7 @@ public class KafkaProducerAvro {
         try {
             for (long index = 0; index < sendMessageCount; index++) {
                 Notification notification = new Notification(id, "Hello Kafka " + index);
+
                 final ProducerRecord<Long, Notification> record =
                         new ProducerRecord<>(TOPIC, key, notification);
 
