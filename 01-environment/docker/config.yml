@@ -56,10 +56,10 @@
       KAFKA_auto_create_topics_enable: false
 
       #kafka schema registry
-      KAFKA_SCHEMA_REGISTRY_enable: true
-      KAFKA_SCHEMA_REGISTRY_nodes: 1
-      KAFKA_SCHEMA_REGISTRY_use_zookeeper_election: false
-      KAFKA_SCHEMA_REGISTRY_replication_factor: 1
+      SCHEMA_REGISTRY_enable: true
+      SCHEMA_REGISTRY_nodes: 1
+      CONFLUENT_SCHEMA_REGISTRY_use_zookeeper_election: false
+      CONFLUENT_SCHEMA_REGISTRY_replication_factor: 1
 
       #kafka connect
       KAFKA_CONNECT_enable: true
@@ -77,7 +77,7 @@
       KAFKA_RESTPROXY_enable: false
       KAFKA_MQTTPROXY_enable: false
 
-      KAFKA_SCHEMA_REGISTRY_UI_enable: true
+      SCHEMA_REGISTRY_UI_enable: true
       KAFKA_TOPICS_UI_enable: true
       KAFKA_CONNECT_UI_enable: true
 

@@ -12,7 +12,6 @@ networks:
 # enforce some dependencies
 # enforce some dependencies
 # enforce some dependencies
-# enforce some dependencies
 # Enable PostgreSQL or MySQL for MLflow server
 services:
   #  ================================== Zookeeper ========================================== #
@@ -411,6 +410,23 @@ services:
     volumes:
       - ./data-transfer:/data-transfer
       - ./plugins/opentelemetry/agents:/tmp
+    restart: unless-stopped
+  #  ================================== Schema Registry UI ========================================== #
+  schema-registry-ui:
+    image: landoop/schema-registry-ui:latest
+    container_name: schema-registry-ui
+    hostname: schema-registry-ui
+    labels:
+      com.platys.name: schema-registry-ui
+      com.platys.webui.title: Confluent Schema Registry UI
+      com.platys.webui.url: http://${PUBLIC_IP}:28102
+    ports:
+      - 28102:8000
+    environment:
+      SCHEMAREGISTRY_URL: http://${PUBLIC_IP}:8081
+    volumes:
+      - ./data-transfer:/data-transfer
+      - ./conf/resolv.conf:/etc/resolv.conf:ro
     restart: unless-stopped
   #  ================================== Kafka Topics UI ========================================== #
   kafka-topics-ui:
