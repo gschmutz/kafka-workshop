@@ -106,7 +106,7 @@ The Kafka cluster is configured with `auto.topic.create.enable` set to `false`. 
 We can easily get access to the `kafka-topics` CLI by navigating into one of the containers for the 3 Kafka Brokers. Let's use `kafka-11`
 
 ```bash
-docker exec -ti kafka-11 bash
+docker exec -ti kafka-1 bash
 ```
 
 First let's see all existing topics
