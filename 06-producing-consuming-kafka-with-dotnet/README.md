@@ -60,7 +60,7 @@ kafka-topics --create \
     --replication-factor 3 \
     --partitions 8 \
     --topic test-dotnet-topic \
-    --bootstrap-server kafka-1:19092
+    --bootstrap-server kafka-1:19092,kafka-2:19093
 ```
 
 Cross check that the topic has been created.
