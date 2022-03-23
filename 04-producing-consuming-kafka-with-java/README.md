@@ -772,13 +772,13 @@ nothing consumed
 Let's first remove and recreate the topic, so the offsets will again start at 0. 
 
 ```bash
-docker exec -ti kafka-1 kafka-topics --delete --topic test-java-topic --zookeeper zookeeper-1:2181
+docker exec -ti kafka-1 kafka-topics --delete --topic test-java-topic --bootstrap-server kafka-1:19092,kafka-2:19093
 
 docker exec kafka-1 kafka-topics --create \
     --replication-factor 3 \
     --partitions 8 \
     --topic test-java-topic \
-    --zookeeper zookeeper-1:2181
+    --bootstrap-server kafka-1:19092,kafka-2:19093
 ```
 
 Start the a producer to produce 1000 messages with a delay of 100ms between sending each message. We deliberetly only use one partition by specifying a key (`1`). 

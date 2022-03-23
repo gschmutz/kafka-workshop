@@ -177,7 +177,7 @@ kafka-topics --create \
 --replication-factor 3 \
 --partitions 8 \
 --topic test-java-avro-topic \
---zookeeper zookeeper-1:2181
+--bootstrap-server kafka-1:19092,kafka-2:19093
 ```
 
 This finishes the setup steps and our new project is ready to be used. Next we will start implementing the **Kafka Producer** which uses Avro for the serialization. 
