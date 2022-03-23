@@ -376,6 +376,7 @@ An other option for Windows is to run it as a Docker container as shown above.
 
 `kcat` has many options. If you just enter `kcat` without any options, all the options with a short description is shown on the console. Additionally kcat will show the version which is installed. This is currently **1.7.0** if installed on Mac and **1.6.0** if on Ubuntu. 
 
+
 ```bash
 gus@gusmacbook ~> kcat
 Error: -b <broker,..> missing
@@ -561,9 +562,12 @@ Now let's use it to Produce and Consume messages.
 
 ### Consuming messages using Kcat
 
-The simplest way to consume a topic is just specifying the broker and the topic. By default all messages from the beginning of the topic will be shown. All the examples below are shown using `kcat`. If you are still on the older version (before `1.7` replace `kcat` with `kafkacat`). 
+All the examples below are shown using `kcat`. If you are still on the older version (before `1.7` replace `kcat` with `kafkacat`). 
 
-Replace `kafka-1` by the IP address of the Kafka broker if needed.
+**Note:** Replace `kafka-1` by the IP address of the Kafka broker if needed.
+If you are using the dockerized version, you might have to add the port `19092` to `kafka-1` in all of the samples below (i.e. `kafka-1:19092`).
+
+The simplest way to consume a topic is just specifying the broker and the topic. By default all messages from the beginning of the topic will be shown. 
 
 ```bash
 kcat -b kafka-1 -t test-topic
