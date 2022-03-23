@@ -1,8 +1,14 @@
 # Local Virtual Machine Environment
 
-Open and start the virtual machine either by using **VMWare Workstation** on Windows or **VMWare Fusion** on Mac or **Virtual Box**. 
+Create and start virtual machine with Linux (i.e. Ubuntu) either by using **VMWare Workstation** on Windows or **VMWare Fusion** on Mac or **Virtual Box**. 
 
-Currently the VM is configured to use 14 GB of Memory. If you have less than 16 GB in total available on your system, make sure to reduce it before starting the virtual machine. 
+Configure the VM to use at 12 GB of Memory. 
+
+Install the following software
+
+  * [Docker](https://docs.docker.com/engine/install/ubuntu/)
+  * [Docker Compose](https://docs.docker.com/compose/install/)
+  * [Platys](https://github.com/TrivadisPF/platys/blob/master/documentation/install.md) (optional)
 
 ## Prepare Environment
 
