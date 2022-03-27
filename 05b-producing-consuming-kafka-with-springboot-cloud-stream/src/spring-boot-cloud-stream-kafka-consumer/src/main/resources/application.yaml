@@ -1,0 +1,26 @@
+spring:
+  cloud:
+    stream:
+      default:
+        consumer:
+          useNativeEncoding: true
+      bindings:
+        input:
+          destination: test-spring-cloud-stream-topic
+          group: group-1
+          concurrency: 3
+      kafka:
+        binder:
+          consumer-properties:
+            key.deserializer: org.apache.kafka.common.serialization.LongDeserializer
+            value.deserializer: org.apache.kafka.common.serialization.StringDeserializer
+        bindings:
+          input:
+            consumer:
+              ackEachRecord: false
+              ackMode: BATCH
+  kafka:
+    bootstrap-servers: ${DATAPLATFORM_IP}:9092
+
+
+

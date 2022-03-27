@@ -1,0 +1,23 @@
+topic:
+  name: test-spring-cloud-stream-topic
+  replication-factor: 3
+  partitions: 8
+
+spring:
+  cloud:
+    stream:
+      default:
+        producer:
+          useNativeEncoding: true
+
+      kafka:
+        binder:
+          producer-properties:
+            key.serializer: org.apache.kafka.common.serialization.LongSerializer
+            value.serializer: org.apache.kafka.common.serialization.StringSerializer
+
+      bindings:
+        output:
+          destination: ${topic.name}
+  kafka:
+    bootstrap-servers: ${DATAPLATFORM_IP}:9092
