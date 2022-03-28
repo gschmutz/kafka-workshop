@@ -1,0 +1,26 @@
+topic:
+  name: test-spring-cloud-stream-topic-avro
+
+spring:
+  cloud:
+    stream:
+      kafka:
+        bindings:
+          input:
+            consumer:
+              configuration:
+                value.deserializer: io.confluent.kafka.serializers.KafkaAvroDeserializer
+                schema.registry.url: http://${DATAPLATFORM_IP}:8081
+                specific.avro.reader: true
+
+      bindings:
+        input:
+          destination: ${topic.name}
+          consumer:
+            useNativeEncoding: true
+
+  kafka:
+    bootstrap-servers:
+      - ${DATAPLATFORM_IP}:9092
+      - ${DATAPLATFORM_IP}:9093
+

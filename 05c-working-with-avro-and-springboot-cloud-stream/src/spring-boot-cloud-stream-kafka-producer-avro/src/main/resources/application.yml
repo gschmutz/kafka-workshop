@@ -1,0 +1,24 @@
+topic:
+  name: test-spring-cloud-stream-topic-avro
+  replication-factor: 3
+  partitions: 8
+
+spring:
+  cloud:
+    stream:
+      kafka:
+        bindings:
+          output:
+            producer:
+              configuration:
+                value.serializer: io.confluent.kafka.serializers.KafkaAvroSerializer
+                schema.registry.url: http://${DATAPLATFORM_IP}:8081
+
+      bindings:
+        output:
+          destination: ${topic.name}
+          producer:
+            useNativeEncoding: true
+
+  kafka:
+    bootstrap-servers: ${DATAPLATFORM_IP}:9092
