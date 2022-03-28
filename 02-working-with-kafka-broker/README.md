@@ -215,6 +215,12 @@ and run the following command to start the producer.
 kafka-console-producer --bootstrap-server kafka-1:19092,kafka-2:19093 --topic test-topic
 ```
 
+By default, the console producer waits for **1000ms** before sending messages, if they are not larger than 16'384 bytes. The reason for that is as follows: 
+
+  * the `linger.ms` parameter is set using the `--timeout` option on the command line which if not specified is **1000 ms**. 
+  * the `batch.size` parameter is set using the `--max-partition-memory-bytes` option on the command line which if not specified is **16384**. 
+  * **Note:** even if you specify `linger.ms` and `batch.size` using `--producer-property` or `--producer.config`, they will be always overwritten by the above "specific" options!
+
 The console producer reads from stdin, and takes a bootstrap-server list (you should use it instead of the borker-list, which is deprecated). We specify 2 of the 3 brokers of the Streaming Platform.
 
 On the `>` prompt enter a few messages, execute each single message by hitting the **Enter** key.<br>
