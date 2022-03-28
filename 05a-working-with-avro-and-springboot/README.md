@@ -1,4 +1,4 @@
-# Using Kafka from Spring Boot with Avro & Schema Registry
+# Kafka from Spring Boot with Avro & Schema Registry
 
 In this workshop we will learn how to use the Spring Kafka abstraction with Avro message serialization from within a Spring Boot application. We will implement both a consumer and a producer. We are using the same Avro schema of [Workshop 4a: Working with Avro and Java](../04a-working-with-avro-and-java). 
 

@@ -1,4 +1,4 @@
-package com.trivadis.kafkaws.springbootkafkaconsumer;
+package com.trivadis.kafkaws.springcloudstreamkafkaconsumer;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -7,7 +7,7 @@ import org.springframework.cloud.stream.messaging.Processor;
 
 @SpringBootApplication
 @EnableBinding(Processor.class)
-public class SpringBootKafkaConsumerApplication {
+public class SpringCloudStreamKafkaConsumerApplication {
 
 	/*
 	@Autowired
@@ -24,7 +24,7 @@ public class SpringBootKafkaConsumerApplication {
 	*/
 
 	public static void main(String[] args) {
-		SpringApplication.run(SpringBootKafkaConsumerApplication.class, args);
+		SpringApplication.run(SpringCloudStreamKafkaConsumerApplication.class, args);
 	}
 
 }

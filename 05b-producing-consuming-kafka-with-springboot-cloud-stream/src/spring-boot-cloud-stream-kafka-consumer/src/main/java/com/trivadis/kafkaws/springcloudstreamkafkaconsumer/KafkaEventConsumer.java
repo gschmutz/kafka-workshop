@@ -1,4 +1,4 @@
-package com.trivadis.kafkaws.springbootkafkaconsumer;
+package com.trivadis.kafkaws.springcloudstreamkafkaconsumer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

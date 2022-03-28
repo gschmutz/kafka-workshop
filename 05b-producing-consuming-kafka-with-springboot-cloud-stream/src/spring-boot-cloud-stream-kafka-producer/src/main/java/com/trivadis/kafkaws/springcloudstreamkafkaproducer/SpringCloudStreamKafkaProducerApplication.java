@@ -1,4 +1,4 @@
-package com.trivadis.kafkaws.springbootkafkaproducer;
+package com.trivadis.kafkaws.springcloudstreamkafkaproducer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,15 +13,15 @@ import java.time.LocalDateTime;
 
 @SpringBootApplication
 @EnableBinding(Processor.class)
-public class SpringBootKafkaProducerApplication implements CommandLineRunner {
+public class SpringCloudStreamKafkaProducerApplication implements CommandLineRunner {
 
-	private static Logger LOG = LoggerFactory.getLogger(SpringBootKafkaProducerApplication.class);
+	private static Logger LOG = LoggerFactory.getLogger(SpringCloudStreamKafkaProducerApplication.class);
 
 	@Autowired
 	private KafkaEventProducer kafkaEventProducer;
 
 	public static void main(String[] args) {
-		SpringApplication.run(SpringBootKafkaProducerApplication.class, args);
+		SpringApplication.run(SpringCloudStreamKafkaProducerApplication.class, args);
 	}
 
 	@Override

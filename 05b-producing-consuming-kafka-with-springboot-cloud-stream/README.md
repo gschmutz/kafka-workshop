@@ -26,6 +26,20 @@ Once you have unzipped the project, you’ll have a very simple structure.
 
 Import the project as a Maven Project into your favourite IDE for further development. 
 
+### Extend the Maven POM with some configurations
+
+In oder to use the Avro serializer and the class generated above, we have to add the following dependencies to the `pom.xml`. 
+
+```xml
+	<dependencies>
+	   ...
+	   	
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-stream-binder-kafka</artifactId>
+		</dependency>
+```
+
 ### Implement a Kafka Producer in Spring
 
 Now create a simple Java class `KafkaEventProducer` within the `com.trivadis.kafkaws.springbootkafkaproducer ` package, which we will use to produce messages to Kafka.
@@ -267,7 +281,7 @@ Import the project as a Maven Project into your favourite IDE for further develo
 Start by creating a simple Java class `KafkaEventConsumer` within the `com.trivadis.kafkaws.springbootkafkaconsumer` package, which we will use to consume messages from Kafka. 
 
 ```java
-package com.trivadis.kafkaws.springbootkafkaconsumer;
+package com.trivadis.kafkaws.springcloudstreamkafkaconsumer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -293,6 +307,16 @@ public class KafkaEventConsumer {
 This class uses the `Component` annotation to have it registered as bean in the Spring context and the `StreamListener` annotation to specify a listener method to be called for each record consumed from the Kafka input topic. The name of the topic is specified as a property to be read again from the `application.yml` configuration file.
 
 In the code we only log the key and value received to the console. In real life, we would probably inject another bean into the `KafkaEventConsumer` to perform the message processing.
+
+### Add @EnableBinding to Application class  
+
+Add the following annotation to the `SpringCloudStreamKafkaConsumerAvroApplication` class
+
+```yml
+@EnableBinding(Processor.class)
+public class SpringCloudStreamKafkaConsumerAvroApplication {
+...
+```
  
 ### Configure Kafka through application.yml configuration file
 
