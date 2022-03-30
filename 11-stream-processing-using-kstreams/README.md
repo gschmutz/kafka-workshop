@@ -272,13 +272,13 @@ docker exec -ti broker-1 bash
 and execute the necessary `kafka-topics` command. 
 
 ```bash
-kafka-topics --zookeeper zookeeper-1:2181 --create --topic dangerous_driving_kstreams --partitions 8 --replication-factor 2
+kafka-topics --bootstrap-server kafka-1:19092,kafka-2:19093 --create --topic dangerous_driving_kstreams --partitions 8 --replication-factor 2
 ```
 
 Cross check that the topic has been created.
 
 ```bash
-kafka-topics --list --zookeeper zookeeper-1:2181
+kafka-topics --list --bootstrap-server kafka-1:19092,kafka-2:19093
 ```
 
 This finishes the setup steps and our new project is ready to be used. Next we will start implementing the **Kafka Streams Topology**.
