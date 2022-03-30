@@ -25,4 +25,5 @@ ID  | Title   | Descritpion
 9 | [IoT Data Ingestion through MQTT into Kafka](./09-iot-data-ingestion-over-mqtt)  | learn how to use Kafka Connect to ingest data from MQTT into Kafka
 10 | [Stream Processing using ksqlDB](./10-stream-processing-using-ksql)  | learn how to use ksqlDB to execute processing and analytics directly on a stream of data
 11 | [Stream Processing using Kafka Streams](./11-stream-processing-using-kstreams)  | learn how to use Kafka Streams to execute processing and analytics directly on a stream of data
-12 | [Static Data Ingestion into Kafka](./12-static-data-ingestion)  | use Kafak Connect to ingest data from relational database (static data) and then join it with a data stream using ksqlDB
+12 | [Static Data Ingestion into Kafka](./12-static-data-ingestion)  | use Kafka Connect to ingest data from relational database (static data) and then join it with a data stream using ksqlDB
+12 | [Using Confluent REST APIs (REST Proxy)](./13-using-rest-proxy)  | use Confluent REST Proxy to create topics and produce and consume messages (JSON and Avro) to these topics.

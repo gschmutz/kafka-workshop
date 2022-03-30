@@ -1,4 +1,4 @@
-# Rest Proxy
+# Using Confluent REST APIs (REST Proxy)
 
 These APIs are available both on Confluent Server (as a part of Confluent Enterprise) and REST Proxy. When using the API in Confluent Server, all paths should be prefixed with `/kafka`. For example, the path to list clusters is:
 
@@ -197,13 +197,13 @@ To create a topic, use the topics endpoint POST `/clusters/{cluster_id}/topics` 
 
 ```bash
 curl --silent -X POST -H "Content-Type: application/json" \
-     --data '{"topic_name": "rest-proxy-topic-avro", "replication_factor":"3", "partitions_count": "8"}' \
+     --data '{"topic_name": "rest-proxy-avro-topic", "replication_factor":"3", "partitions_count": "8"}' \
      http://dataplatform:18086/v3/clusters/${CLUSTER_ID}/topics | jq
 ```
 
 ### Register the Avro Schema
 
-Navigate to http://dataplatform:28102 and register the following Avro schema under subject `rest-proxy-topic-avro-value`:
+Navigate to http://dataplatform:28102 and register the following Avro schema under subject `rest-proxy-avro-topic-value`:
 
 ```json
 {
@@ -239,12 +239,12 @@ Navigate to http://dataplatform:28102 and register the following Avro schema und
 Set the variable `SCHEMA_ID` to the value of the schema ID of the schema registry
 
 ```bash
-export SCHEMA_ID=$(curl -X GET "http://dataplatform:8081/subjects/rest-proxy-topic-avro-value/versions/latest" | jq '.id')
+export SCHEMA_ID=$(curl -X GET "http://dataplatform:8081/subjects/rest-proxy-avro-topic-value/versions/latest" | jq '.id')
 ```
 
 ### Produce Avro
 
-Produce three Avro messages to the topic `rest-proxy-topic-avro`
+Produce three Avro messages to the topic `rest-proxy-avro-topic`
 
 ```bash
 curl --silent -X POST \
@@ -257,7 +257,7 @@ curl --silent -X POST \
         "email": "supplier1@test.com",
         "language": "EN"        
       } }]}' \
-     "http://dataplatform:18086/topics/rest-proxy-topic-avro" | jq .
+     "http://dataplatform:18086/topics/rest-proxy-avro-topic" | jq .
 ```
 
 Result:
@@ -297,12 +297,12 @@ Result:
 }
 ```
 
-2. Subscribe the consumer to topic `rest-proxy-topic-avro`
+2. Subscribe the consumer to topic `rest-proxy-avro-topic`
 
 ```bash
 curl --silent -X POST \
      -H "Content-Type: application/vnd.kafka.v2+json" \
-     --data '{"topics":["rest-proxy-topic-avro"]}' \
+     --data '{"topics":["rest-proxy-avro-topic"]}' \
      http://dataplatform:18086/consumers/cg2/instances/ci2/subscription | jq .
 ```
 
