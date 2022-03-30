@@ -56,7 +56,7 @@ docker exec -ti kafka-1 bash
 And then perform the `kafka-topics --create` command:
 
 ```
-kafka-topics --zookeeper zookeeper-1:2181 --create --topic truck_driver --partitions 8 --replication-factor 2 --config cleanup.policy=compact --config segment.ms=100 --config delete.retention.ms=100 --config min.cleanable.dirty.ratio=0.001
+kafka-topics --bootstrap-server kafka-1:19092,kafka-2:19093 --create --topic truck_driver --partitions 8 --replication-factor 2 --config cleanup.policy=compact --config segment.ms=100 --config delete.retention.ms=100 --config min.cleanable.dirty.ratio=0.001
 ```
 
 Eventhough we have no messages yet, let's create a consumer wich reads the new topic from the beginning. 
