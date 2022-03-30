@@ -1,0 +1,28 @@
+{
+  "type": "record",
+  "name": "Customer",
+  "namespace": "com.trivadis.kafkaws.avro.v1",
+  "doc": "Customer Avro schemas",
+  "fields": [
+    {
+      "name": "id",
+      "type": "long"
+    },
+    {
+      "name": "customerCode",
+      "type": "long"
+    },
+    {
+      "name": "telephone",
+      "type": "string"
+    },
+    {
+      "name": "email",
+      "type": "string"
+    },
+    {
+      "name": "language",
+      "type": "string"
+    }
+  ]
+}
