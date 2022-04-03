@@ -741,8 +741,39 @@ We can see that we clearly commit every 50 records
 
 ## Using Batching with ProducerAsync
 
+Let's see how we can add the throughput by enabling batching on producer side.
+For that we have to add either one or both of `LingerMs` and `BatchSize` to the `ProducerConfig`.
+
+Before we add it, let's see how fast we can produce by running the producer with 5x more records (`5000`) and no wait in between each produce (`waitMsInBetween = 0`).
+
+First using the `runProducerSync` method, producing the 5000 records with no delay takes 43 seconds:
+
 ```bash
-var config = new ProducerConfig { BootstrapServers = brokerList, BatchSize = 120000, LingerMs = 2000 };
+Producing all records took : 43324 ms = (43 sec)
+```
+
+Now lets run the `runProducerASync` method, first with `LingerMs` set to `0`, no batching.
+
+```bash
+var config = new ProducerConfig { BootstrapServers = brokerList, LingerMs = 0 };
+```
+
+we can see that in this case, producing is down to 1 second:
+
+```bash
+Producing all records took : 1068 ms = (1 sec)
+```
+
+Lets increase `linger.ms` to 1 second:
+
+```bash
+var config = new ProducerConfig { BootstrapServers = brokerList, LingerMs = 1000 };
+```
+
+Running it reveals the better throughput with batching, we are down to **377ms** for producing the 5000 records.
+
+```bash
+Producing all records took : 377 ms = (0 sec)
 ```
 
 ## Try running Producer and Consumer together
