@@ -29,7 +29,7 @@ and also the consumer project
 dotnet new console -o consumer
 ```
 
-Now start Visual Code, on Mac if installed using the [following documentation](https://code.visualstudio.com/docs/setup/linux), then it can be started with `code`. 
+Now start Visual Code, on Linux if installed using the [following documentation](https://code.visualstudio.com/docs/setup/linux), then it can be started with `code`. 
 
 ```
 code
@@ -89,53 +89,65 @@ The following reference will be added to project metadata
   ...
    
   <ItemGroup>
-    <PackageReference Include="Confluent.Kafka" Version="1.6.3" />
+    <PackageReference Include="Confluent.Kafka" Version="1.8.2" />
   </ItemGroup>
 
 </Project>
 ```
 
-Now let's add the code for producing messages to the Kafka topic. Navigate to the `Program.cs` C# class in the `producer` project and open it in the editor. 
+Now let's add the code for producing messages to the Kafka topic. Navigate to the `Program.cs` C# class in the `producer` project and rename it to `KafkaProducer.cs` and then open it in the editor. 
 
-Add the following directives on the top
+Add the following directives on the top with the class and the following two constants for the Broker List and the Topic name:
 
 ```csharp
 using System.Threading;
 using Confluent.Kafka;
+
+class KafkaProducer
+{
+    const string brokerList = "dataplatform:9092,dataplatform:9093";
+    const string topicName = "test-dotnet-topic";
+}
 ```
 
-add the following two constants for the Broker List and the Topic name:
+Add the following main method to the class:
 
 ```csharp
-    class Program
+    static void Main(string[] args)
     {
-        const string brokerList = "dataplatform:9092,dataplatform:9093";
-        const string topicName = "test-dotnet-topic";
-```
-
-Replace the code of the ```static void Main``` method by the following block:
-
-```csharp
-        static void Main(string[] args)
+        long startTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+        if (args.Length == 0)
         {
-            if (args.Length == 0) {
-                runProducer(100, 10, 0);
-            } else {
-                runProducer(int.Parse(args[0]), int.Parse(args[1]), int.Parse(args[2]));
-            }
+            runProducerASync(100, 10, 0);
         }
+        else
+        {
+            runProducerASync(int.Parse(args[0]), int.Parse(args[1]), int.Parse(args[2]));
+        }
+        long endTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+    
+        Console.WriteLine("Producing all records took : " + (endTime - startTime) + " ms = (" + (endTime - startTime) / 1000 + " sec)" );
+    }
+
+    // place the runProducerXXXX methods below
 ```
 
 The `Main()` method accepts 3 parameters, the number of messages to produce, the time in ms to wait in-between sending each message and the ID of the producer.
 
 
-Add the following additional method for implementing the Kafka producer. We are producing just a value and leave the key empty (`Null`):
+Add the following additional method for implementing the Kafka producer. To write messages to Kafka, we can either use the `ProduceAsync` or `Produce` method. 
 
+### Produce Synchronously with a `Null` key
+
+We will first use the `ProducerAsync` method in a synchronous way using the `await` operator. We are producing just a value and leave the key empty (`Null`). 
 
 ```csharp
-        static void runProducer(int totalMessages, int waitMsInBetween, int id)
+    static void runProducerSync(int totalMessages, int waitMsInBetween, int id)
+    {
+        var config = new ProducerConfig { BootstrapServers = brokerList };
+
+        Func<Task> mthd = async () =>
         {
-            var config = new ProducerConfig { BootstrapServers = brokerList };
 
             // Create the Kafka Producer
             using (var producer = new ProducerBuilder<Null, string>(config).Build())
@@ -146,120 +158,90 @@ Add the following additional method for implementing the Kafka producer. We are 
 
                     // Construct the message value
                     string value = "[" + index + ":" + id + "] Hello Kafka " + DateTimeOffset.Now;
-                    
-                    try
-                        {
-                            // send the message to Kafka
-                            var task =  producer.ProduceAsync(topicName, new Message<Null, string> { Value = value});    
-                            if (task.IsFaulted) {
-                                
-                            } else {
-                                long elapsedTime = DateTimeOffset.Now.ToUnixTimeMilliseconds() - time;
 
-                                Console.WriteLine($"[{id}] sent record (key={task.Result.Key} value={task.Result.Value}) meta (partition={task.Result.TopicPartition.Partition}, offset={task.Result.TopicPartitionOffset.Offset}, time={elapsedTime})");
-                            }
-                        }
-                        catch (ProduceException<string, string> e)
-                        {
-                            Console.WriteLine($"failed to deliver message: {e.Message} [{e.Error.Code}]");
-                        }
+                    // send the message to Kafka
+                    var deliveryReport = await producer.ProduceAsync(topicName, new Message<Null, string> { Value = value });
+                    Console.WriteLine($"[{id}] sent record (key={deliveryReport.Key} value={deliveryReport.Value}) meta (partition={deliveryReport.TopicPartition.Partition}, offset={deliveryReport.TopicPartitionOffset.Offset}, time={deliveryReport.Timestamp.UnixTimestampMs})");
 
-                        Thread.Sleep(waitMsInBetween);
+                    Thread.Sleep(waitMsInBetween);
                 }
-           
-            }  
-        }
+            }
+        };
+
+        mthd().Wait();
+    }
 ```        
 
-Now run it using the `dotnet run` command. It will generate 1000 messages, waiting 10ms in-between sending each message and use 0 for the ID. 
+Before starting the producer, in an addtional terminal, let's use `kcat` or `kafka-console-consumer` to consume the messages from the topic `test-dotnet-topic`. 
 
-```
-dotnet run -p ./producer/producer.csproj 1000 100 0
-```
-
-Use `kcat` or `kafka-console-consumer` to consume the messages from the topic `test-dotnet-topic`.
-
-```
+```bash
 kcat -b kafka-1 -t test-dotnet-topic -f 'Part-%p => %k:%s\n' -q
 ```
 
+Now run it using the `dotnet run` command. It will generate 1000 messages, waiting 10ms in-between sending each message and use 0 for the `id`. 
+
+```bash
+dotnet run -p ./producer/producer.csproj 1000 10 0
 ```
-Part-1 => :[0:0] Hello Kafka 19/05/2021 19:05:34 +02:00
-Part-7 => :[1:0] Hello Kafka 19/05/2021 19:05:35 +02:00
-Part-7 => :[2:0] Hello Kafka 19/05/2021 19:05:35 +02:00
-Part-4 => :[3:0] Hello Kafka 19/05/2021 19:05:35 +02:00
-Part-0 => :[4:0] Hello Kafka 19/05/2021 19:05:35 +02:00
-Part-3 => :[5:0] Hello Kafka 19/05/2021 19:05:35 +02:00
-Part-3 => :[6:0] Hello Kafka 19/05/2021 19:05:35 +02:00
-Part-1 => :[7:0] Hello Kafka 19/05/2021 19:05:35 +02:00
-Part-1 => :[8:0] Hello Kafka 19/05/2021 19:05:35 +02:00
-Part-1 => :[9:0] Hello Kafka 19/05/2021 19:05:35 +02:00
-Part-1 => :[10:0] Hello Kafka 19/05/2021 19:05:35 +02:00
-Part-2 => :[11:0] Hello Kafka 19/05/2021 19:05:35 +02:00
-Part-7 => :[12:0] Hello Kafka 19/05/2021 19:05:35 +02:00
-Part-7 => :[13:0] Hello Kafka 19/05/2021 19:05:35 +02:00
-Part-1 => :[14:0] Hello Kafka 19/05/2021 19:05:35 +02:00
-Part-1 => :[15:0] Hello Kafka 19/05/2021 19:05:35 +02:00
-Part-5 => :[16:0] Hello Kafka 19/05/2021 19:05:35 +02:00
-Part-5 => :[17:0] Hello Kafka 19/05/2021 19:05:35 +02:00
-Part-0 => :[18:0] Hello Kafka 19/05/2021 19:05:35 +02:00
-Part-0 => :[19:0] Hello Kafka 19/05/2021 19:05:35 +02:00
-Part-0 => :[20:0] Hello Kafka 19/05/2021 19:05:35 +02:00
-Part-2 => :[21:0] Hello Kafka 19/05/2021 19:05:35 +02:00
-Part-2 => :[22:0] Hello Kafka 19/05/2021 19:05:35 +02:00
-Part-7 => :[23:0] Hello Kafka 19/05/2021 19:05:35 +02:00
-Part-7 => :[24:0] Hello Kafka 19/05/2021 19:05:36 +02:00
-Part-5 => :[25:0] Hello Kafka 19/05/2021 19:05:36 +02:00
-Part-5 => :[26:0] Hello Kafka 19/05/2021 19:05:36 +02:00
-Part-0 => :[27:0] Hello Kafka 19/05/2021 19:05:36 +02:00
-Part-7 => :[28:0] Hello Kafka 19/05/2021 19:05:36 +02:00
-Part-7 => :[29:0] Hello Kafka 19/05/2021 19:05:36 +02:00
-Part-0 => :[30:0] Hello Kafka 19/05/2021 19:05:36 +02:00
-Part-0 => :[31:0] Hello Kafka 19/05/2021 19:05:36 +02:00
-Part-3 => :[32:0] Hello Kafka 19/05/2021 19:05:36 +02:00
-Part-1 => :[33:0] Hello Kafka 19/05/2021 19:05:36 +02:00
-Part-1 => :[34:0] Hello Kafka 19/05/2021 19:05:36 +02:00
-Part-2 => :[35:0] Hello Kafka 19/05/2021 19:05:36 +02:00
-Part-2 => :[36:0] Hello Kafka 19/05/2021 19:05:36 +02:00
-Part-1 => :[37:0] Hello Kafka 19/05/2021 19:05:36 +02:00
-Part-1 => :[38:0] Hello Kafka 19/05/2021 19:05:36 +02:00
-Part-4 => :[39:0] Hello Kafka 19/05/2021 19:05:36 +02:00
-Part-4 => :[40:0] Hello Kafka 19/05/2021 19:05:36 +02:00
-Part-4 => :[41:0] Hello Kafka 19/05/2021 19:05:36 +02:00
-Part-4 => :[42:0] Hello Kafka 19/05/2021 19:05:36 +02:00
-Part-1 => :[43:0] Hello Kafka 19/05/2021 19:05:36 +02:00
-Part-1 => :[44:0] Hello Kafka 19/05/2021 19:05:36 +02:00
-Part-1 => :[45:0] Hello Kafka 19/05/2021 19:05:36 +02:00
-Part-5 => :[46:0] Hello Kafka 19/05/2021 19:05:36 +02:00
-Part-5 => :[47:0] Hello Kafka 19/05/2021 19:05:36 +02:00
-Part-1 => :[48:0] Hello Kafka 19/05/2021 19:05:36 +02:00
-Part-6 => :[49:0] Hello Kafka 19/05/2021 19:05:36 +02:00
-Part-6 => :[50:0] Hello Kafka 19/05/2021 19:05:36 +02:00
-Part-6 => :[51:0] Hello Kafka 19/05/2021 19:05:36 +02:00
-Part-2 => :[52:0] Hello Kafka 19/05/2021 19:05:36 +02:00
-Part-5 => :[53:0] Hello Kafka 19/05/2021 19:05:36 +02:00
-Part-4 => :[54:0] Hello Kafka 19/05/2021 19:05:36 +02:00
-Part-7 => :[55:0] Hello Kafka 19/05/2021 19:05:36 +02:00
-Part-0 => :[56:0] Hello Kafka 19/05/2021 19:05:36 +02:00
-Part-0 => :[57:0] Hello Kafka 19/05/2021 19:05:36 +02:00
+
+The log will show each messages metadata after it has been sent and at the end you can see that it took **20 seconds** to send the 1000 records
+
+```bash
+[0] sent record (key= value=[0:0] Hello Kafka 04/03/2022 12:33:21 +02:00) meta (partition=[2], offset=652, time=1648982001348)
+[0] sent record (key= value=[1:0] Hello Kafka 04/03/2022 12:33:22 +02:00) meta (partition=[5], offset=649, time=1648982002348)
+[0] sent record (key= value=[2:0] Hello Kafka 04/03/2022 12:33:22 +02:00) meta (partition=[5], offset=650, time=1648982002357)
+[0] sent record (key= value=[3:0] Hello Kafka 04/03/2022 12:33:22 +02:00) meta (partition=[2], offset=653, time=1648982002368)
+[0] sent record (key= value=[4:0] Hello Kafka 04/03/2022 12:33:22 +02:00) meta (partition=[2], offset=654, time=1648982002377)
+[0] sent record (key= value=[5:0] Hello Kafka 04/03/2022 12:33:22 +02:00) meta (partition=[4], offset=1566, time=1648982002386)
+[0] sent record (key= value=[6:0] Hello Kafka 04/03/2022 12:33:22 +02:00) meta (partition=[4], offset=1567, time=1648982002396)
+[0] sent record (key= value=[7:0] Hello Kafka 04/03/2022 12:33:22 +02:00) meta (partition=[7], offset=2244, time=1648982002405)
+[0] sent record (key= value=[8:0] Hello Kafka 04/03/2022 12:33:22 +02:00) meta (partition=[7], offset=2245, time=1648982002415)
+[0] sent record (key= value=[9:0] Hello Kafka 04/03/2022 12:33:22 +02:00) meta (partition=[1], offset=974, time=1648982002425)
+[0] sent record (key= value=[10:0] Hello Kafka 04/03/2022 12:33:22 +02:00) meta (partition=[4], offset=1568, time=1648982002436)
+[0] sent record (key= value=[11:0] Hello Kafka 04/03/2022 12:33:22 +02:00) meta (partition=[3], offset=1619, time=1648982002447)
+[0] sent record (key= value=[12:0] Hello Kafka 04/03/2022 12:33:22 +02:00) meta (partition=[0], offset=1479, time=1648982002457)
+[0] sent record (key= value=[13:0] Hello Kafka 04/03/2022 12:33:22 +02:00) meta (partition=[7], offset=2246, time=1648982002469)
+...
+Producing all records took : 20589 ms = (20 sec)
+```
+
+On the console consumer window, we can see in the output that the data is distributed over all 8 partitions using the round robin partition strategy. This is caused by the key being `Null`. 
+
+```bash
+Part-6 => :[0:0] Hello Kafka 04/03/2022 13:07:53 +02:00
+Part-2 => :[1:0] Hello Kafka 04/03/2022 13:07:54 +02:00
+Part-4 => :[2:0] Hello Kafka 04/03/2022 13:07:54 +02:00
+Part-7 => :[3:0] Hello Kafka 04/03/2022 13:07:54 +02:00
+Part-6 => :[4:0] Hello Kafka 04/03/2022 13:07:54 +02:00
+Part-1 => :[5:0] Hello Kafka 04/03/2022 13:07:54 +02:00
+Part-2 => :[6:0] Hello Kafka 04/03/2022 13:07:54 +02:00
+Part-6 => :[7:0] Hello Kafka 04/03/2022 13:07:54 +02:00
+Part-1 => :[8:0] Hello Kafka 04/03/2022 13:07:54 +02:00
+Part-2 => :[9:0] Hello Kafka 04/03/2022 13:07:54 +02:00
+Part-6 => :[10:0] Hello Kafka 04/03/2022 13:07:54 +02:00
+Part-2 => :[11:0] Hello Kafka 04/03/2022 13:07:54 +02:00
+Part-3 => :[12:0] Hello Kafka 04/03/2022 13:07:54 +02:00
+Part-7 => :[13:0] Hello Kafka 04/03/2022 13:07:54 +02:00
+Part-3 => :[14:0] Hello Kafka 04/03/2022 13:07:54 +02:00
+Part-5 => :[15:0] Hello Kafka 04/03/2022 13:07:54 +02:00
+Part-5 => :[16:0] Hello Kafka 04/03/2022 13:07:54 +02:00
 ...
 ```
 
-### Using the Id field as the key
+### Produce Synchronously using the `id` field as the key
 
-Instead of producing a `Null` key as before, let's use the `id` argument as the key
+Instead of producing a `Null` key as before, let's use the `id` argument as the key. You can either change the current method or copy/paste it to a new one as we do here:
 
-```java
-        static void runProducerWithKey(int totalMessages, int waitMsInBetween, int id)
+```csharp
+    static void runProducerSyncWithKey(int totalMessages, int waitMsInBetween, int id)
+    {
+        var config = new ProducerConfig { BootstrapServers = brokerList };
+
+        Func<Task> mthd = async () =>
         {
 
-            string brokerList = "dataplatform:9092,dataplatform:9093";
-            string topicName = "test-dotnet-topic";
-
-            var config = new ProducerConfig { BootstrapServers = brokerList };
-
             // Create the Kafka Producer
-            using (var producer = new ProducerBuilder<long, string>(config).Build())
+            using (var producer = new ProducerBuilder<int, string>(config).Build())
             {
                 for (int index = 0; index < totalMessages; index++)
                 {
@@ -267,29 +249,18 @@ Instead of producing a `Null` key as before, let's use the `id` argument as the 
 
                     // Construct the message value
                     string value = "[" + index + ":" + id + "] Hello Kafka " + DateTimeOffset.Now;
-                    
-                    try
-                        {
-                            // send the message to Kafka
-                            var task =  producer.ProduceAsync(topicName, new Message<long, string> { Key = id, Value = value});    
-                            if (task.IsFaulted) {
-                                
-                            } else {
-                                long elapsedTime = DateTimeOffset.Now.ToUnixTimeMilliseconds() - time;
 
-                                Console.WriteLine($"[{id}] sent record (key={task.Result.Key} value={task.Result.Value}) meta (partition={task.Result.TopicPartition.Partition}, offset={task.Result.TopicPartitionOffset.Offset}, time={elapsedTime})");
-                            }
-                        }
-                        catch (ProduceException<string, string> e)
-                        {
-                            Console.WriteLine($"failed to deliver message: {e.Message} [{e.Error.Code}]");
-                        }
-                        
-                        Thread.Sleep(waitMsInBetween);
+                    // send the message to Kafka
+                    var deliveryReport = await producer.ProduceAsync(topicName, new Message<int, string> { Key = id, Value = value });
+                    Console.WriteLine($"[{id}] sent record (key={deliveryReport.Key} value={deliveryReport.Value}) meta (partition={deliveryReport.TopicPartition.Partition}, offset={deliveryReport.TopicPartitionOffset.Offset}, time={deliveryReport.Timestamp.UnixTimestampMs})");
+
+                    Thread.Sleep(waitMsInBetween);
                 }
-           
-            }  
-        }
+            }
+        };
+
+        mthd().Wait();
+    }
 ```
 
 Change the `Main()` method to run the new method
@@ -298,18 +269,280 @@ Change the `Main()` method to run the new method
         static void Main(string[] args)
         {
             if (args.Length == 0) {
-                runProducerWithKey(100, 10, 0);
+                runProducerSyncWithKey(100, 10, 0);
             } else {
-                runProducerWithKey(int.Parse(args[0]), int.Parse(args[1]), int.Parse(args[2]));
+                runProducerSyncWithKey(int.Parse(args[0]), int.Parse(args[1]), int.Parse(args[2]));
             }
         }
+        ...
 ```
 
-Run the program again and check the output in kafka console consumer
+Again use `kcat` or `kafka-console-consumer` to consume the messages from the topic `test-dotnet-topic` before starting the producer.
 
 ```bash
-dotnet run -p ./producer/producer.csproj 1000 100 0
+kcat -b kafka-1 -t test-dotnet-topic -f 'Part-%p => %k:%s\n' -q
 ```
+
+Now run the producer and check the output in kafka console consumer
+
+```bash
+dotnet run --project ./producer/producer.csproj 1000 10 0
+```
+
+you can see from the log that all the message have been sent to the same partitions
+
+```bash
+[0] sent record (key=0 value=[0:0] Hello Kafka 04/03/2022 12:36:15 +02:00) meta (partition=[4], offset=1587, time=1648982175963)
+[0] sent record (key=0 value=[1:0] Hello Kafka 04/03/2022 12:36:16 +02:00) meta (partition=[4], offset=1588, time=1648982176961)
+[0] sent record (key=0 value=[2:0] Hello Kafka 04/03/2022 12:36:16 +02:00) meta (partition=[4], offset=1589, time=1648982176971)
+[0] sent record (key=0 value=[3:0] Hello Kafka 04/03/2022 12:36:16 +02:00) meta (partition=[4], offset=1590, time=1648982176981)
+[0] sent record (key=0 value=[4:0] Hello Kafka 04/03/2022 12:36:16 +02:00) meta (partition=[4], offset=1591, time=1648982176991)
+[0] sent record (key=0 value=[5:0] Hello Kafka 04/03/2022 12:36:17 +02:00) meta (partition=[4], offset=1592, time=1648982177001)
+[0] sent record (key=0 value=[6:0] Hello Kafka 04/03/2022 12:36:17 +02:00) meta (partition=[4], offset=1593, time=1648982177012)
+[0] sent record (key=0 value=[7:0] Hello Kafka 04/03/2022 12:36:17 +02:00) meta (partition=[4], offset=1594, time=1648982177023)
+[0] sent record (key=0 value=[8:0] Hello Kafka 04/03/2022 12:36:17 +02:00) meta (partition=[4], offset=1595, time=1648982177033)
+[0] sent record (key=0 value=[9:0] Hello Kafka 04/03/2022 12:36:17 +02:00) meta (partition=[4], offset=1596, time=1648982177043)
+[0] sent record (key=0 value=[10:0] Hello Kafka 04/03/2022 12:36:17 +02:00) meta (partition=[4], offset=1597, time=1648982177052)
+...
+Producing all records took : 20643 ms = (20 sec)
+```
+
+On the console consumer, we can see in the output that the data is distributed over all 8 partitions using the round robin partition strategy. This is caused by the key being `Null`. 
+
+```bash
+Part-4 => :[0:0] Hello Kafka 04/03/2022 12:36:15 +02:00
+Part-4 => :[1:0] Hello Kafka 04/03/2022 12:36:16 +02:00
+Part-4 => :[2:0] Hello Kafka 04/03/2022 12:36:16 +02:00
+Part-4 => :[3:0] Hello Kafka 04/03/2022 12:36:16 +02:00
+Part-4 => :[4:0] Hello Kafka 04/03/2022 12:36:16 +02:00
+Part-4 => :[5:0] Hello Kafka 04/03/2022 12:36:17 +02:00
+Part-4 => :[6:0] Hello Kafka 04/03/2022 12:36:17 +02:00
+Part-4 => :[7:0] Hello Kafka 04/03/2022 12:36:17 +02:00
+Part-4 => :[8:0] Hello Kafka 04/03/2022 12:36:17 +02:00
+Part-4 => :[9:0] Hello Kafka 04/03/2022 12:36:17 +02:00
+Part-4 => :[10:0] Hello Kafka 04/03/2022 12:36:17 +02:00
+Part-4 => :[11:0] Hello Kafka 04/03/2022 12:36:17 +02:00
+Part-4 => :[12:0] Hello Kafka 04/03/2022 12:36:17 +02:00
+Part-4 => :[13:0] Hello Kafka 04/03/2022 12:36:17 +02:00
+Part-4 => :[14:0] Hello Kafka 04/03/2022 12:36:17 +02:00
+Part-4 => :[15:0] Hello Kafka 04/03/2022 12:36:17 +02:00
+Part-4 => :[16:0] Hello Kafka 04/03/2022 12:36:17 +02:00
+Part-4 => :[17:0] Hello Kafka 04/03/2022 12:36:17 +02:00
+Part-4 => :[18:0] Hello Kafka 04/03/2022 12:36:17 +02:00
+Part-4 => :[19:0] Hello Kafka 04/03/2022 12:36:17 +02:00
+Part-4 => :[20:0] Hello Kafka 04/03/2022 12:36:17 +02:00
+Part-4 => :[21:0] Hello Kafka 04/03/2022 12:36:17 +02:00
+Part-4 => :[22:0] Hello Kafka 04/03/2022 12:36:17 +02:00
+Part-4 => :[23:0] Hello Kafka 04/03/2022 12:36:17 +02:00
+Part-4 => :[24:0] Hello Kafka 04/03/2022 12:36:17 +02:00
+Part-4 => :[25:0] Hello Kafka 04/03/2022 12:36:17 +02:00
+Part-4 => :[26:0] Hello Kafka 04/03/2022 12:36:17 +02:00
+Part-4 => :[27:0] Hello Kafka 04/03/2022 12:36:17 +02:00
+Part-4 => :[28:0] Hello Kafka 04/03/2022 12:36:17 +02:00
+...
+```
+
+### Produce Asynchronously
+
+To produce asynchronously, we can either use the `ProduceAsync` or the `Produce` method. We first show the `ProduceAsync` method and basically adapt the version used for the synchronous produce.
+
+To asynchronously handle delivery result notifications, we can use `Task.ContinueWith` as shown by the `runProducerASync` method:
+
+```csharp
+    static void runProducerASync(int totalMessages, int waitMsInBetween, int id)
+    {
+        var config = new ProducerConfig { BootstrapServers = brokerList };
+
+        // Create the Kafka Producer
+        using (var producer = new ProducerBuilder<Null, string>(config).Build())
+        {
+            for (int index = 0; index < totalMessages; index++)
+            {
+                long time = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+
+                // Construct the message value
+                string value = "[" + index + ":" + id + "] Hello Kafka " + DateTimeOffset.Now;
+
+                // send the message to Kafka
+                var deliveryReport = producer.ProduceAsync(topicName, new Message<Null, string> { Value = value });
+
+                deliveryReport.ContinueWith(task =>
+                {
+                    if (task.IsFaulted)
+                    {
+                    }
+                    else
+                    {
+                        Console.WriteLine($"[{id}] sent record (key={task.Result.Key} value={task.Result.Value}) meta (partition={task.Result.TopicPartition.Partition}, offset={task.Result.TopicPartitionOffset.Offset}, time={task.Result.Timestamp.UnixTimestampMs})");
+                    }
+
+                });
+                Thread.Sleep(waitMsInBetween);
+            }
+            producer.Flush(TimeSpan.FromSeconds(10));
+        }
+    }
+```
+
+Change the `Main()` method to use the new method
+
+```csharp
+        static void Main(string[] args)
+        {
+            if (args.Length == 0) {
+                runProducerASync(100, 10, 0);
+            } else {
+                runProducerASync(int.Parse(args[0]), int.Parse(args[1]), int.Parse(args[2]));
+            }
+        }
+        ...
+```
+
+Once again use `kcat` or `kafka-console-consumer` to consume the messages from the topic `test-dotnet-topic` before starting the producer.
+
+```bash
+kcat -b kafka-1 -t test-dotnet-topic -f 'Part-%p => %k:%s\n' -q
+```
+
+Now run the producer and check the output in kafka console consumer. 
+
+```bash
+dotnet run --project ./producer/producer.csproj 1000 10 0
+```
+
+We can see that asynchronously the processing went down to **12 seconds** compared to the **20 seconds** it took for the synchronous way. The speed up is only because we no longer wait for the metadata before sending the next message.
+
+```bash
+[0] sent record (key= value=[16:0] Hello Kafka 04/03/2022 13:12:10 +02:00) meta (partition=[7], offset=3776, time=1648984330895)
+[0] sent record (key= value=[67:0] Hello Kafka 04/03/2022 13:12:11 +02:00) meta (partition=[7], offset=3783, time=1648984331533)
+[0] sent record (key= value=[51:0] Hello Kafka 04/03/2022 13:12:11 +02:00) meta (partition=[7], offset=3780, time=1648984331340)
+[0] sent record (key= value=[14:0] Hello Kafka 04/03/2022 13:12:10 +02:00) meta (partition=[5], offset=1995, time=1648984330870)
+[0] sent record (key= value=[28:0] Hello Kafka 04/03/2022 13:12:11 +02:00) meta (partition=[5], offset=1997, time=1648984331036)
+[0] sent record (key= value=[26:0] Hello Kafka 04/03/2022 13:12:11 +02:00) meta (partition=[5], offset=1996, time=1648984331015)
+[0] sent record (key= value=[34:0] Hello Kafka 04/03/2022 13:12:11 +02:00) meta (partition=[5], offset=1998, time=1648984331116)
+[0] sent record (key= value=[18:0] Hello Kafka 04/03/2022 13:12:10 +02:00) meta (partition=[7], offset=3777, time=1648984330921)
+[0] sent record (key= value=[35:0] Hello Kafka 04/03/2022 13:12:11 +02:00) meta (partition=[7], offset=3779, time=1648984331128)
+[0] sent record (key= value=[60:0] Hello Kafka 04/03/2022 13:12:11 +02:00) meta (partition=[5], offset=2001, time=1648984331452)
+[0] sent record (key= value=[13:0] Hello Kafka 04/03/2022 13:12:10 +02:00) meta (partition=[6], offset=2977, time=1648984330857)
+[0] sent record (key= value=[79:0] Hello Kafka 04/03/2022 13:12:11 +02:00) meta (partition=[5], offset=2002, time=1648984331682)
+[0] sent record (key= value=[70:0] Hello Kafka 04/03/2022 13:12:11 +02:00) meta (partition=[7], offset=3784, time=1648984331574)
+[0] sent record (key= value=[21:0] Hello Kafka 04/03/2022 13:12:10 +02:00) meta (partition=[6], offset=2979, time=1648984330959)
+[0] sent record (key= value=[25:0] Hello Kafka 04/03/2022 13:12:11 +02:00) meta (partition=[6], offset=2980, time=1648984331004)
+[0] sent record (key= value=[36:0] Hello Kafka 04/03/2022 13:12:11 +02:00) meta (partition=[6], offset=2982, time=1648984331139)
+[0] sent record (key= value=[30:0] Hello Kafka 04/03/2022 13:12:11 +02:00) meta (partition=[6], offset=2981, time=1648984331062)
+[0] sent record (key= value=[39:0] Hello Kafka 04/03/2022 13:12:11 +02:00) meta (partition=[6], offset=2983, time=1648984331178)
+[0] sent record (key= value=[42:0] Hello Kafka 04/03/2022 13:12:11 +02:00) meta (partition=[6], offset=2984, time=1648984331220)
+[0] sent record (key= value=[11:0] Hello Kafka 04/03/2022 13:12:10 +02:00) meta (partition=[7], offset=3775, time=1648984330832)
+[0] sent record (key= value=[47:0] Hello Kafka 04/03/2022 13:12:11 +02:00) meta (partition=[6], offset=2985, time=1648984331284)
+...
+Producing all records took : 12978 ms = (12 sec)
+```
+
+**Note:** We will later see (after seeing how to consume) how we can increase the producer rate by enabling batching on the producer side.
+
+
+As we said before, there is a second was to produce asynchronously using the `Produce` method, which takes a delivery handler delegate as a parameter. Let's add it as another method called `runProducerAsync2`
+
+```csharp
+    static void runProducerASync2(int totalMessages, int waitMsInBetween, int id)
+    {
+        var config = new ProducerConfig { BootstrapServers = brokerList};
+
+        // Create the Kafka Producer
+        using (var producer = new ProducerBuilder<long, string>(config).Build())
+        {
+            for (int index = 0; index < totalMessages; index++)
+            {
+                long time = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+
+                // Construct the message value
+                string value = "[" + index + ":" + id + "] Hello Kafka " + DateTimeOffset.Now;
+
+                try
+                {
+                    // send the message to Kafka
+                    producer.Produce(topicName, new Message<long, string> { Key = id, Value = value },
+                        (deliveryReport) =>
+                        {
+                            if (deliveryReport.Error.Code != ErrorCode.NoError)
+                            {
+                                Console.WriteLine($"Failed to deliver message: {deliveryReport.Error.Reason}");
+                            }
+                            else
+                            {
+                                Console.WriteLine($"[{id}] sent record (key={deliveryReport.Key} value={deliveryReport.Value}) meta (partition={deliveryReport.TopicPartition.Partition}, offset={deliveryReport.TopicPartitionOffset.Offset}, time={deliveryReport.Timestamp.UnixTimestampMs})");
+                            }
+                        });
+
+                }
+                catch (ProduceException<long, string> e)
+                {
+                    Console.WriteLine($"failed to deliver message: {e.Message} [{e.Error.Code}]");
+                }
+
+                producer.Flush(TimeSpan.FromSeconds(10));
+
+                Thread.Sleep(waitMsInBetween);
+            }
+
+        }
+    }
+```
+Change the `Main()` method to use the new method `runProducerAsync2`
+
+```csharp
+        static void Main(string[] args)
+        {
+            if (args.Length == 0) {
+                runProducerASync2(100, 10, 0);
+            } else {
+                runProducerASync2(int.Parse(args[0]), int.Parse(args[1]), int.Parse(args[2]));
+            }
+        }
+        ...
+```
+
+Once again use `kcat` or `kafka-console-consumer` to consume the messages from the topic `test-dotnet-topic` before starting the producer.
+
+```bash
+kcat -b kafka-1 -t test-dotnet-topic -f 'Part-%p => %k:%s\n' -q
+```
+
+Now run the producer and check the output in kafka console consumer. 
+
+```bash
+dotnet run --project ./producer/producer.csproj 1000 10 0
+```
+
+We can see that asynchronously the processing took the same **12 seconds** as with the `AsynProduce` method.
+
+```bash
+[0] sent record (key= value=[16:0] Hello Kafka 04/03/2022 13:12:10 +02:00) meta (partition=[7], offset=3776, time=1648984330895)
+[0] sent record (key= value=[67:0] Hello Kafka 04/03/2022 13:12:11 +02:00) meta (partition=[7], offset=3783, time=1648984331533)
+[0] sent record (key= value=[51:0] Hello Kafka 04/03/2022 13:12:11 +02:00) meta (partition=[7], offset=3780, time=1648984331340)
+[0] sent record (key= value=[14:0] Hello Kafka 04/03/2022 13:12:10 +02:00) meta (partition=[5], offset=1995, time=1648984330870)
+[0] sent record (key= value=[28:0] Hello Kafka 04/03/2022 13:12:11 +02:00) meta (partition=[5], offset=1997, time=1648984331036)
+[0] sent record (key= value=[26:0] Hello Kafka 04/03/2022 13:12:11 +02:00) meta (partition=[5], offset=1996, time=1648984331015)
+[0] sent record (key= value=[34:0] Hello Kafka 04/03/2022 13:12:11 +02:00) meta (partition=[5], offset=1998, time=1648984331116)
+[0] sent record (key= value=[18:0] Hello Kafka 04/03/2022 13:12:10 +02:00) meta (partition=[7], offset=3777, time=1648984330921)
+[0] sent record (key= value=[35:0] Hello Kafka 04/03/2022 13:12:11 +02:00) meta (partition=[7], offset=3779, time=1648984331128)
+[0] sent record (key= value=[60:0] Hello Kafka 04/03/2022 13:12:11 +02:00) meta (partition=[5], offset=2001, time=1648984331452)
+[0] sent record (key= value=[13:0] Hello Kafka 04/03/2022 13:12:10 +02:00) meta (partition=[6], offset=2977, time=1648984330857)
+[0] sent record (key= value=[79:0] Hello Kafka 04/03/2022 13:12:11 +02:00) meta (partition=[5], offset=2002, time=1648984331682)
+[0] sent record (key= value=[70:0] Hello Kafka 04/03/2022 13:12:11 +02:00) meta (partition=[7], offset=3784, time=1648984331574)
+[0] sent record (key= value=[21:0] Hello Kafka 04/03/2022 13:12:10 +02:00) meta (partition=[6], offset=2979, time=1648984330959)
+[0] sent record (key= value=[25:0] Hello Kafka 04/03/2022 13:12:11 +02:00) meta (partition=[6], offset=2980, time=1648984331004)
+[0] sent record (key= value=[36:0] Hello Kafka 04/03/2022 13:12:11 +02:00) meta (partition=[6], offset=2982, time=1648984331139)
+[0] sent record (key= value=[30:0] Hello Kafka 04/03/2022 13:12:11 +02:00) meta (partition=[6], offset=2981, time=1648984331062)
+[0] sent record (key= value=[39:0] Hello Kafka 04/03/2022 13:12:11 +02:00) meta (partition=[6], offset=2983, time=1648984331178)
+[0] sent record (key= value=[42:0] Hello Kafka 04/03/2022 13:12:11 +02:00) meta (partition=[6], offset=2984, time=1648984331220)
+[0] sent record (key= value=[11:0] Hello Kafka 04/03/2022 13:12:10 +02:00) meta (partition=[7], offset=3775, time=1648984330832)
+[0] sent record (key= value=[47:0] Hello Kafka 04/03/2022 13:12:11 +02:00) meta (partition=[6], offset=2985, time=1648984331284)
+...
+Producing all records took : 12959 ms = (12 sec)
+```
+
+As noted before, we will later see how we can increase the throughput by adding batching. But first let's see how to write a consumer in C#.
 
 ## Create a Kafka Consumer
 
@@ -642,3 +875,5 @@ nothing consumed
 
 nothing consumed
 
+
+        var config = new ProducerConfig { BootstrapServers = brokerList, BatchSize = 120000, LingerMs = 2000 };
