@@ -2,9 +2,9 @@
 
 In this workshop we will learn how to produce and consume messages using the [Kafka .NET API](https://docs.confluent.io/clients-confluent-kafka-dotnet/current/overview.html).
 
-We will show how to build the .NET application using the Visual Code IDE, but anyother IDE or just a simple Editor would be fine as well. 
+We will show how to build the .NET application using the Visual Code IDE, but any other IDE or just a simple Editor would be fine as well.
 
-We asume that .NET Core is installed on your client as well as Visual Code with the C# extension (ms-dotnettools.csharp) enabled. We will use the .NET CLI (`dotnet`) for creating projects and running the code.
+We assume that .NET Core is installed on your client as well as Visual Code with the C# extension (ms-dotnettools.csharp) enabled. We will use the .NET CLI (`dotnet`) for creating projects and running the code.
 
 ## Create the project structure
 
@@ -12,40 +12,34 @@ We will create two projects, one acting as the producer to Kafka and the other o
 
 First create the workspace folder, which will hold our projects and navigate into it.
 
-```
+```bash
 mkdir kafka-dotnet-workshop
 cd kafka-dotnet-workshop
 ```
 
 Now let's create the producer project
 
-```
+```bash
 dotnet new console -o producer
 ```
 
-and also the consumer project
+Now start Visual Code, on Linux if installed using the [following documentation](https://code.visualstudio.com/docs/setup/linux), then it can be started with `code`.
 
-```
-dotnet new console -o consumer
-```
-
-Now start Visual Code, on Linux if installed using the [following documentation](https://code.visualstudio.com/docs/setup/linux), then it can be started with `code`. 
-
-```
+```bash
 code
 ```
 
-On the **Getting Started** page, click on **Open...** and select the `kafka-dotnet-workspace` folder created above. Confirm the **Required assets to build and debug are missing from ... Add them?** message pop-up with **Yes**. Open a Terminal in Visual Code over the menu **Terminal** | **New Terminal**. 
+On the **Getting Started** page, click on **Open...** and select the `kafka-dotnet-workspace` folder created above. Confirm the **Required assets to build and debug are missing from ... Add them?** message pop-up with **Yes**. Open a Terminal in Visual Code over the menu **Terminal** | **New Terminal**.
 
 ![Visual Code](./images/visual-code.png)
 
-We are now ready to add code to the classes which have been created with the `dotnet new` command. 
+We are now ready to add code to the classes which have been created with the `dotnet new` command.
 
-But before we do that, let's create the topic we will use to produce to and to consume from. 
+But before we do that, let's create the topic we will use to produce to and to consume from.
 
-### Creating the necessary Kafka Topic 
+### Creating the necessary Kafka Topic
 
-We will use the topic `test-dotnet-topic` in the Producer and Consumer code below. Due to the fact that `auto.topic.create.enable` is set to `false`, we have to manually create the topic. 
+We will use the topic `test-dotnet-topic` in the Producer and Consumer code below. Because `auto.topic.create.enable` is set to `false`, we have to manually create the topic.
 
 Connect to the `kafka-1` container
 
@@ -53,7 +47,7 @@ Connect to the `kafka-1` container
 docker exec -ti kafka-1 bash
 ```
 
-and execute the necessary kafka-topics command. 
+and execute the necessary kafka-topics command.
 
 ```
 kafka-topics --create \
@@ -75,7 +69,7 @@ This finishes the setup steps and our new project is ready to be used. Next we w
 
 To communicate with Kafka, we need to use the [**confluent-kafka-dotnet**](https://docs.confluent.io/clients-confluent-kafka-dotnet/current/overview.html) .NET library].
 
-The reference the library from the .NET Core project, execute the following command from within the `kafka-dotnet-workspace` folder. 
+The reference the library from the .NET Core project, execute the following command from within the `kafka-dotnet-workspace` folder.
 
 ```
 dotnet add producer package Confluent.Kafka
@@ -87,7 +81,7 @@ The following reference will be added to project metadata
 <Project Sdk="Microsoft.NET.Sdk">
 
   ...
-   
+
   <ItemGroup>
     <PackageReference Include="Confluent.Kafka" Version="1.8.2" />
   </ItemGroup>
@@ -95,7 +89,7 @@ The following reference will be added to project metadata
 </Project>
 ```
 
-Now let's add the code for producing messages to the Kafka topic. Navigate to the `Program.cs` C# class in the `producer` project and rename it to `KafkaProducer.cs` and then open it in the editor. 
+Now let's add the code for producing messages to the Kafka topic. Navigate to the `Program.cs` C# class in the `producer` project and rename it to `KafkaProducer.cs` and then open it in the editor.
 
 Add the following directives on the top with the class and the following two constants for the Broker List and the Topic name:
 
@@ -125,7 +119,7 @@ Add the following main method to the class:
             runProducerASync(int.Parse(args[0]), int.Parse(args[1]), int.Parse(args[2]));
         }
         long endTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
-    
+
         Console.WriteLine("Producing all records took : " + (endTime - startTime) + " ms = (" + (endTime - startTime) / 1000 + " sec)" );
     }
 
@@ -134,12 +128,11 @@ Add the following main method to the class:
 
 The `Main()` method accepts 3 parameters, the number of messages to produce, the time in ms to wait in-between sending each message and the ID of the producer.
 
-
-Add the following additional method for implementing the Kafka producer. To write messages to Kafka, we can either use the `ProduceAsync` or `Produce` method. 
+Add the following additional method for implementing the Kafka producer. To write messages to Kafka, we can either use the `ProduceAsync` or `Produce` method.
 
 ### Produce Synchronously with a `Null` key
 
-We will first use the `ProducerAsync` method in a synchronous way using the `await` operator. We are producing just a value and leave the key empty (`Null`). 
+We will first use the `ProducerAsync` method in a synchronous way using the `await` operator. We are producing just a value and leave the key empty (`Null`).
 
 ```csharp
     static void runProducerSync(int totalMessages, int waitMsInBetween, int id)
@@ -172,13 +165,13 @@ We will first use the `ProducerAsync` method in a synchronous way using the `awa
     }
 ```        
 
-Before starting the producer, in an addtional terminal, let's use `kcat` or `kafka-console-consumer` to consume the messages from the topic `test-dotnet-topic`. 
+Before starting the producer, in an additional terminal, let's use `kcat` or `kafka-console-consumer` to consume the messages from the topic `test-dotnet-topic`.
 
 ```bash
 kcat -b kafka-1 -t test-dotnet-topic -f 'Part-%p => %k:%s\n' -q
 ```
 
-Now run it using the `dotnet run` command. It will generate 1000 messages, waiting 10ms in-between sending each message and use 0 for the `id`. 
+Now run it using the `dotnet run` command. It will generate 1000 messages, waiting 10ms in-between sending each message and use 0 for the `id`.
 
 ```bash
 dotnet run -p ./producer/producer.csproj 1000 10 0
@@ -205,7 +198,7 @@ The log will show each messages metadata after it has been sent and at the end y
 Producing all records took : 20589 ms = (20 sec)
 ```
 
-On the console consumer window, we can see in the output that the data is distributed over all 8 partitions using the round robin partition strategy. This is caused by the key being `Null`. 
+On the console consumer window, we can see in the output that the data is distributed over all 8 partitions using the round robin partition strategy. This is caused by the key being `Null`.
 
 ```bash
 Part-6 => :[0:0] Hello Kafka 04/03/2022 13:07:53 +02:00
@@ -307,7 +300,7 @@ you can see from the log that all the message have been sent to the same partiti
 Producing all records took : 20643 ms = (20 sec)
 ```
 
-On the console consumer, we can see in the output that the data is distributed over all 8 partitions using the round robin partition strategy. This is caused by the key being `Null`. 
+On the console consumer, we can see in the output that the data is distributed over all 8 partitions using the round robin partition strategy. This is caused by the key being `Null`.
 
 ```bash
 Part-4 => :[0:0] Hello Kafka 04/03/2022 12:36:15 +02:00
@@ -404,7 +397,7 @@ Once again use `kcat` or `kafka-console-consumer` to consume the messages from t
 kcat -b kafka-1 -t test-dotnet-topic -f 'Part-%p => %k:%s\n' -q
 ```
 
-Now run the producer and check the output in kafka console consumer. 
+Now run the producer and check the output in kafka console consumer.
 
 ```bash
 dotnet run --project ./producer/producer.csproj 1000 10 0
@@ -440,53 +433,51 @@ Producing all records took : 12978 ms = (12 sec)
 
 **Note:** We will later see (after seeing how to consume) how we can increase the producer rate by enabling batching on the producer side.
 
-
 As we said before, there is a second was to produce asynchronously using the `Produce` method, which takes a delivery handler delegate as a parameter. Let's add it as another method called `runProducerAsync2`
 
 ```csharp
-    static void runProducerASync2(int totalMessages, int waitMsInBetween, int id)
+static void runProducerASync2(int totalMessages, int waitMsInBetween, int id)
+{
+    var config = new ProducerConfig { BootstrapServers = brokerList };
+
+    // Create the Kafka Producer
+    using (var producer = new ProducerBuilder<Null, string>(config).Build())
     {
-        var config = new ProducerConfig { BootstrapServers = brokerList};
-
-        // Create the Kafka Producer
-        using (var producer = new ProducerBuilder<long, string>(config).Build())
+        for (int index = 0; index < totalMessages; index++)
         {
-            for (int index = 0; index < totalMessages; index++)
+            long time = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+
+            // Construct the message value
+            string value = "[" + index + ":" + id + "] Hello Kafka " + DateTimeOffset.Now;
+
+            try
             {
-                long time = DateTimeOffset.Now.ToUnixTimeMilliseconds();
-
-                // Construct the message value
-                string value = "[" + index + ":" + id + "] Hello Kafka " + DateTimeOffset.Now;
-
-                try
-                {
-                    // send the message to Kafka
-                    producer.Produce(topicName, new Message<long, string> { Key = id, Value = value },
-                        (deliveryReport) =>
+                // send the message to Kafka
+                producer.Produce(topicName, new Message<Null, string> { Value = value },
+                    (deliveryReport) =>
+                    {
+                        if (deliveryReport.Error.Code != ErrorCode.NoError)
                         {
-                            if (deliveryReport.Error.Code != ErrorCode.NoError)
-                            {
-                                Console.WriteLine($"Failed to deliver message: {deliveryReport.Error.Reason}");
-                            }
-                            else
-                            {
-                                Console.WriteLine($"[{id}] sent record (key={deliveryReport.Key} value={deliveryReport.Value}) meta (partition={deliveryReport.TopicPartition.Partition}, offset={deliveryReport.TopicPartitionOffset.Offset}, time={deliveryReport.Timestamp.UnixTimestampMs})");
-                            }
-                        });
+                            Console.WriteLine($"Failed to deliver message: {deliveryReport.Error.Reason}");
+                        }
+                        else
+                        {
+                            Console.WriteLine($"[{id}] sent record (key={deliveryReport.Key} value={deliveryReport.Value}) meta (partition={deliveryReport.TopicPartition.Partition}, offset={deliveryReport.TopicPartitionOffset.Offset}, time={deliveryReport.Timestamp.UnixTimestampMs})");
+                        }
+                    });
 
-                }
-                catch (ProduceException<long, string> e)
-                {
-                    Console.WriteLine($"failed to deliver message: {e.Message} [{e.Error.Code}]");
-                }
-
-                producer.Flush(TimeSpan.FromSeconds(10));
-
-                Thread.Sleep(waitMsInBetween);
+            }
+            catch (ProduceException<Null, string> e)
+            {
+                Console.WriteLine($"failed to deliver message: {e.Message} [{e.Error.Code}]");
             }
 
+            Thread.Sleep(waitMsInBetween);
         }
+        producer.Flush(TimeSpan.FromSeconds(10));
+
     }
+}
 ```
 Change the `Main()` method to use the new method `runProducerAsync2`
 
@@ -508,13 +499,13 @@ Once again use `kcat` or `kafka-console-consumer` to consume the messages from t
 kcat -b kafka-1 -t test-dotnet-topic -f 'Part-%p => %k:%s\n' -q
 ```
 
-Now run the producer and check the output in kafka console consumer. 
+Now run the producer and check the output in kafka console consumer.
 
 ```bash
 dotnet run --project ./producer/producer.csproj 1000 10 0
 ```
 
-We can see that asynchronously the processing took the same **12 seconds** as with the `AsynProduce` method.
+We can see that asynchronously the processing took the same **12 seconds** as with the `AsyncProduce` method.
 
 ```bash
 [0] sent record (key= value=[16:0] Hello Kafka 04/03/2022 13:12:10 +02:00) meta (partition=[7], offset=3776, time=1648984330895)
@@ -546,7 +537,13 @@ As noted before, we will later see how we can increase the throughput by adding 
 
 ## Create a Kafka Consumer
 
-Now let's create the consumer, which consumes the messages from the Kafka topic. 
+Now let's create the consumer, which consumes the messages from the Kafka topic.
+
+First let's create a new project
+
+```bash
+dotnet new console -o consumer
+```
 
 Again add a reference to library from the .NET Core project, by executing the following command from within the `kafka-dotnet-workspace` folder.  
 
@@ -554,151 +551,215 @@ Again add a reference to library from the .NET Core project, by executing the fo
 dotnet add consumer package Confluent.Kafka
 ```
 
-Add the following directives on the top
+Now let's add the code for consuming the messages from the Kafka topic. Navigate to the `Program.cs` C# class in the consumer project and rename it to `KafkaConsumer.cs` and then open it in the editor.
+
+Add the following directives on the top with the class and the following two constants for the Broker List, the Topic name and the consumer group to use
 
 ```csharp
 using System.Threading;
 using Confluent.Kafka;
+
+class KafkaConsumer
+{
+    const string brokerList = "dataplatform:9092,dataplatform:9093";
+    const string topicName = "test-dotnet-topic";
+    const string groupId = "KafkaConsumerAuto";
+}
 ```
 
-add the following two constants for the Broker List and the Topic name. 
+Add the following main method to the class:
 
 ```csharp
-    class Program
+static void Main(string[] args)
+{
+    if (args.Length == 0)
     {
-        const string brokerList = "dataplatform:9092,dataplatform:9093";
-        const string topicName = "test-dotnet-topic";
-        const string groupId = "KafkaConsumerAuto";
+        runConsumerAuto(10);
+    }
+    else
+    {
+        runConsumerAuto(int.Parse(args[0]));
+    }
+}
 ```
 
-Replace the code of the ```static void Main``` method by the following block:
+Add the following additional method for implementing the Kafka consumer. First we implement a consumer with using Auto Commit mode.
 
 ```csharp
-        static void Main(string[] args)
+static void runConsumerAuto(int waitMsInBetween)
+{
+    var config = new ConsumerConfig
+    {
+        BootstrapServers = brokerList,
+        GroupId = groupId,
+        AutoOffsetReset = AutoOffsetReset.Earliest,
+        EnableAutoCommit = true,
+        AutoCommitIntervalMs = 2000
+    };
+
+    bool cancelled = false;
+
+    using (var consumer = new ConsumerBuilder<Ignore, string>(config).Build())
+    {
+        consumer.Subscribe(topicName);
+        var cancelToken = new CancellationTokenSource();
+
+        while (!cancelled)
         {
-            if (args.Length == 0) {
-                runConsumerAuto(10);
-            } else {
-                runConsumerAuto(int.Parse(args[0]));
-            }
+            var consumeResult = consumer.Consume(cancelToken.Token);
+            // handle message
+            Console.WriteLine($"Consumer Record:(Key: {consumeResult.Message.Key}, Value: {consumeResult.Message.Value} Partition: {consumeResult.TopicPartition.Partition} Offset: {consumeResult.TopicPartitionOffset.Offset}");
+            Thread.Sleep(waitMsInBetween);
         }
-```
-
-Add the following additional method for implementing the Kafka conusmer. First we implement a consumer with using Auto Commit mode. 
-
-```csharp
-        static void runConsumerAuto()
-        {
-            var config = new ConsumerConfig
-            {
-                BootstrapServers = brokerList,
-                GroupId = groupId,
-                AutoOffsetReset = AutoOffsetReset.Earliest,
-                EnableAutoCommit = true,
-                AutoCommitIntervalMs = 10000
-            };
-
-            bool cancelled = false;
-
-            using (var consumer = new ConsumerBuilder<Ignore, string>(config).Build())
-            {
-                consumer.Subscribe(topicName);
-                var cancelToken = new CancellationTokenSource();
-
-                while (!cancelled) {
-                    var consumeResult = consumer.Consume(cancelToken.Token);
-                    // handle message
-                    Console.WriteLine($"Consumer Record:(Key: {consumeResult.Message.Key}, Value: {consumeResult.Message.Value} Partition: {consumeResult.TopicPartition.Partition} Offset: {consumeResult.TopicPartitionOffset.Offset}");
-                }
-                consumer.Close();
-            }
-        }   
-    } 
+        consumer.Close();
+    }
+}
 ```
 
 Now run it using the `dotnet run` command. It will print the consumed messages to the console.
 
 ```
-dotnet run -p ./consumer/consumer.csproj 
+dotnet run -p ./consumer/consumer.csproj
 ```
 
-You can check the commits by consuming from the internal `__consumer_offsets` topic. We need a special formatter for deserializing the messages.
+Rerun one of the producers, if you need additional messages.
+
+You can check the commits by consuming from the internal `__consumer_offsets` topic. For that we have to specify a special formatter for deserialising the commit messages.
 
 ```
-docker exec -ti kafka-1 kafka-console-consumer  --formatter "kafka.coordinator.group.GroupMetadataManager\$OffsetsMessageFormatter" --bootstrap-server kafka-1:19092 --topic __consumer_offsets --from-beginning
+docker exec -ti kafka-1 kafka-console-consumer  --formatter "kafka.coordinator.group.GroupMetadataManager\$OffsetsMessageFormatter" --bootstrap-server kafka-1:19092 --topic __consumer_offsets
 ```
 
-### Kafka Consumer with Manual Commit 
+In the output of the consumer you can see that a commit message is issued every **5 seconds**, due to the `AutoCommitIntervalMs = 5000` setting.
 
-Create a new method `runConsumerManual` which uses the manual method to commit offsets. We use a hardcoded value (`50`) for the commit block size, so that a commit will happen every 50 messages.
+```bash
+[KafkaConsumerAuto,test-dotnet-topic,1]::OffsetAndMetadata(offset=9253, leaderEpoch=Optional.empty, metadata=, commitTimestamp=1648988661678, expireTimestamp=None)
+[KafkaConsumerAuto,test-dotnet-topic,2]::OffsetAndMetadata(offset=6160, leaderEpoch=Optional.empty, metadata=, commitTimestamp=1648988661678, expireTimestamp=None)
+[KafkaConsumerAuto,test-dotnet-topic,3]::OffsetAndMetadata(offset=3731, leaderEpoch=Optional.empty, metadata=, commitTimestamp=1648988661678, expireTimestamp=None)
+[KafkaConsumerAuto,test-dotnet-topic,7]::OffsetAndMetadata(offset=4185, leaderEpoch=Optional.empty, metadata=, commitTimestamp=1648988666697, expireTimestamp=None)
+[KafkaConsumerAuto,test-dotnet-topic,0]::OffsetAndMetadata(offset=4834, leaderEpoch=Optional.empty, metadata=, commitTimestamp=1648988666697, expireTimestamp=None)
+[KafkaConsumerAuto,test-dotnet-topic,4]::OffsetAndMetadata(offset=5563, leaderEpoch=Optional.empty, metadata=, commitTimestamp=1648988666697, expireTimestamp=None)
+[KafkaConsumerAuto,test-dotnet-topic,3]::OffsetAndMetadata(offset=3748, leaderEpoch=Optional.empty, metadata=, commitTimestamp=1648988666697, expireTimestamp=None)
+[KafkaConsumerAuto,test-dotnet-topic,5]::OffsetAndMetadata(offset=2479, leaderEpoch=Optional.empty, metadata=, commitTimestamp=1648988666697, expireTimestamp=None)
+[KafkaConsumerAuto,test-dotnet-topic,6]::OffsetAndMetadata(offset=3455, leaderEpoch=Optional.empty, metadata=, commitTimestamp=1648988671713, expireTimestamp=None)
+[KafkaConsumerAuto,test-dotnet-topic,7]::OffsetAndMetadata(offset=4279, leaderEpoch=Optional.empty, metadata=, commitTimestamp=1648988671713, expireTimestamp=None)
+```
+
+Now let's switch from auto commit mode to manual commit.
+
+### Kafka Consumer with Manual Commit
+
+Create a new method `runConsumerManual` which uses the manual method to commit offsets.
+
+We use a hardcoded value (`50`) for the commit block size, so that a commit will happen every 50 messages.
 
 ```csharp
-        static void runConsumerManual()
+static void runConsumerManual(int waitMsInBetween)
+{
+    var config = new ConsumerConfig
+    {
+        BootstrapServers = brokerList,
+        GroupId = groupId,
+        EnableAutoCommit = false
+    };
+
+    bool cancelled = false;
+    int noRecordsCount = 0;
+
+    using (var consumer = new ConsumerBuilder<Ignore, string>(config).Build())
+    {
+        consumer.Subscribe(topicName);
+        var cancelToken = new CancellationTokenSource();
+        ConsumeResult<Ignore, string> consumeResult = null;
+
+        while (!cancelled)
         {
-            var config = new ConsumerConfig
+            consumeResult = consumer.Consume(cancelToken.Token);
+            noRecordsCount++;
+
+            // handle message
+            Console.WriteLine($"Consumer Record:(Key: {consumeResult.Message.Key}, Value: {consumeResult.Message.Value} Partition: {consumeResult.TopicPartition.Partition} Offset: {consumeResult.TopicPartitionOffset.Offset}");
+            Thread.Sleep(waitMsInBetween);
+
+            if (consumeResult.Offset % 50 == 0)
             {
-                BootstrapServers = brokerList,
-                GroupId = groupId,
-                EnableAutoCommit = false
-            };
-
-            bool cancelled = false;         
-            int noRecordsCount = 0;
-
-            using (var consumer = new ConsumerBuilder<Ignore, string>(config).Build())
-            {
-                consumer.Subscribe(topicName);
-                var cancelToken = new CancellationTokenSource();
-                ConsumeResult<Ignore, string> consumeResult = null;
-
-                while (!cancelled) {
-                    consumeResult = consumer.Consume(cancelToken.Token);
-                    noRecordsCount++;
-                    
-                    // handle message
-                    Console.WriteLine($"Consumer Record:(Key: {consumeResult.Message.Key}, Value: {consumeResult.Message.Value} Partition: {consumeResult.TopicPartition.Partition} Offset: {consumeResult.TopicPartitionOffset.Offset}");
-
-                    if (consumeResult.Offset % 50 == 0) {
-                        consumer.Commit(consumeResult);
-                    }
-
-                }
-                
-                // commit the rest
                 consumer.Commit(consumeResult);
-
-                consumer.Close();
             }
-        }  
+        }
+
+        // commit the rest
+        consumer.Commit(consumeResult);
+
+        consumer.Close();
+    }
+}
 ```
 
-Run the program again
+Change the `Main` method to use the new `runConsumerManual` method.
+
+```csharp
+static void Main(string[] args)
+{
+    if (args.Length == 0)
+    {
+        runConsumerManual(10);
+    }
+    else
+    {
+        runConsumerManual(int.Parse(args[0]));
+    }
+}
+```
+
+Run the program again (produce some new messages before, if you have consumed all messages in the previous run)
 
 ```bash
 dotnet run -p ./consumer/consumer.csproj
 ```
 
-and check the commits by consuming again from the internal `__consumer_offsets` topic. 
+and check the commits by consuming again from the internal `__consumer_offsets` topic.
 
 ```
-docker exec -ti kafka-1 kafka-console-consumer  --formatter "kafka.coordinator.group.GroupMetadataManager\$OffsetsMessageFormatter" --bootstrap-server kafka-1:19092 --topic __consumer_offsets --from-beginning
+docker exec -ti kafka-1 kafka-console-consumer  --formatter "kafka.coordinator.group.GroupMetadataManager\$OffsetsMessageFormatter" --bootstrap-server kafka-1:19092 --topic __consumer_offsets
 ```
 
-## Try running Producer and Consumer
+We can see that we clearly commit every 50 records
 
-Run the consumer from one terminal window and the producer from another one. You should see the consumer get the records that the producer sent.
+```bash
+[KafkaConsumerAuto,test-dotnet-topic,1]::OffsetAndMetadata(offset=9301, leaderEpoch=Optional.empty, metadata=, commitTimestamp=1648989071728, expireTimestamp=None)
+[KafkaConsumerAuto,test-dotnet-topic,1]::OffsetAndMetadata(offset=9351, leaderEpoch=Optional.empty, metadata=, commitTimestamp=1648989072383, expireTimestamp=None)
+[KafkaConsumerAuto,test-dotnet-topic,1]::OffsetAndMetadata(offset=9401, leaderEpoch=Optional.empty, metadata=, commitTimestamp=1648989073024, expireTimestamp=None)
+[KafkaConsumerAuto,test-dotnet-topic,0]::OffsetAndMetadata(offset=4901, leaderEpoch=Optional.empty, metadata=, commitTimestamp=1648989073987, expireTimestamp=None)
+[KafkaConsumerAuto,test-dotnet-topic,0]::OffsetAndMetadata(offset=4951, leaderEpoch=Optional.empty, metadata=, commitTimestamp=1648989074610, expireTimestamp=None)
+[KafkaConsumerAuto,test-dotnet-topic,5]::OffsetAndMetadata(offset=2551, leaderEpoch=Optional.empty, metadata=, commitTimestamp=1648989075843, expireTimestamp=None)
+[KafkaConsumerAuto,test-dotnet-topic,5]::OffsetAndMetadata(offset=2601, leaderEpoch=Optional.empty, metadata=, commitTimestamp=1648989076468, expireTimestamp=None)
+[KafkaConsumerAuto,test-dotnet-topic,4]::OffsetAndMetadata(offset=5601, leaderEpoch=Optional.empty, metadata=, commitTimestamp=1648989077335, expireTimestamp=None)
+[KafkaConsumerAuto,test-dotnet-topic,4]::OffsetAndMetadata(offset=5651, leaderEpoch=Optional.empty, metadata=, commitTimestamp=1648989077976, expireTimestamp=None)
+[KafkaConsumerAuto,test-dotnet-topic,4]::OffsetAndMetadata(offset=5701, leaderEpoch=Optional.empty, metadata=, commitTimestamp=1648989078622, expireTimestamp=None)
+[KafkaConsumerAuto,test-dotnet-topic,3]::OffsetAndMetadata(offset=3801, leaderEpoch=Optional.empty, metadata=, commitTimestamp=1648989079600, expireTimestamp=None)
+```
+
+## Using Batching with ProducerAsync
+
+```bash
+var config = new ProducerConfig { BootstrapServers = brokerList, BatchSize = 120000, LingerMs = 2000 };
+```
+
+## Try running Producer and Consumer together
+
+To see how scalability on the consumer side works, let's start multiple consumers consuming the records sent by the producer. Run the various consumers from a terminal window each and the producer from another one.
+
+You should see that the consumers get the records that the producer sent.
 
 ### Three Consumers in same group and one Producer sending 25 messages
 
-Make sure that you switch back to the first version of the producer where no key is produced (method `runProducer`).
-
-Start the consumer 3 times by executing the following command in 3 different terminal windows.
+Make sure that you switch back to the first version of the producer where no key is produced (method `runProducer`). Start the consumer 3 times by executing the following command in 3 different terminal windows.
 
 ```bash
 dotnet run -p ./consumer/consumer.csproj
 ```
 
-and then start the producer
+and then start one of the producer which distributes the messages over all partitions:
 
 ```bash
 dotnet run -p ./producer/producer.csproj 25 0 0
@@ -708,7 +769,7 @@ dotnet run -p ./producer/producer.csproj 25 0 0
 
 you see the 25 records being created to different partitions.
 
-```
+```bash
 [0] sent record (key= value=[0:0] Hello Kafka 05/19/2021 21:54:44 +02:00) meta (partition=[3], offset=555, time=61)
 [0] sent record (key= value=[1:0] Hello Kafka 05/19/2021 21:54:45 +02:00) meta (partition=[5], offset=544, time=0)
 [0] sent record (key= value=[2:0] Hello Kafka 05/19/2021 21:54:45 +02:00) meta (partition=[5], offset=545, time=0)
@@ -737,7 +798,10 @@ you see the 25 records being created to different partitions.
 ```
 
 #### Consumer 1 Output (same consumer group)
-```
+
+The first consumer only consumes part of the messages, in this case from Partition 4 and 5:
+
+```bash
 Consumer Record:(Key: , Value: [5:0] Hello Kafka 05/19/2021 21:54:00 +02:00 Partition: [4] Offset: 613
 Consumer Record:(Key: , Value: [6:0] Hello Kafka 05/19/2021 21:54:00 +02:00 Partition: [4] Offset: 614
 Consumer Record:(Key: , Value: [19:0] Hello Kafka 05/19/2021 21:54:00 +02:00 Partition: [4] Offset: 615
@@ -755,9 +819,12 @@ Consumer Record:(Key: , Value: [10:0] Hello Kafka 05/19/2021 21:54:45 +02:00 Par
 Consumer Record:(Key: , Value: [11:0] Hello Kafka 05/19/2021 21:54:45 +02:00 Partition: [4] Offset: 619
 Consumer Record:(Key: , Value: [12:0] Hello Kafka 05/19/2021 21:54:45 +02:00 Partition: [4] Offset: 620
 ```
+
 #### Consumer 2 Output (same consumer group)
 
-```
+The second consumer  consumes the messages from Partition 6 and 7:
+
+```bash
 Consumer Record:(Key: , Value: [7:0] Hello Kafka 05/19/2021 21:54:00 +02:00 Partition: [7] Offset: 705
 Consumer Record:(Key: , Value: [8:0] Hello Kafka 05/19/2021 21:54:00 +02:00 Partition: [7] Offset: 706
 Consumer Record:(Key: , Value: [9:0] Hello Kafka 05/19/2021 21:54:00 +02:00 Partition: [7] Offset: 707
@@ -774,7 +841,9 @@ Consumer Record:(Key: , Value: [24:0] Hello Kafka 05/19/2021 21:54:45 +02:00 Par
 
 #### Consumer 3 Output (same consumer group)
 
-```
+And the third consumer consumes the message from Partition 0 and 1
+
+```bash
 Consumer Record:(Key: , Value: [3:0] Hello Kafka 05/19/2021 21:54:00 +02:00 Partition: [1] Offset: 9763
 Consumer Record:(Key: , Value: [4:0] Hello Kafka 05/19/2021 21:54:00 +02:00 Partition: [1] Offset: 9764
 Consumer Record:(Key: , Value: [1:0] Hello Kafka 05/19/2021 21:54:00 +02:00 Partition: [0] Offset: 578
@@ -793,11 +862,9 @@ Consumer Record:(Key: , Value: [22:0] Hello Kafka 05/19/2021 21:54:45 +02:00 Par
 
 ### Three Consumers in same group and one Producer sending 10 messages using key
 
-Switch the producer to use the method with key (`runProducerWithKey`).
+Switch the producer to use the method with key (`runProducerSyncWithKey`). Start the consumer 3 times by executing the following command in 3 different terminal windows.
 
-Start the consumer 3 times by executing the following command in 3 different terminal windows.
-
-```
+```bash
 dotnet run -p ./consumer/consumer.csproj
 ```
 
@@ -874,6 +941,3 @@ nothing consumed
 #### Consumer 3 Output (same consumer group)
 
 nothing consumed
-
-
-        var config = new ProducerConfig { BootstrapServers = brokerList, BatchSize = 120000, LingerMs = 2000 };
