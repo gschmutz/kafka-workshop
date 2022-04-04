@@ -16,7 +16,7 @@ You will see the still rather empty definition.
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.trivadis.kafkaws</groupId>
-  <artifactId>java-avro-kafka</artifactId>
+  <artifactId>java-protobuf-kafka</artifactId>
   <version>0.0.1-SNAPSHOT</version>
 </project>
 ```
@@ -180,7 +180,7 @@ log4j.throwableRenderer=org.apache.log4j.EnhancedThrowableRenderer
 
 ## Creating the necessary Kafka Topic
 
-We will use the topic `test-java-avro-topic` in the Producer and Consumer code below. Due to the fact that `auto.topic.create.enable` is set to `false`, we have to manually create the topic.
+We will use the topic `test-java-protobuf-topic` in the Producer and Consumer code below. Due to the fact that `auto.topic.create.enable` is set to `false`, we have to manually create the topic.
 
 In a terminal window, connect to the `kafka-1` container
 
@@ -194,19 +194,19 @@ and execute the necessary kafka-topics command.
 kafka-topics --create \
 --replication-factor 3 \
 --partitions 8 \
---topic test-java-avro-topic \
+--topic test-java-protobuf-topic \
 --bootstrap-server kafka-1:19092,kafka-2:19093
 ```
 
 This finishes the setup steps and our new project is ready to be used. Next we will start implementing the **Kafka Producer** which uses Protocol Buffers for the serialisation.
 
-## Create an Avro Schema representing the Notification Message
+## Create an Protocol Buffer Schema representing the Notification Message
 
 First create a new Folder `protobuf` under the existing folder **src/main/**.
 
 Create a new File `Notification-v1.proto` in the folder  **src/main/protobuf** just created above.
 
-Add the following Avro schema to the empty file.  
+Add the following Protocol Buffer schema to the empty file.  
 
 ```
 syntax = "proto3";
@@ -399,7 +399,7 @@ Now run it using the `mvn exec:java` command. It will generate 1000 messages, wa
 mvn exec:java@producer -Dexec.args="1000 100 0"
 ```
 
-You can see that kafkacat shows some special, non-printable characters. This is due to the Avro format. If you want to display the Avro, you can use the `kafka-protobuf-console-consumer` CLI, which is part of the Schema Registry.
+You can see that kafkacat shows some special, non-printable characters. This is due to the Protocol Buffer format. If you want to display the Protocol Buffer in a readable way, you can use the `kafka-protobuf-console-consumer` CLI, which is part of the Schema Registry.
 
 So let's connect to the schema registry container:
 
@@ -417,7 +417,7 @@ You should see an output similar to the one below.
 
 ```
 ...
-[2018-07-11 21:32:43,155] INFO [Consumer clientId=consumer-1, groupId=console-consumer-88150] Resetting offset for partition test-java-avro-topic-6 to offset 0. (org.apache.kafka.clients.consumer.internals.Fetcher)
+[2018-07-11 21:32:43,155] INFO [Consumer clientId=consumer-1, groupId=console-consumer-88150] Resetting offset for partition test-java-protobuf-topic-6 to offset 0. (org.apache.kafka.clients.consumer.internals.Fetcher)
 {"id":"0","message":"Hello Kafka 0"}
 {"id":"0","message":"Hello Kafka 3"}
 {"id":"0","message":"Hello Kafka 1"}
@@ -447,7 +447,7 @@ Consuming with `kcat` and specifying the serialisation format `-s` and the addre
 
 ## View the Schema in the Registry
 
-The Protobuf Serializer and Deserializer automatically register the Avro schema, if it is not already in the registry.
+The Protobuf Serializer and Deserializer automatically register the Protocol Buffer schema, if it is not already in the registry.
 
 The Streamingplatform also contains a tool made by a company called Landoop which allows us to see what's in the registry. But it does not support Protocol Buffer schemas! But we can use [AKHQ](https://akhq.io/) to view the schema registry.
 
@@ -490,7 +490,7 @@ public class KafkaConsumerProtobuf {
     private static Consumer<Long, Notification> createConsumer() {
         final Properties props = new Properties();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS);
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, "KakfaConsumerAvro");
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, "KafkaConsumerProtobuf");
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
         props.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, 10000);
         props.put(KafkaProtobufDeserializerConfig.AUTO_REGISTER_SCHEMAS, "false");
