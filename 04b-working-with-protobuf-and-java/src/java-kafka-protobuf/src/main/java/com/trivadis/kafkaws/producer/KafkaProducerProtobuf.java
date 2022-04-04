@@ -18,7 +18,7 @@ public class KafkaProducerProtobuf {
         Properties props = new Properties();
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS);
         props.put(ProducerConfig.CLIENT_ID_CONFIG, "KafkaExampleProducer");
-        props.put(KafkaProtobufSerializerConfig.AUTO_REGISTER_SCHEMAS, "false");
+        //props.put(KafkaProtobufSerializerConfig.AUTO_REGISTER_SCHEMAS, "false");
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, KafkaProtobufSerializer.class.getName());
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, KafkaProtobufSerializer.class.getName());
         props.put(KafkaProtobufSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, SCHEMA_REGISTRY_URL);   // use constant for "schema.registry.url"
