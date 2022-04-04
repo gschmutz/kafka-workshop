@@ -121,7 +121,7 @@
 				<version>6.2.0</version>
 				<configuration>
 					<schemaRegistryUrls>
-						<param>http://dataplatform:8081</param>
+						<param>http://${DATAPLATFORM_IP}:8081</param>
 					</schemaRegistryUrls>
 					<subjects>
 						<test-java-avro-topic-value>src/main/avro/Notification-v1.avsc</test-java-avro-topic-value>

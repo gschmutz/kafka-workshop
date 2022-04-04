@@ -1,21 +1,18 @@
 package com.trivadis.kafkaws.consumer;
 
-import java.util.Collections;
-import java.util.Properties;
-
+import com.trivadis.kafkaws.protobuf.v1.NotificationProtos.Notification;
+import io.confluent.kafka.serializers.protobuf.KafkaProtobufDeserializer;
+import io.confluent.kafka.serializers.protobuf.KafkaProtobufDeserializerConfig;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 
-import com.trivadis.kafkaws.avro.v1.Notification;
-
-import io.confluent.kafka.serializers.KafkaAvroDeserializer;
-import io.confluent.kafka.serializers.KafkaAvroSerializer;
-import io.confluent.kafka.serializers.KafkaAvroSerializerConfig;
+import java.util.Collections;
+import java.util.Properties;
 
 public class KafkaConsumerProtobuf {
-    private final static String TOPIC = "test-java-avro-topic";
+    private final static String TOPIC = "test-java-protobuf-topic";
     private final static String BOOTSTRAP_SERVERS =
             "dataplatform:9092, dataplatform:9093, dataplatform:9094";
     private final static String SCHEMA_REGISTRY_URL = "http://dataplatform:8081";
@@ -26,10 +23,10 @@ public class KafkaConsumerProtobuf {
         props.put(ConsumerConfig.GROUP_ID_CONFIG, "KakfaConsumerAvro");
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
         props.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, 10000);
-        props.put(KafkaAvroSerializerConfig.AUTO_REGISTER_SCHEMAS, "false");
-        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, KafkaAvroDeserializer.class.getName());
-        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, KafkaAvroDeserializer.class.getName());
-        props.put(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, SCHEMA_REGISTRY_URL);   // use constant for "schema.registry.url"
+        props.put(KafkaProtobufDeserializerConfig.AUTO_REGISTER_SCHEMAS, "false");
+        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, KafkaProtobufDeserializer.class.getName());
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, KafkaProtobufDeserializer.class.getName());
+        props.put(KafkaProtobufDeserializerConfig.SCHEMA_REGISTRY_URL_CONFIG, SCHEMA_REGISTRY_URL);   // use constant for "schema.registry.url"
 
         // Create the consumer using props.
         final Consumer<Long, Notification> consumer =

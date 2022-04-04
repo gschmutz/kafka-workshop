@@ -1,20 +1,20 @@
 package com.trivadis.kafkaws.producer;
 
-import java.util.Properties;
-
-import com.trivadis.kafkaws.protobuf.NotificationProtos;
+import com.trivadis.kafkaws.protobuf.v1.NotificationProtos.Notification;
 import io.confluent.kafka.serializers.protobuf.KafkaProtobufSerializer;
 import io.confluent.kafka.serializers.protobuf.KafkaProtobufSerializerConfig;
 import org.apache.kafka.clients.producer.*;
 
+import java.util.Properties;
+
 public class KafkaProducerProtobuf {
 
-    private final static String TOPIC = "test-java-avro-topic";
+    private final static String TOPIC = "test-java-protobuf-topic";
     private final static String BOOTSTRAP_SERVERS =
             "dataplatform:9092, dataplatform:9093, dataplatform:9094";
     private final static String SCHEMA_REGISTRY_URL = "http://dataplatform:8081";
 
-    private static Producer<Long, NotificationProtos> createProducer() {
+    private static Producer<Long, Notification> createProducer() {
         Properties props = new Properties();
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS);
         props.put(ProducerConfig.CLIENT_ID_CONFIG, "KafkaExampleProducer");
@@ -27,15 +27,15 @@ public class KafkaProducerProtobuf {
     }
 
     static void runProducer(final int sendMessageCount, final int waitMsInBetween, final long id) throws Exception {
-        final Producer<Long, NotificationProtos> producer = createProducer();
+        final Producer<Long, Notification> producer = createProducer();
         long time = System.currentTimeMillis();
         Long key = (id > 0) ? id : null;
 
         try {
             for (long index = 0; index < sendMessageCount; index++) {
-                NotificationProtos notification = new NotificationProtos(id, "Hello Kafka " + index);
+                Notification notification = Notification.newBuilder().setId(id).setMessage("Hello Kafka " + index).build();
 
-                final ProducerRecord<Long, NotificationProtos> record =
+                final ProducerRecord<Long, Notification> record =
                         new ProducerRecord<>(TOPIC, key, notification);
 
                 RecordMetadata metadata = producer.send(record).get();
