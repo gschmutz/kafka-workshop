@@ -21,6 +21,7 @@ ID  | Title   | Descritpion
 5b | [Kafka from Spring Boot using Cloud Stream](./05b-producing-consuming-kafka-with-springboot-cloud-stream)  | learn how to use Spring Cloud Stream to consume and produce from/to Kafka
 5c | [Kafka from Spring Boot using Cloud Stream with Avro & Schema Registry](./05c-working-with-avro-and-springboot-cloud-stream)  | learn how to use Spring Cloud Stream to consume and produce from/to Kafka using Avro for serialization with the Confluent Schema Registry.
 6 | [Kafka with Confluent's .NET client](./06-producing-consuming-kafka-with-dotnet)  | learn how to use .NET to consume and produce from/to Kafka
+6b | [Using Kafka from #C (.Net) with Avro & Schema Registry](./06b-working-with-avro-and-dotnet)  | learn how to use .NET to consume and produce messages from/to Kafka using Avro for serialization with the Confluent Schema Registry
 7 |[Kafka with Confluent's Python client](./07-producing-consuming-kafka-with-python)  | learn how to use Python to consume and produce from/to Kafka
 8 |[Kafka from Node.js](./08-working-with-nodejs)  | learn how to use Node.js to consume and produce from/to Kafka
 9 |[Manipulating Consumer Offsets](./09-manipulating-consumer-offsets)  | learn how to use the `kafka-consumer-groups` CLI for manipulating consumer offsets
