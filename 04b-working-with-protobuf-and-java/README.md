@@ -387,16 +387,16 @@ Next you define the main method.
 
 The `main()` method accepts 3 parameters, the number of messages to produce, the time in ms to wait in-between sending each message and the ID of the producer.
 
-Use `kafkacat` or `kafka-console-consumer` to consume the messages from the topic `test-java-protobuf-topic `.
+Use `kcat` or `kafka-console-consumer` to consume the messages from the topic `test-java-protobuf-topic `.
 
 ```
-kafkacat -b $PUBLIC_IP -t test-java-protobuf-topic
+kcat -b kafka-1:19092 -t test-java-protobuf-topic
 ```
 
 Now run it using the `mvn exec:java` command. It will generate 1000 messages, waiting 10ms in-between sending each message and use 0 for the ID.
 
 ```
-mvn exec:java@producer -Dexec.args="1000 100 0"
+mvn exec:java@producer -Dexec.args="1000 10 0"
 ```
 
 You can see that kafkacat shows some special, non-printable characters. This is due to the Protocol Buffer format. If you want to display the Protocol Buffer in a readable way, you can use the `kafka-protobuf-console-consumer` CLI, which is part of the Schema Registry.
