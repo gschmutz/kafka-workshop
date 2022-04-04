@@ -23,7 +23,7 @@ ID  | Title   | Descritpion
 6 | [Kafka with Confluent's .NET client](./06-producing-consuming-kafka-with-dotnet)  | learn how to use .NET to consume and produce from/to Kafka
 7 |[Kafka with Confluent's Python client](./07-producing-consuming-kafka-with-python)  | learn how to use Python to consume and produce from/to Kafka
 8 |[Kafka from Node.js](./08-working-with-nodejs)  | learn how to use Node.js to consume and produce from/to Kafka
-9 |[Kafka from Node.js](./08-working-with-nodejs)  | learn how to use Node.js to consume and produce from/to Kafka
+9 |[Manipulating Consumer Offsets](./09-manipulating-consumer-offsets)  | learn how to use the `kafka-consumer-groups` CLI for manipulating consumer offsets
 10 | [IoT Data Ingestion through MQTT into Kafka](./10-iot-data-ingestion-over-mqtt)  | learn how to use Kafka Connect to ingest data from MQTT into Kafka
 11 | [Stream Processing using ksqlDB](./11-stream-processing-using-ksql)  | learn how to use ksqlDB to execute processing and analytics directly on a stream of data
 12 | [Stream Processing using Kafka Streams](./12-stream-processing-using-kstreams)  | learn how to use Kafka Streams to execute processing and analytics directly on a stream of data
