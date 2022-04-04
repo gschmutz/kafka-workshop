@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package com.trivadis.kafkaws.protobuf.v1;
+option java_outer_classname = "NotificationProtos";
+
+message Notification {
+	int64 id = 1;
+	string message = 2;
+}

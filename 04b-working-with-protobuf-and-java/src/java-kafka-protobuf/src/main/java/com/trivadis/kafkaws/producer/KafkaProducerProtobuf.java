@@ -1,0 +1,65 @@
+package com.trivadis.kafkaws.producer;
+
+import java.util.Properties;
+
+import com.trivadis.kafkaws.protobuf.NotificationProtos;
+import io.confluent.kafka.serializers.protobuf.KafkaProtobufSerializer;
+import io.confluent.kafka.serializers.protobuf.KafkaProtobufSerializerConfig;
+import org.apache.kafka.clients.producer.*;
+
+public class KafkaProducerProtobuf {
+
+    private final static String TOPIC = "test-java-avro-topic";
+    private final static String BOOTSTRAP_SERVERS =
+            "dataplatform:9092, dataplatform:9093, dataplatform:9094";
+    private final static String SCHEMA_REGISTRY_URL = "http://dataplatform:8081";
+
+    private static Producer<Long, NotificationProtos> createProducer() {
+        Properties props = new Properties();
+        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS);
+        props.put(ProducerConfig.CLIENT_ID_CONFIG, "KafkaExampleProducer");
+        props.put(KafkaProtobufSerializerConfig.AUTO_REGISTER_SCHEMAS, "false");
+        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, KafkaProtobufSerializer.class.getName());
+        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, KafkaProtobufSerializer.class.getName());
+        props.put(KafkaProtobufSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, SCHEMA_REGISTRY_URL);   // use constant for "schema.registry.url"
+
+        return new KafkaProducer<>(props);
+    }
+
+    static void runProducer(final int sendMessageCount, final int waitMsInBetween, final long id) throws Exception {
+        final Producer<Long, NotificationProtos> producer = createProducer();
+        long time = System.currentTimeMillis();
+        Long key = (id > 0) ? id : null;
+
+        try {
+            for (long index = 0; index < sendMessageCount; index++) {
+                NotificationProtos notification = new NotificationProtos(id, "Hello Kafka " + index);
+
+                final ProducerRecord<Long, NotificationProtos> record =
+                        new ProducerRecord<>(TOPIC, key, notification);
+
+                RecordMetadata metadata = producer.send(record).get();
+
+                long elapsedTime = System.currentTimeMillis() - time;
+                System.out.printf("[" + id + "] sent record(key=%s value=%s) " +
+                                "meta(partition=%d, offset=%d) time=%d\n",
+                        record.key(), record.value(), metadata.partition(),
+                        metadata.offset(), elapsedTime);
+                time = System.currentTimeMillis();
+
+                Thread.sleep(waitMsInBetween);
+            }
+        } finally {
+            producer.flush();
+            producer.close();
+        }
+    }
+
+    public static void main(String... args) throws Exception {
+        if (args.length == 0) {
+            runProducer(100,10,0);
+        } else {
+            runProducer(Integer.parseInt(args[0]),Integer.parseInt(args[1]),Long.parseLong(args[2]));
+        }
+    }
+}
