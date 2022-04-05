@@ -443,7 +443,7 @@ After some time you should start seeing the output of the `peek` operation on th
 Now let's see that we actually produce data on that new topic by running a `kafka-console-consumer` or alternatively a `kafkacat`.
 
 ```bash
-docker exec -ti borker-1 bash
+docker exec -ti broker-1 bash
 ```
 
 ```bash
