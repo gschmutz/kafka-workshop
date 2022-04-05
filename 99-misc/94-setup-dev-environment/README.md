@@ -6,7 +6,7 @@ This document describes how to finish setting up the development environment on 
 
 Java 8 and Maven (3.0.5) are already installed.
 
-### Java SDK
+### Java 11 SDK
 
 You can install a Java 11 by executing
 
@@ -18,6 +18,42 @@ To switch to Java 11
 
 ```bash
 sudo alternatives --config java_outer_classname
+```
+
+### Maven 3.6.3
+
+You can install a Maven 3.6.3 by performing these steps
+
+1. In a terminal, first uninstall the old version
+
+  ```bash
+sudo yum remove maven
+```
+
+1. In a terminal, download the archive
+
+  ```bash
+cd /home/oracle
+wget https://www-eu.apache.org/dist/maven/maven-3/3.8.5/binaries/apache-maven-3.8.5-bin.tar.gz
+```
+
+1. Unpack the archive
+
+  ```bash
+tar -zxvf apache-maven-3.8.5-bin.tar.gz
+```
+
+1. add the following two entries to `/home/oracle/.bash_profile`
+
+  ```bash
+export MVN_HOME=$HOME/apache-maven-3.8.5
+export PATH=$PATH:$MVN_HOME/bin
+```
+
+1. Source the .bash_profile to activate the environment variables
+
+```bash
+source .bash_profile
 ```
 
 ### IntelliJ IDEA
