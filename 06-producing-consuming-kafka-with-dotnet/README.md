@@ -94,13 +94,17 @@ Now let's add the code for producing messages to the Kafka topic. Navigate to th
 Add the following directives on the top with the class and the following two constants for the Broker List and the Topic name:
 
 ```csharp
+using System;
 using System.Threading;
 using Confluent.Kafka;
 
-class KafkaProducer
+namespace producer
 {
-    const string brokerList = "dataplatform:9092,dataplatform:9093";
-    const string topicName = "test-dotnet-topic";
+    class Program
+    {
+        const string brokerList = "dataplatform:9092,dataplatform:9093";
+        const string topicName = "test-dotnet-topic";
+    }
 }
 ```
 
@@ -112,11 +116,11 @@ Add the following main method to the class:
         long startTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
         if (args.Length == 0)
         {
-            runProducerASync(100, 10, 0);
+            runProducerSync(100, 10, 0);
         }
         else
         {
-            runProducerASync(int.Parse(args[0]), int.Parse(args[1]), int.Parse(args[2]));
+            runProducerSync(int.Parse(args[0]), int.Parse(args[1]), int.Parse(args[2]));
         }
         long endTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
 
@@ -135,34 +139,32 @@ Add the following additional method for implementing the Kafka producer. To writ
 We will first use the `ProducerAsync` method in a synchronous way using the `await` operator. We are producing just a value and leave the key empty (`Null`).
 
 ```csharp
-    static void runProducerSync(int totalMessages, int waitMsInBetween, int id)
+static void runProducerSync(int totalMessages, int waitMsInBetween, int id)
+{
+    var config = new ProducerConfig { BootstrapServers = brokerList };
+
+    Func<Task> mthd = async () =>
     {
-        var config = new ProducerConfig { BootstrapServers = brokerList };
 
-        Func<Task> mthd = async () =>
+        // Create the Kafka Producer
+        using (var producer = new ProducerBuilder<Null, string>(config).Build())
         {
-
-            // Create the Kafka Producer
-            using (var producer = new ProducerBuilder<Null, string>(config).Build())
+            for (int index = 0; index < totalMessages; index++)
             {
-                for (int index = 0; index < totalMessages; index++)
-                {
-                    long time = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+                // Construct the message value
+                string value = "[" + index + ":" + id + "] Hello Kafka " + DateTimeOffset.Now;
 
-                    // Construct the message value
-                    string value = "[" + index + ":" + id + "] Hello Kafka " + DateTimeOffset.Now;
+                // send the message to Kafka
+                var deliveryReport = await producer.ProduceAsync(topicName, new Message<Null, string> { Value = value });
+                Console.WriteLine($"[{id}] sent record (key={deliveryReport.Key} value={deliveryReport.Value}) meta (partition={deliveryReport.TopicPartition.Partition}, offset={deliveryReport.TopicPartitionOffset.Offset}, time={deliveryReport.Timestamp.UnixTimestampMs})");
 
-                    // send the message to Kafka
-                    var deliveryReport = await producer.ProduceAsync(topicName, new Message<Null, string> { Value = value });
-                    Console.WriteLine($"[{id}] sent record (key={deliveryReport.Key} value={deliveryReport.Value}) meta (partition={deliveryReport.TopicPartition.Partition}, offset={deliveryReport.TopicPartitionOffset.Offset}, time={deliveryReport.Timestamp.UnixTimestampMs})");
-
-                    Thread.Sleep(waitMsInBetween);
-                }
+                Thread.Sleep(waitMsInBetween);
             }
-        };
+        }
+    };
 
-        mthd().Wait();
-    }
+    mthd().Wait();
+}
 ```        
 
 Before starting the producer, in an additional terminal, let's use `kcat` or `kafka-console-consumer` to consume the messages from the topic `test-dotnet-topic`.
