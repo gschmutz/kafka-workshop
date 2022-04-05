@@ -1,6 +1,20 @@
 # Setup Development Environment
 
-This document describes how to finish setting up the development environment on a Oracle Linux environment. Depending on your preference, either follow the **Java Environment** or **.NET Environment** section.
+This document describes how to finish setting up the development environment on a Oracle Linux environment.
+
+Depending on your preference, either follow the **Java Environment** or **.NET Environment** section. But before that, let's configure the terminal.
+
+## Configure the Terminal to run as login shell
+
+Perform these steps:
+
+1. Open a new terminal and in the menu select **Edit** | **Preferences**.
+1. Navigate to the **Command** tab.
+1. Select the option **Run command as a login shell** and click **Close**.
+
+  ![Alt Image Text](./images/terminal-login-shell.png "Schema Registry UI")
+
+Now a new shell will be created when you open a new terminal.
 
 ## Java Environment
 
