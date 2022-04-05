@@ -1,10 +1,12 @@
-# Setup Development environment
+# Setup Development Environment
 
-## Java environment
+This document describes how to finish setting up the development environment on a Oracle Linux environment. Depending on your preference, either follow the **Java Environment** or **.NET Environment** section.
+
+## Java Environment
 
 Java 8 and Maven (3.0.5) are already installed.
 
-###Java SDK
+### Java SDK
 
 You can install a Java 11 by executing
 
