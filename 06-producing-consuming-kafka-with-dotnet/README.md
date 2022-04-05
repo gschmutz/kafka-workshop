@@ -94,7 +94,7 @@ Now let's add the code for producing messages to the Kafka topic. Navigate to th
 Add the following directives on the top with the class and the following two constants for the Broker List and the Topic name:
 
 ```csharp
-using System.Threading;
+using System;
 using Confluent.Kafka;
 
 class KafkaProducer
@@ -112,11 +112,11 @@ Add the following main method to the class:
         long startTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
         if (args.Length == 0)
         {
-            runProducerASync(100, 10, 0);
+            runProducerSync(100, 10, 0);
         }
         else
         {
-            runProducerASync(int.Parse(args[0]), int.Parse(args[1]), int.Parse(args[2]));
+            runProducerSync(int.Parse(args[0]), int.Parse(args[1]), int.Parse(args[2]));
         }
         long endTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
 
