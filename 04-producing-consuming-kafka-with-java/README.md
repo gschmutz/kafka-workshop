@@ -8,9 +8,9 @@ We will fist use just the `StringSerializer` to serialize a `java.lang.String` o
 
 Create a new Maven Project (using the functionality of your favourite IDE) and use `com.trivadis.kafkaws` for the **Group Id** and `java-kafka` for the **Artifact Id**.
 
-Navigate to the **pom.xml** and double-click on it. The POM Editor will be displayed. 
+Navigate to the **pom.xml** and double-click on it. The POM Editor will be displayed.
 
-You can either use the GUI to edit your pom.xml or click on the last tab **pom.xml** to switch to the "code view". Let's do that. 
+You can either use the GUI to edit your pom.xml or click on the last tab **pom.xml** to switch to the "code view". Let's do that.
 
 You will see the still rather empty definition.
 
@@ -32,7 +32,7 @@ Copy the following block right after the <version> tag, before the closing </pro
        <kafka.version>2.7.0</kafka.version>
        <java.version>1.8</java.version>
        <slf4j-version>1.7.5</slf4j-version>
-       
+
        <!-- use utf-8 encoding -->
        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -51,7 +51,7 @@ Copy the following block right after the <version> tag, before the closing </pro
 		    <version>${slf4j-version}</version>
 		</dependency>
     </dependencies>
-    
+
 	<build>
 		<defaultGoal>install</defaultGoal>
 
@@ -89,11 +89,11 @@ Copy the following block right after the <version> tag, before the closing </pro
 
 ## Create log4j settings
 
-Let's also create the necessary log4j configuration. 
+Let's also create the necessary log4j configuration.
 
-In the code we are using the [Log4J Logging Framework](https://logging.apache.org/log4j/2.x/), which we have to configure using a property file. 
+In the code we are using the [Log4J Logging Framework](https://logging.apache.org/log4j/2.x/), which we have to configure using a property file.
 
-Create a new file `log4j.properties` in the folder **src/main/resources** and add the following configuration properties. 
+Create a new file `log4j.properties` in the folder **src/main/resources** and add the following configuration properties.
 
 ```properties
 ## ------------------------------------------------------------------------
@@ -133,9 +133,9 @@ log4j.appender.out.layout.ConversionPattern=[%30.30t] %-30.30c{1} %-5p %m%n
 log4j.throwableRenderer=org.apache.log4j.EnhancedThrowableRenderer
 ```
 
-## Creating the necessary Kafka Topic 
+## Creating the necessary Kafka Topic
 
-We will use the topic `test-java-topic` in the Producer and Consumer code below. Due to the fact that `auto.topic.create.enable` is set to `false`, we have to manually create the topic. 
+We will use the topic `test-java-topic` in the Producer and Consumer code below. Due to the fact that `auto.topic.create.enable` is set to `false`, we have to manually create the topic.
 
 Connect to the `kafka-1` container
 
@@ -143,21 +143,20 @@ Connect to the `kafka-1` container
 docker exec -ti kafka-1 bash
 ```
 
-and execute the necessary kafka-topics command. 
+and execute the necessary kafka-topics command.
 
 ```bash
 kafka-topics --create \
     --replication-factor 3 \
     --partitions 8 \
     --topic test-java-topic \
-    --zookeeper zookeeper-1:2181
+    --bootstrap-server kafka-1:19092
 ```
 
 Cross check that the topic has been created.
 
 ```bash
-kafka-topics --list \
-    --zookeeper zookeeper-1:2181
+kafka-topics --list --bootstrap-server kafka-1:19092
 ```
 
 This finishes the setup steps and our new project is ready to be used. Next we will start implementing a **Kafka Producer**.
@@ -170,9 +169,9 @@ Let's first create a producer in synchronous mode.
 
 First create a new Java Package `com.trivadis.kafkaws.producer` in the folder **src/main/java**.
 
-Create a new Java Class `KafkaProducerSync` in the package `com.trivadis.kafkaws.producer` just created. 
+Create a new Java Class `KafkaProducerSync` in the package `com.trivadis.kafkaws.producer` just created.
 
-Add the following code to the empty class to create a Kafka Producer. 
+Add the following code to the empty class to create a Kafka Producer.
 
 ```java
 package com.trivadis.kafkaws.producer;
@@ -216,7 +215,7 @@ Kafka provides a synchronous send method to send a record to a topic. Let’s us
                 long time = System.currentTimeMillis();
 
                 ProducerRecord<Long, String> record
-                        = new ProducerRecord<>(TOPIC, 
+                        = new ProducerRecord<>(TOPIC,
                         			"[" + id + "] Hello Kafka " + index + " => " + LocalDateTime.now());
 
                 RecordMetadata metadata = producer.send(record).get();
@@ -235,7 +234,7 @@ Kafka provides a synchronous send method to send a record to a topic. Let’s us
 ```
 
 Next you define the main method.
-    
+
 ```java
     public static void main(String... args) throws Exception {
         if (args.length == 0) {
@@ -249,7 +248,7 @@ Next you define the main method.
 The `main()` method accepts 3 parameters, the number of messages to produce, the time in ms to wait in-between sending each message and the ID of the producer.
 
 
-Now run it using the `mvn exec:java` command. It will generate 1000 messages, waiting 100ms in-between sending each message and use 0 for the ID, which will set the key to `null`. 
+Now run it using the `mvn exec:java` command. It will generate 1000 messages, waiting 100ms in-between sending each message and use 0 for the ID, which will set the key to `null`.
 
 ```bash
 mvn clean package -Dmaven.test.skip=true
@@ -425,9 +424,9 @@ Just like we did with the producer, you need to specify bootstrap servers. You a
 
 First create a new Java Package `com.trivadis.kafkaws.consumer` in the folder **src/main/java**.
 
-Create a new Java Class `KafkaConsumerAuto` in the package `com.trivadis.kafkaws.consumer` just created. 
+Create a new Java Class `KafkaConsumerAuto` in the package `com.trivadis.kafkaws.consumer` just created.
 
-Add the following code to the empty class. 
+Add the following code to the empty class.
 
 Now, that we imported the Kafka classes and defined some constants, let’s create a Kafka producer.
 
@@ -471,7 +470,7 @@ public class KafkaConsumerAuto {
     }
 ```
 
-With that in place, let's process the record with the Kafka Consumer. 
+With that in place, let's process the record with the Kafka Consumer.
 
 ```java
     private static void runConsumer(int waitMsInBetween) throws InterruptedException {
@@ -526,13 +525,13 @@ Next you define the main method. You can pass the amount of time the consumer sp
 
 The main method just calls `runConsumer`.
 
-Before we run the consumer, let's add a new line to the `log4j.properties` configuration, just right after the `log4j.logger.org.apache.kafka=INFO` line. 
+Before we run the consumer, let's add a new line to the `log4j.properties` configuration, just right after the `log4j.logger.org.apache.kafka=INFO` line.
 
 ```properties
 log4j.logger.org.apache.kafka.clients.consumer.internals.ConsumerCoordinator=DEBUG
 ```
 
-If will show a DEBUG message whenever the auto commit is executed. 
+If will show a DEBUG message whenever the auto commit is executed.
 
 Before we can run it, add the consumer to the `<executions>` section in the `pom.xml`.
 
@@ -613,7 +612,7 @@ Replace the `runConsumer()` method with the code below.
     }
 ```
 
-Make sure to change the Consumer Group (`ConsumerConfig.GROUP_ID_CONFIG`) to `KafkaConsumerManual` and set the `ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG` to `false` in the `createConsumer()` method. 
+Make sure to change the Consumer Group (`ConsumerConfig.GROUP_ID_CONFIG`) to `KafkaConsumerManual` and set the `ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG` to `false` in the `createConsumer()` method.
 
 ```java
         props.put(ConsumerConfig.GROUP_ID_CONFIG, "KafkaConsumerManual");
@@ -1007,7 +1006,7 @@ and with all the generics, where we use `<Long, Notifcation>` instead of `<Long,
 
 We also use another topic `test-java-json-topic`, so we clearly separate the different messages.
 
-### Creating the new Kafka Topic 
+### Creating the new Kafka Topic
 
 We show a shortcut version here, instead of first "connecting" to the container and then issuing the `kafka-topics` command, we do it in one
 
@@ -1166,7 +1165,7 @@ Additionally when we create the `KafkaConsumer`, we have to initialze an instanc
         Consumer<Long, Notification> consumer = new KafkaConsumer<>(props, new LongDeserializer(), new JsonDeserializer<Notification>(Notification.class));
 ```
 
-And again we change all the generics, where we use `<Long, Notifcation>` instead of `<Long, String>`. 
+And again we change all the generics, where we use `<Long, Notifcation>` instead of `<Long, String>`.
 
 ### Testing the JsonProducer
 
@@ -1202,5 +1201,3 @@ and you should see the `toString()` output of the `Notification` instances, simi
 190 - Consumer Record:(Key: null, Value: Notification{id=0, message='[0] Hello Kafka 768', createdAt='2021-08-06T18:38:12.591090'}, Partition: 1, Offset: 243)
 190 - Consumer Record:(Key: null, Value: Notification{id=0, message='[0] Hello Kafka 774', createdAt='2021-08-06T18:38:13.233265'}, Partition: 1, Offset: 244)
 ```
-
-
