@@ -10,18 +10,17 @@ import org.springframework.kafka.retrytopic.TopicSuffixingStrategy;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.retry.annotation.Backoff;
-import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 
 @Component
-public class KafkaEventConsumer {
-    private static final Logger LOGGER = LoggerFactory.getLogger(KafkaEventConsumer.class);
+public class RetryableKafkaEventConsumer {
+    private static final Logger LOGGER = LoggerFactory.getLogger(RetryableKafkaEventConsumer.class);
 
     @RetryableTopic(attempts = "4",
             backoff = @Backoff(delay = 1000, multiplier = 2.0),
             autoCreateTopics = "true",
             topicSuffixingStrategy = TopicSuffixingStrategy.SUFFIX_WITH_INDEX_VALUE)
-    @KafkaListener(topics = "${topic.name}", groupId = "simple-consumer-group")
+    @KafkaListener(topics = "${topic.retryable-topic-name}", groupId = "simple-consumer-group")
     public void listen(ConsumerRecord<String, String> consumerRecord, @Header(KafkaHeaders.RECEIVED_TOPIC) String topicName) {
         String value = consumerRecord.value();
         String key = consumerRecord.key();

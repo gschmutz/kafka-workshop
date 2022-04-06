@@ -1,5 +1,6 @@
 topic:
-  name: test-spring-topic
+  retryable-topic-name: test-spring-retryable-topic
+  stopping-topic-name: test-spring-stopping-topic
 
 spring:
   kafka:
