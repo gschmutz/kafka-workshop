@@ -1,7 +1,5 @@
 package com.trivadis.kafkastreams;
 
-import java.math.BigInteger;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.streams.KeyValue;
 
@@ -32,24 +30,10 @@ public class TruckPosition {
 		
 		return truckPosition;
 	}
-	
-	public static KeyValue<String, TruckPosition> create(String key, String csvRecord) {
-		TruckPosition truckPosition = new TruckPosition();
-		String[] values = StringUtils.split(csvRecord, ',');
-		truckPosition.timestamp = new Long(values[0]);
-		truckPosition.truckId = new Integer(values[1]);
-		truckPosition.driverId = new Integer(values[2]);		
-		truckPosition.routeId = new Integer(values[3]);	
-		truckPosition.eventType = values[4];
-		truckPosition.latitude = new Double(values[5]);
-		truckPosition.longitude = new Double(values[6]);
-		truckPosition.correlationId = values[7];
-		
-		key = truckPosition.truckId.toString();
-		
-		return new KeyValue<String, TruckPosition>(key, truckPosition);
+
+	public String toCSV() {
+		return timestamp + "," + truckId + "," + driverId + "," + routeId + "," + eventType + "," + latitude + "," + longitude + "," + correlationId;
 	}
-	
 
     public static boolean filterNonNORMAL(String key, TruckPosition value) {
         boolean result = false;
@@ -63,9 +47,6 @@ public class TruckPosition {
 				+ ", eventType=" + eventType + ", latitude=" + latitude + ", longitude="
 				+ longitude + ", correlationId=" + correlationId + "]";
 	}
-	
-	public String toCSV() {
-		return timestamp + "," + truckId + "," + driverId + "," + routeId + "," + eventType + "," + latitude + "," + longitude + "," + correlationId;
-	}
+
 	
 }
