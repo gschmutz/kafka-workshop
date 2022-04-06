@@ -49,6 +49,8 @@ public class StoppingErrorHandlerKafkaEventConsumer {
 
         // message is invalid, if value starts with @
         if (value.startsWith("@")) {
+
+            // restart the container automatically after 60 seconds
             this.scheduler.schedule(() -> {
                 this.registry.getListenerContainer(stoppingTopicName + ".id").start();
 
