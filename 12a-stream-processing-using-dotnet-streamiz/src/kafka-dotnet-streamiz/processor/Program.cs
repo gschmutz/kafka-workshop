@@ -17,28 +17,28 @@ namespace processor
 {
     class TruckPosition
     {
-	    long timestamp;
-	    int truckId;
-	    int driverId;
-	    int routeId;
-	    String eventType;
-	    Double latitude;
-	    Double longitude;
-	    String correlationId;
+	      long timestamp;
+	      int truckId;
+	      int driverId;
+	      int routeId;
+	      String eventType;
+	      Double latitude;
+	      Double longitude;
+	      String correlationId;
 
         public static TruckPosition create(String csvRecord) {
             TruckPosition truckPosition = new TruckPosition();
 
             String[] values = csvRecord.Split(',');
             truckPosition.timestamp = Convert.ToInt64(values[0]);
-		    truckPosition.truckId = Convert.ToInt32(values[1]);
-		    truckPosition.driverId = Convert.ToInt32(values[2]);		
-		    truckPosition.routeId = Convert.ToInt32(values[3]);	
-		    truckPosition.eventType = values[4];
-		    truckPosition.latitude = Convert.ToDouble(values[5]);
-		    truckPosition.longitude = Convert.ToDouble(values[6]);
-		    truckPosition.correlationId = values[7];
-            
+		        truckPosition.truckId = Convert.ToInt32(values[1]);
+		        truckPosition.driverId = Convert.ToInt32(values[2]);
+		        truckPosition.routeId = Convert.ToInt32(values[3]);
+		        truckPosition.eventType = values[4];
+		        truckPosition.latitude = Convert.ToDouble(values[5]);
+		        truckPosition.longitude = Convert.ToDouble(values[6]);
+		        truckPosition.correlationId = values[7];
+
             return truckPosition;
         }
 
@@ -46,11 +46,11 @@ namespace processor
             Boolean result = false;
             result = !value.eventType.Equals("Normal");
             return result;
-        }	
+        }
 
         public String toCSV() {
-		    return timestamp + "," + truckId + "," + driverId + "," + routeId + "," + eventType + "," + latitude + "," + longitude + "," + correlationId;
-	}
+		        return timestamp + "," + truckId + "," + driverId + "," + routeId + "," + eventType + "," + latitude + "," + longitude + "," + correlationId;
+	      }
 
     }
 

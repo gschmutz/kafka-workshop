@@ -2,11 +2,9 @@
 
 Let's redo the simple message filtering process of the previous workshop, using the [Streamiz.Kafka.Net](https://lgouellec.github.io/kafka-streams-dotnet) instead of KSQL. Streamiz.Kafka.Net is a .NET stream processing library for Apache Kafka (TM).
 
-![Alt Image Text](./images/stream-processing-with-ksql-overview.png "Schema Registry UI")
+![Alt Image Text](./images/stream-processing-with-streamiz-overview.png "Schema Registry UI")
 
 ## Create the project structure
-
-We will create two projects, one acting as the producer to Kafka and the other one as the consumer from Kafka.
 
 First create the workspace folder, which will hold our projects and navigate into it.
 
@@ -15,7 +13,7 @@ mkdir kafka-dotnet-streamiz
 cd kafka-dotnet-streamiz
 ```
 
-Now let's create the producer project
+Now let's create the processor project
 
 ```bash
 dotnet new console -o processor
@@ -29,17 +27,15 @@ code .
 
 ## Create the processor
 
-The reference the library from the .NET Core project, execute the following command from within the `kafka-dotnet-workspace` folder.
+To reference the library from the .NET Core project, execute the following command from within the `kafka-dotnet-streamiz` folder.
 
 ```
 dotnet add processor package Streamiz.Kafka.Net
 ```
 
+## Create the necessary Kafka Topic
 
-
-### Creating the necessary Kafka Topic 
-
-We will use the topic `dangerous_driving_kstreams` in the Kafka Streams code below. Due to the fact that `auto.topic.create.enable` is set to `false`, we have to manually create the topic. 
+We will use the topic `dangerous_driving_kstreams` for the output stream in the Kafka Streams code below. Due to the fact that `auto.topic.create.enable` is set to `false`, we have to manually create the topic.
 
 Connect to the `broker-1` container
 
@@ -47,19 +43,17 @@ Connect to the `broker-1` container
 docker exec -ti broker-1 bash
 ```
 
-and execute the necessary `kafka-topics` command. 
+and execute the necessary `kafka-topics` command.
 
 ```bash
 kafka-topics --bootstrap-server kafka-1:19092,kafka-2:19093 --create --topic dangerous_driving_streamiz --partitions 8 --replication-factor 2
 ```
 
-## Create a Kafka Streams Topology
+## Create a Streamiz Topology
 
-First create a new Java Package `com.trivadis.kafkastreams` in the folder **src/main/java**.
+Open `Program.cs` in the editor and add a `TruckPosition` class, which is handling the transformation from/to CSV and then add the Streamiz topology after.
 
-Create a new Java Class `TruckPosition ` in the package `com.trivadis.kafkastreams ` just created. 
-
-```java
+```csharp
 using Confluent.Kafka;
 using Streamiz.Kafka.Net;
 using Streamiz.Kafka.Net.SerDes;
@@ -79,28 +73,28 @@ namespace processor
 {
     class TruckPosition
     {
-	    long timestamp;
-	    int truckId;
-	    int driverId;
-	    int routeId;
-	    String eventType;
-	    Double latitude;
-	    Double longitude;
-	    String correlationId;
+	      long timestamp;
+	      int truckId;
+	      int driverId;
+	      int routeId;
+	      String eventType;
+	      Double latitude;
+	      Double longitude;
+	      String correlationId;
 
         public static TruckPosition create(String csvRecord) {
             TruckPosition truckPosition = new TruckPosition();
 
             String[] values = csvRecord.Split(',');
             truckPosition.timestamp = Convert.ToInt64(values[0]);
-		    truckPosition.truckId = Convert.ToInt32(values[1]);
-		    truckPosition.driverId = Convert.ToInt32(values[2]);		
-		    truckPosition.routeId = Convert.ToInt32(values[3]);	
-		    truckPosition.eventType = values[4];
-		    truckPosition.latitude = Convert.ToDouble(values[5]);
-		    truckPosition.longitude = Convert.ToDouble(values[6]);
-		    truckPosition.correlationId = values[7];
-            
+		        truckPosition.truckId = Convert.ToInt32(values[1]);
+		        truckPosition.driverId = Convert.ToInt32(values[2]);
+		        truckPosition.routeId = Convert.ToInt32(values[3]);
+		        truckPosition.eventType = values[4];
+		        truckPosition.latitude = Convert.ToDouble(values[5]);
+		        truckPosition.longitude = Convert.ToDouble(values[6]);
+		        truckPosition.correlationId = values[7];
+
             return truckPosition;
         }
 
@@ -108,11 +102,11 @@ namespace processor
             Boolean result = false;
             result = !value.eventType.Equals("Normal");
             return result;
-        }	
+        }
 
         public String toCSV() {
-		    return timestamp + "," + truckId + "," + driverId + "," + routeId + "," + eventType + "," + latitude + "," + longitude + "," + correlationId;
-	}
+		        return timestamp + "," + truckId + "," + driverId + "," + routeId + "," + eventType + "," + latitude + "," + longitude + "," + correlationId;
+	      }
 
     }
 
@@ -147,18 +141,14 @@ namespace processor
 }
 ```
 
-
-
-With these 2 classes in place, we can run the TruckFilterTopology as an Application from within the IDE. 
+With this in place, we can run the Topology from the terminal.
 
 ```bash
 dotnet run -p ./processor/processor.csproj
 ```
 
-
-After some time you should start seeing the output of the `peek` operation on the `positionsTruck` stream.
-
 Now let's see that we actually produce data on that new topic by running a `kafka-console-consumer` or alternatively a `kafkacat`.
 
-
-
+```bash
+kcat -b kafka-1:19092 -t dangerous_driving_streamiz
+```
