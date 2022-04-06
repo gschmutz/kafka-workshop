@@ -1,18 +1,18 @@
-# Stream Processing using Kafka Streams
+# Stream Processing with Java using Kafka Streams
 
-Let's redo the simple message filtering process of the previous workshop, using Kafka Streams instead of KSQL. 
+Let's redo the simple message filtering process of the previous workshop, using Kafka Streams instead of KSQL.
 
 ![Alt Image Text](./images/stream-processing-with-ksql-overview.png "Schema Registry UI")
 
 ## Create the project in Eclipse IDE
 
-Start the Eclipse IDE if not yet done. 
+Start the Eclipse IDE if not yet done.
 
 Create a new [Maven project](../99-misc/97-working-with-eclipse/README.md) and in the last step use `com.trivadis.kafkastreams` for the **Group Id** and `kafka-streams-truck` for the **Artifact Id**.
 
-Navigate to the **pom.xml** and double-click on it. The POM Editor will be displayed. 
+Navigate to the **pom.xml** and double-click on it. The POM Editor will be displayed.
 
-You can either use the GUI to edit your pom.xml or click on the last tab **pom.xml** to switch to the "code view". Let's do that. 
+You can either use the GUI to edit your pom.xml or click on the last tab **pom.xml** to switch to the "code view". Let's do that.
 
 You will see the still rather empty definition.
 
@@ -22,7 +22,7 @@ You will see the still rather empty definition.
   <groupId>com.trivadis.kafkastreams</groupId>
   <artifactId>kafka-streams-truck</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  
+
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
@@ -55,7 +55,7 @@ Copy the following block right after the <version> tag, before the closing </pro
 		<maven.compiler.source>1.8</maven.compiler.source>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
-    
+
 	<repositories>
 		<repository>
 			<id>confluent</id>
@@ -71,7 +71,7 @@ Copy the following block right after the <version> tag, before the closing </pro
             <artifactId>slf4j-log4j12</artifactId>
             <version>1.7.26</version>
         </dependency>
-        
+
         <dependency>
             <groupId>io.confluent</groupId>
             <artifactId>kafka-streams-avro-serde</artifactId>
@@ -98,13 +98,13 @@ Copy the following block right after the <version> tag, before the closing </pro
             <artifactId>avro</artifactId>
             <version>${avro.version}</version>
         </dependency>
-		
+
 		<dependency>
 			<groupId>commons-cli</groupId>
 			<artifactId>commons-cli</artifactId>
 			<version>1.4</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
@@ -222,7 +222,7 @@ Copy the following block right after the <version> tag, before the closing </pro
 ```
 
 
-In a terminal window, perform the following command to update the Eclipse IDE project settings. 
+In a terminal window, perform the following command to update the Eclipse IDE project settings.
 
 ```bash
 mvn eclipse:eclipse
@@ -232,11 +232,11 @@ Refresh the project in Eclipse to re-read the project settings.
 
 ## Create log4j settings
 
-Let's also create the necessary log4j configuration. 
+Let's also create the necessary log4j configuration.
 
-In the code we are using the [Log4J Logging Framework](https://logging.apache.org/log4j/2.x/), which we have to configure using a property file. 
+In the code we are using the [Log4J Logging Framework](https://logging.apache.org/log4j/2.x/), which we have to configure using a property file.
 
-Create a new file `log4j.properties` in the folder **src/main/resources** and add the following configuration properties. 
+Create a new file `log4j.properties` in the folder **src/main/resources** and add the following configuration properties.
 
 ```bash
 log4j.rootLogger=OFF, stdout
@@ -259,9 +259,9 @@ log4j.additivity.org.apache.kafka.streams.processor.internals.StreamThread=false
 #log4j.additivity.io.confluent=false
 ```
 
-### Creating the necessary Kafka Topic 
+### Creating the necessary Kafka Topic
 
-We will use the topic `dangerous_driving_kstreams` in the Kafka Streams code below. Due to the fact that `auto.topic.create.enable` is set to `false`, we have to manually create the topic. 
+We will use the topic `dangerous_driving_kstreams` in the Kafka Streams code below. Due to the fact that `auto.topic.create.enable` is set to `false`, we have to manually create the topic.
 
 Connect to the `broker-1` container
 
@@ -269,7 +269,7 @@ Connect to the `broker-1` container
 docker exec -ti broker-1 bash
 ```
 
-and execute the necessary `kafka-topics` command. 
+and execute the necessary `kafka-topics` command.
 
 ```bash
 kafka-topics --bootstrap-server kafka-1:19092,kafka-2:19093 --create --topic dangerous_driving_kstreams --partitions 8 --replication-factor 2
@@ -287,7 +287,7 @@ This finishes the setup steps and our new project is ready to be used. Next we w
 
 First create a new Java Package `com.trivadis.kafkastreams` in the folder **src/main/java**.
 
-Create a new Java Class `TruckPosition ` in the package `com.trivadis.kafkastreams ` just created. 
+Create a new Java Class `TruckPosition ` in the package `com.trivadis.kafkastreams ` just created.
 
 ```java
 package com.trivadis.kafkastreams;
@@ -304,22 +304,22 @@ public class TruckPosition {
 	public Double latitude;
 	public Double longitude;
 	public String correlationId;
-	
+
 	public TruckPosition() {		
 	}
-	
+
 	public static TruckPosition create(String csvRecord) {
 		TruckPosition truckPosition = new TruckPosition();
 		String[] values = StringUtils.split(csvRecord, ',');
 		truckPosition.timestamp = new Long(values[0]);
 		truckPosition.truckId = new Integer(values[1]);
 		truckPosition.driverId = new Integer(values[2]);		
-		truckPosition.routeId = new Integer(values[3]);	
+		truckPosition.routeId = new Integer(values[3]);
 		truckPosition.eventType = values[4];
 		truckPosition.latitude = new Double(values[5]);
 		truckPosition.longitude = new Double(values[6]);
 		truckPosition.correlationId = values[7];
-		
+
 		return truckPosition;
 	}
 
@@ -331,8 +331,8 @@ public class TruckPosition {
         boolean result = false;
         result = !value.eventType.equals("Normal");
         return result;
-    }	
-	
+    }
+
 	@Override
 	public String toString() {
 		return "TruckPosition [timestamp=" + timestamp + ", truckId=" + truckId + ", driverId=" + driverId + ", routeId=" + routeId
@@ -340,13 +340,13 @@ public class TruckPosition {
 				+ longitude + ", correlationId=" + correlationId + "]";
 	}
 
-	
+
 }
 ```
 
-Create a new Java Class `TruckFilterTopology` in the package `com.trivadis.kafkastreams ` just created. 
+Create a new Java Class `TruckFilterTopology` in the package `com.trivadis.kafkastreams ` just created.
 
-Add the following code to the empty class to create a Kafka Producer. 
+Add the following code to the empty class to create a Kafka Producer.
 
 ```java
 package com.trivadis.kafkastreams;
@@ -367,14 +367,14 @@ import org.apache.kafka.streams.kstream.Printed;
 public class TruckFilterTopology {
 
 	public static void main(String[] args) {
-		
+
 		// Serializers/deserializers (serde) for String and Long types
 		final Serde<String> stringSerde = Serdes.String();
 		final Serde<Long> longSerde = Serdes.Long();
-		
+
 	    final String bootstrapServers = args.length > 0 ? args[0] : "dataplatform:9092";
 	    final Properties streamsConfiguration = new Properties();
-	    
+
 	    // Give the Streams application a unique name.  The name must be unique in the Kafka cluster
 	    // against which the application is run.
 	    streamsConfiguration.put(StreamsConfig.APPLICATION_ID_CONFIG, "kafka-streams-truck-filter");
@@ -382,11 +382,11 @@ public class TruckFilterTopology {
 	    // Where to find Kafka broker(s).
 	    streamsConfiguration.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
 	    streamsConfiguration.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
-	    
+
 	    // Specify default (de)serializers for record keys and for record values.
 	    streamsConfiguration.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName());
 	    streamsConfiguration.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName());		
-	    		
+
 		// In the subsequent lines we define the processing topology of the Streams application.
 		// used to be KStreamBuilder ....
 	    final StreamsBuilder builder = new StreamsBuilder();
@@ -400,22 +400,22 @@ public class TruckFilterTopology {
 		 * Create a Stream of TruckPosition's by parsing the CSV into TruckPosition instances
 		 */
 		KStream<String, TruckPosition> positionsTruck = positions.mapValues(value -> TruckPosition.create(value.substring(7, value.length())));
-		
+
 		positionsTruck.peek((k, v) -> System.out.println (k + ":" +v));
-		
+
 		/*
 		 * Non stateful transformation => filter out normal behaviour
 		 */
 		KStream<String, TruckPosition> positionsTruckFiltered = positionsTruck.filter(TruckPosition::filterNonNORMAL);
-		
+
 		/*
 		 * Convert the Truck Position back into a CSV format and publish to the dangerous_driving_kstreams topic
 		 */
 		positionsTruckFiltered.mapValues(value -> value.toCSV()).to("dangerous_driving_kstreams");
-		
+
 		// Create the topology
 		final KafkaStreams streams = new KafkaStreams(builder.build(), streamsConfiguration);
-		
+
 		// clean up all local state by application-id
 		streams.cleanUp();
 
@@ -430,13 +430,13 @@ public class TruckFilterTopology {
 
 	    // Add shutdown hook to respond to SIGTERM and gracefully close Kafka Streams
 	    Runtime.getRuntime().addShutdownHook(new Thread(streams::close));
-	    
-	}	
-	
+
+	}
+
 }
 ```
 
-With these 2 classes in place, we can run the TruckFilterTopology as an Application from within the IDE. 
+With these 2 classes in place, we can run the TruckFilterTopology as an Application from within the IDE.
 
 After some time you should start seeing the output of the `peek` operation on the `positionsTruck` stream.
 
@@ -452,5 +452,3 @@ kafka-console-consumer --bootstrap-server broker-1:9092 \
 ```
 
 You should only see events for abnormal driving behaviour.        
-
-

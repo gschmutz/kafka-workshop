@@ -27,6 +27,7 @@ ID  | Title   | Descritpion
 9 |[Manipulating Consumer Offsets](./09-manipulating-consumer-offsets)  | learn how to use the `kafka-consumer-groups` CLI for manipulating consumer offsets
 10 | [IoT Data Ingestion through MQTT into Kafka](./10-iot-data-ingestion-over-mqtt)  | learn how to use Kafka Connect to ingest data from MQTT into Kafka
 11 | [Stream Processing using ksqlDB](./11-stream-processing-using-ksql)  | learn how to use ksqlDB to execute processing and analytics directly on a stream of data
-12 | [Stream Processing using Kafka Streams](./12-stream-processing-using-kstreams)  | learn how to use Kafka Streams to execute processing and analytics directly on a stream of data
+12 | [Stream Processing with using Kafka Streams](./12-stream-processing-using-java-kstreams)  | learn how to use Kafka Streams from Java to execute processing and analytics directly on a stream of data
+12a | [Stream Processing with .Net using Streamiz](./12a-stream-processing-using-dotnet-streamiz)  | learn how to use Streamiz from .NET to execute processing and analytics directly on a stream of data
 13 | [Static Data Ingestion into Kafka](./13-static-data-ingestion)  | use Kafka Connect to ingest data from relational database (static data) and then join it with a data stream using ksqlDB
 14 | [Using Confluent REST APIs (REST Proxy)](./14-using-rest-proxy)  | use Confluent REST Proxy to create topics and produce and consume messages (JSON and Avro) to these topics.
