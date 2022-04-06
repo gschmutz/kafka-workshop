@@ -111,7 +111,7 @@ namespace producer
 Add the following main method to the class:
 
 ```csharp
-    static void Main(string[] args)
+    private static async Task Main(string[] args)
     {
         long startTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
         if (args.Length == 0)
@@ -124,7 +124,7 @@ Add the following main method to the class:
         }
         long endTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
 
-        Console.WriteLine("Producing all records took : " + (endTime - startTime) + " ms = (" + (endTime - startTime) / 1000 + " sec)" );
+        Console.WriteLine("Producing all records took : " + (endTime - startTime) + " ms = (" + (endTime - startTime) / 1000 + " sec)");
     }
 
     // place the runProducerXXXX methods below
@@ -139,32 +139,27 @@ Add the following additional method for implementing the Kafka producer. To writ
 We will first use the `ProducerAsync` method in a synchronous way using the `await` operator. We are producing just a value and leave the key empty (`Null`).
 
 ```csharp
-static void runProducerSync(int totalMessages, int waitMsInBetween, int id)
-{
-    var config = new ProducerConfig { BootstrapServers = brokerList };
+  static async Task runProducerSync(int totalMessages, int waitMsInBetween, int id)
+   {
+       var config = new ProducerConfig { BootstrapServers = brokerList };
 
-    Func<Task> mthd = async () =>
-    {
 
-        // Create the Kafka Producer
-        using (var producer = new ProducerBuilder<Null, string>(config).Build())
-        {
-            for (int index = 0; index < totalMessages; index++)
-            {
-                // Construct the message value
-                string value = "[" + index + ":" + id + "] Hello Kafka " + DateTimeOffset.Now;
+       // Create the Kafka Producer
+       using (var producer = new ProducerBuilder<Null, string>(config).Build())
+       {
+           for (int index = 0; index < totalMessages; index++)
+           {
+               // Construct the message value
+               string value = "[" + index + ":" + id + "] Hello Kafka " + DateTimeOffset.Now;
 
-                // send the message to Kafka
-                var deliveryReport = await producer.ProduceAsync(topicName, new Message<Null, string> { Value = value });
-                Console.WriteLine($"[{id}] sent record (key={deliveryReport.Key} value={deliveryReport.Value}) meta (partition={deliveryReport.TopicPartition.Partition}, offset={deliveryReport.TopicPartitionOffset.Offset}, time={deliveryReport.Timestamp.UnixTimestampMs})");
+               // send the message to Kafka
+               var deliveryReport = await producer.ProduceAsync(topicName, new Message<Null, string> { Value = value });
+               Console.WriteLine($"[{id}] sent record (key={deliveryReport.Key} value={deliveryReport.Value}) meta (partition={deliveryReport.TopicPartition.Partition}, offset={deliveryReport.TopicPartitionOffset.Offset}, time={deliveryReport.Timestamp.UnixTimestampMs})");
 
-                Thread.Sleep(waitMsInBetween);
-            }
-        }
-    };
-
-    mthd().Wait();
-}
+               Thread.Sleep(waitMsInBetween);
+           }
+       }
+   }
 ```        
 
 Before starting the producer, in an additional terminal, let's use `kcat` or `kafka-console-consumer` to consume the messages from the topic `test-dotnet-topic`.
@@ -228,40 +223,34 @@ Part-5 => :[16:0] Hello Kafka 04/03/2022 13:07:54 +02:00
 Instead of producing a `Null` key as before, let's use the `id` argument as the key. You can either change the current method or copy/paste it to a new one as we do here:
 
 ```csharp
-    static void runProducerSyncWithKey(int totalMessages, int waitMsInBetween, int id)
+    static async Task runProducerSyncWithKey(int totalMessages, int waitMsInBetween, int id)
     {
         var config = new ProducerConfig { BootstrapServers = brokerList };
 
-        Func<Task> mthd = async () =>
+        // Create the Kafka Producer
+        using (var producer = new ProducerBuilder<int, string>(config).Build())
         {
-
-            // Create the Kafka Producer
-            using (var producer = new ProducerBuilder<int, string>(config).Build())
+            for (int index = 0; index < totalMessages; index++)
             {
-                for (int index = 0; index < totalMessages; index++)
-                {
-                    long time = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+                long time = DateTimeOffset.Now.ToUnixTimeMilliseconds();
 
-                    // Construct the message value
-                    string value = "[" + index + ":" + id + "] Hello Kafka " + DateTimeOffset.Now;
+                // Construct the message value
+                string value = "[" + index + ":" + id + "] Hello Kafka " + DateTimeOffset.Now;
 
-                    // send the message to Kafka
-                    var deliveryReport = await producer.ProduceAsync(topicName, new Message<int, string> { Key = id, Value = value });
-                    Console.WriteLine($"[{id}] sent record (key={deliveryReport.Key} value={deliveryReport.Value}) meta (partition={deliveryReport.TopicPartition.Partition}, offset={deliveryReport.TopicPartitionOffset.Offset}, time={deliveryReport.Timestamp.UnixTimestampMs})");
+                // send the message to Kafka
+                var deliveryReport = await producer.ProduceAsync(topicName, new Message<int, string> { Key = id, Value = value });
+                Console.WriteLine($"[{id}] sent record (key={deliveryReport.Key} value={deliveryReport.Value}) meta (partition={deliveryReport.TopicPartition.Partition}, offset={deliveryReport.TopicPartitionOffset.Offset}, time={deliveryReport.Timestamp.UnixTimestampMs})");
 
-                    Thread.Sleep(waitMsInBetween);
-                }
+                Thread.Sleep(waitMsInBetween);
             }
-        };
-
-        mthd().Wait();
+        }
     }
 ```
 
 Change the `Main()` method to run the new method
 
 ```csharp
-        static void Main(string[] args)
+        ...
         {
             if (args.Length == 0) {
                 runProducerSyncWithKey(100, 10, 0);
@@ -382,7 +371,7 @@ To asynchronously handle delivery result notifications, we can use `Task.Continu
 Change the `Main()` method to use the new method
 
 ```csharp
-        static void Main(string[] args)
+        ...
         {
             if (args.Length == 0) {
                 runProducerASync(100, 10, 0);
@@ -484,7 +473,7 @@ static void runProducerASync2(int totalMessages, int waitMsInBetween, int id)
 Change the `Main()` method to use the new method `runProducerAsync2`
 
 ```csharp
-        static void Main(string[] args)
+        ...
         {
             if (args.Length == 0) {
                 runProducerASync2(100, 10, 0);
@@ -700,17 +689,17 @@ static void runConsumerManual(int waitMsInBetween)
 Change the `Main` method to use the new `runConsumerManual` method.
 
 ```csharp
-static void Main(string[] args)
-{
-    if (args.Length == 0)
+    ...
     {
-        runConsumerManual(10);
+        if (args.Length == 0)
+        {
+            runConsumerManual(10);
+        }
+        else
+        {
+            runConsumerManual(int.Parse(args[0]));
+        }
     }
-    else
-    {
-        runConsumerManual(int.Parse(args[0]));
-    }
-}
 ```
 
 Run the program again (produce some new messages before, if you have consumed all messages in the previous run)
