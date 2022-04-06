@@ -8,6 +8,7 @@ spring:
     consumer:
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-
-
-
+  datasource:
+    url: jdbc:postgresql://dataplatform:5432/demodb
+    username: demo
+    password: abc123!

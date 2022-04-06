@@ -3,7 +3,9 @@ package com.trivadis.kafkaws.springbootkafkaconsumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.kafka.annotation.DltHandler;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.annotation.RetryableTopic;
@@ -33,8 +35,11 @@ public class StoppingErrorHandlerKafkaEventConsumer {
     @Value(value = "${topic.stopping-topic-name}")
     public String stoppingTopicName;
 
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
     public StoppingErrorHandlerKafkaEventConsumer(TaskScheduler scheduler, KafkaListenerEndpointRegistry registry,
-                                                  AbstractKafkaListenerContainerFactory<?,?,?> factory) {
+                                                  AbstractKafkaListenerContainerFactory<?, ?, ?> factory) {
         this.scheduler = scheduler;
         this.registry = registry;
         factory.setErrorHandler(new ContainerStoppingErrorHandler());
@@ -47,18 +52,15 @@ public class StoppingErrorHandlerKafkaEventConsumer {
 
         LOGGER.info("received key = '{}' with payload='{}' from topic='{}'", key, value, topicName);
 
-        // message is invalid, if value starts with @
-        if (value.startsWith("@")) {
+        // restart the container automatically after 60 seconds
+        this.scheduler.schedule(() -> {
+            this.registry.getListenerContainer(stoppingTopicName + ".id").start();
 
-            // restart the container automatically after 60 seconds
-            this.scheduler.schedule(() -> {
-                this.registry.getListenerContainer(stoppingTopicName + ".id").start();
+        }, new Date(System.currentTimeMillis() + 60000));
 
-            }, new Date(System.currentTimeMillis() + 60000));
+        // this will cause an error if postgres is not available
+        int rows = jdbcTemplate.update("select 1");
 
-            throw new RuntimeException("Error in consumer");
-        }
         LOGGER.info("message with key = '{}' with payload='{}' from topic='{}' processed successfully!", key, value, topicName);
-
     }
 }
