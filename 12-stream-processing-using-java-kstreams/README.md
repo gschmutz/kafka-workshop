@@ -2,7 +2,7 @@
 
 Let's redo the simple message filtering process of the previous workshop, using Kafka Streams instead of KSQL.
 
-![Alt Image Text](./images/stream-processing-with-ksql-overview.png "Schema Registry UI")
+![Alt Image Text](./images/stream-processing-with-kstream-overview.png "Schema Registry UI")
 
 ## Create the project in Eclipse IDE
 
