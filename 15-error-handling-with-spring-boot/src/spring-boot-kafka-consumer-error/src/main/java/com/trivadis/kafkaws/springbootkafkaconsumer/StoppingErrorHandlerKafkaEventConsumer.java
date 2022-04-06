@@ -59,7 +59,7 @@ public class StoppingErrorHandlerKafkaEventConsumer {
         }, new Date(System.currentTimeMillis() + 60000));
 
         // this will cause an error if postgres is not available
-        int rows = jdbcTemplate.update("select 1");
+        Integer dummy = jdbcTemplate.queryForObject("select 1 as value", Integer.class);
 
         LOGGER.info("message with key = '{}' with payload='{}' from topic='{}' processed successfully!", key, value, topicName);
     }
