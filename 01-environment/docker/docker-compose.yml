@@ -16,7 +16,7 @@ networks:
 services:
   #  ================================== Zookeeper ========================================== #
   zookeeper-1:
-    image: confluentinc/cp-zookeeper:7.0.1
+    image: confluentinc/cp-zookeeper:7.1.0
     container_name: zookeeper-1
     hostname: zookeeper-1
     labels:
@@ -34,7 +34,7 @@ services:
     restart: unless-stopped
 #  ================================== Kafka ========================================== #
   kafka-1:
-    image: confluentinc/cp-kafka:7.0.1
+    image: confluentinc/cp-kafka:7.1.0
     container_name: kafka-1
     hostname: kafka-1
     labels:
@@ -72,7 +72,7 @@ services:
       - ./data-transfer:/data-transfer
     restart: unless-stopped
   kafka-2:
-    image: confluentinc/cp-kafka:7.0.1
+    image: confluentinc/cp-kafka:7.1.0
     container_name: kafka-2
     hostname: kafka-2
     labels:
@@ -110,7 +110,7 @@ services:
       - ./data-transfer:/data-transfer
     restart: unless-stopped
   kafka-3:
-    image: confluentinc/cp-kafka:7.0.1
+    image: confluentinc/cp-kafka:7.1.0
     container_name: kafka-3
     hostname: kafka-3
     labels:
@@ -149,7 +149,7 @@ services:
     restart: unless-stopped
   #  ================================== Kafka Connect ========================================== #
   kafka-connect-1:
-    image: confluentinc/cp-kafka-connect:7.0.1
+    image: confluentinc/cp-kafka-connect:7.1.0
     container_name: kafka-connect-1
     hostname: kafka-connect-1
     labels:
@@ -180,7 +180,7 @@ services:
       CONNECT_LOG4J_ROOT_LOGLEVEL: INFO
       CONNECT_LOG4J_LOGGERS: org.apache.kafka.connect.runtime.rest=WARN,org.reflections=ERROR
       CONNECT_LOG4J_APPENDER_STDOUT_LAYOUT_CONVERSIONPATTERN: '[%d] %p %X{connector.context}%m (%c:%L)%n'
-      CONNECT_PLUGIN_PATH: /usr/share/java,/etc/kafka-connect/addl-plugins
+      CONNECT_PLUGIN_PATH: /usr/share/java,/etc/kafka-connect/addl-plugins,/etc/kafka-connect/cflthub-plugins
       CONNECT_CONNECTOR_CLIENT_CONFIG_OVERRIDE_POLICY: All
       #CLASSPATH: /usr/share/java/monitoring-interceptors/monitoring-interceptors-4.0.0.jar
       AWS_ACCESS_KEY_ID: V42FCGRVMK24JJ8DHUYG
@@ -192,16 +192,17 @@ services:
     volumes:
       - ./data-transfer:/data-transfer
       - ./plugins/kafka-connect/connectors:/etc/kafka-connect/addl-plugins
-      - ./plugins/opentelemetry/agents:/tmp
+      - ./plugins/opentelemetry/agents:/otel
     command:
       # In the command section, $ are replaced with $$ to avoid the error 'Invalid interpolation format for "command" option'
       - bash
       - -c
       - |
         echo "Installing Connectors"
+        mkdir -p /etc/kafka-connect/cflthub-plugins
         for i in $$(echo "confluentinc/kafka-connect-jdbc:10.0.0,confluentinc/kafka-connect-mqtt:1.3.0" | sed "s/,/ /g")
         do
-          confluent-hub install --no-prompt --component-dir /etc/kafka-connect/addl-plugins --verbose "$$i"
+          confluent-hub install --no-prompt --component-dir /etc/kafka-connect/cflthub-plugins --verbose "$$i"
         done
         #
         echo "Launching Kafka Connect worker"
@@ -210,7 +211,7 @@ services:
         sleep infinity
     restart: unless-stopped
   kafka-connect-2:
-    image: confluentinc/cp-kafka-connect:7.0.1
+    image: confluentinc/cp-kafka-connect:7.1.0
     container_name: kafka-connect-2
     hostname: kafka-connect-2
     labels:
@@ -241,7 +242,7 @@ services:
       CONNECT_LOG4J_ROOT_LOGLEVEL: INFO
       CONNECT_LOG4J_LOGGERS: org.apache.kafka.connect.runtime.rest=WARN,org.reflections=ERROR
       CONNECT_LOG4J_APPENDER_STDOUT_LAYOUT_CONVERSIONPATTERN: '[%d] %p %X{connector.context}%m (%c:%L)%n'
-      CONNECT_PLUGIN_PATH: /usr/share/java,/etc/kafka-connect/addl-plugins
+      CONNECT_PLUGIN_PATH: /usr/share/java,/etc/kafka-connect/addl-plugins,/etc/kafka-connect/cflthub-plugins
       CONNECT_CONNECTOR_CLIENT_CONFIG_OVERRIDE_POLICY: All
       #CLASSPATH: /usr/share/java/monitoring-interceptors/monitoring-interceptors-4.0.0.jar
       AWS_ACCESS_KEY_ID: V42FCGRVMK24JJ8DHUYG
@@ -253,11 +254,11 @@ services:
     volumes:
       - ./data-transfer:/data-transfer
       - ./plugins/kafka-connect/connectors:/etc/kafka-connect/addl-plugins
-      - ./plugins/opentelemetry/agents:/tmp
+      - ./plugins/opentelemetry/agents:/otel
     restart: unless-stopped
   #  ================================== ksqlDB ========================================== #
   ksqldb-server-1:
-    image: confluentinc/ksqldb-server:0.24.0
+    image: confluentinc/ksqldb-server:0.25.1
     hostname: ksqldb-server-1
     container_name: ksqldb-server-1
     labels:
@@ -303,7 +304,7 @@ services:
       - ./plugins/opentelemetry/agents:/tmp
     restart: unless-stopped
   ksqldb-server-2:
-    image: confluentinc/ksqldb-server:0.24.0
+    image: confluentinc/ksqldb-server:0.25.1
     hostname: ksqldb-server-2
     container_name: ksqldb-server-2
     labels:
@@ -351,7 +352,7 @@ services:
   # Access the cli by running:
   # > docker exec -it ksqldb-cli ksql http://ksqldb-server-1:8088
   ksqldb-cli:
-    image: confluentinc/ksqldb-cli:0.24.0
+    image: confluentinc/ksqldb-cli:0.25.1
     container_name: ksqldb-cli
     hostname: ksqldb-cli
     labels:
@@ -365,7 +366,7 @@ services:
     restart: unless-stopped
   #  ================================== Confluent REST Proxy ========================================== #
   kafka-rest-1:
-    image: confluentinc/cp-kafka-rest:7.0.1
+    image: confluentinc/cp-kafka-rest:7.1.0
     container_name: kafka-rest-1
     hostname: kafka-rest-1
     labels:
@@ -384,7 +385,7 @@ services:
     restart: unless-stopped
   #  ================================== Confluent Schema Registry ========================================== #
   schema-registry-1:
-    image: confluentinc/cp-schema-registry:7.0.1
+    image: confluentinc/cp-schema-registry:7.1.0
     hostname: schema-registry-1
     container_name: schema-registry-1
     labels:
@@ -504,7 +505,7 @@ services:
               properties:
                 bootstrap.servers: 'kafka-1:19092,kafka-2:19093,kafka-3:19094'
               schema-registry:
-                url: "http://${PUBLIC_IP}:8081"
+                url: "http://schema-registry-1:8081"
                 type: "confluent"
               connect:
                 - name: "connect-1"
@@ -536,6 +537,7 @@ services:
       SDC_CONF_MONITOR_MEMORY: 'true'
       SDC_CONF_PIPELINE_MAX_RUNNERS_COUNT: 50
       SDC_CONF_http_authentication: form
+      SDC_CONF_RUNTIME_CONF_LOCATION: embedded
     volumes:
       - ./data-transfer:/data-transfer
       - ./conf/streamsets/pre-docker-entrypoint.sh:/pre-docker-entrypoint.sh
@@ -555,7 +557,7 @@ services:
     restart: unless-stopped
   #  ================================== NiFi ========================================== #
   nifi-1:
-    image: apache/nifi:1.15.3
+    image: apache/nifi:1.16.1
     container_name: nifi-1
     hostname: nifi-1
     labels:
@@ -592,7 +594,7 @@ services:
     restart: unless-stopped
   #  ================================== Zeppelin ========================================== #
   zeppelin:
-    image: trivadis/apache-zeppelin:0.10.0-spark2.4-hadoop2.8
+    image: trivadis/apache-zeppelin:0.10.0-spark2.4.8-hadoop2.8
     container_name: zeppelin
     hostname: zeppelin
     labels:
@@ -646,9 +648,10 @@ services:
       ZEPPELIN_USER_PASSWORD: changeme
       # set spark-master for Zeppelin interpreter
       ZEPPELIN_SPARK_MASTER: spark://spark-master:7077
+      ZEPPELIN_NOTEBOOK_DIR: notebook
       ZEPPELIN_NOTEBOOK_CRON_ENABLE: 'True'
       PYSPARK_PYTHON: python3
-      SPARK_SUBMIT_OPTIONS: ' --conf spark.ui.port=4050 --conf spark.driver.host=${DOCKER_HOST_IP} --conf spark.driver.port=5050 --conf spark.driver.bindAddress=0.0.0.0 --conf spark.blockManager.port=6060 --conf spark.driver.extraJavaOptions=-Dcom.amazonaws.services.s3.enableV4 --conf spark.executor.extraJavaOptions=-Dcom.amazonaws.services.s3.enableV4'
+      SPARK_SUBMIT_OPTIONS: ' --conf spark.ui.port=4050 --conf spark.driver.host=zeppelin --conf spark.driver.port=5050 --conf spark.driver.bindAddress=0.0.0.0 --conf spark.blockManager.port=6060 --conf spark.driver.extraJavaOptions=-Dcom.amazonaws.services.s3.enableV4 --conf spark.executor.extraJavaOptions=-Dcom.amazonaws.services.s3.enableV4'
     volumes:
       - ./data-transfer:/data-transfer
       - ./plugins/spark/jars:/extra-jars
@@ -732,7 +735,7 @@ services:
     restart: unless-stopped
   #  ================================== Minio ========================================== #
   minio-1:
-    image: minio/minio:RELEASE.2022-02-01T18-00-14Z
+    image: minio/minio:RELEASE.2022-05-04T07-45-27Z
     container_name: minio-1
     hostname: minio-1
     labels:
@@ -746,7 +749,6 @@ services:
       MINIO_ROOT_USER: V42FCGRVMK24JJ8DHUYG
       MINIO_ROOT_PASSWORD: bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza
       MINIO_REGION_NAME: us-east-1
-      MINIO_BROWSER: 'True'
       #MINIO_PUBLIC_IPS: minio-1
       #MINIO_DOMAIN: minio.io
       #MINIO_DEFAULT_BUCKETS: 'admin-bucket,'
@@ -763,12 +765,13 @@ services:
       com.platys.name: minio
     volumes:
       - ./data-transfer:/data-transfer
-      - ./conf/minio/config.json:/root/.mc/config.json
+#      - ./conf/minio/config.json:/root/.mc/config.json
     entrypoint:
       - /bin/sh
       - -c
       - |
         sleep 10
+        mc alias set minio-1 http://minio-1:9000 V42FCGRVMK24JJ8DHUYG bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza
         mc mb --ignore-existing minio-1/admin-bucket
            for i in $$(echo "" | sed "s/,/ /g")
         do
@@ -860,3 +863,6 @@ services:
       - .:/variables
       - ./artefacts:/output
       - ./data-transfer:/data-transfer
+volumes:
+  data-transfer-vol:
+    name: data_transfer_vol
