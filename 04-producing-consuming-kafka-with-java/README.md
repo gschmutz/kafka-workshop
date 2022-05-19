@@ -256,6 +256,8 @@ mvn clean package -Dmaven.test.skip=true
 mvn exec:java@producer -Dexec.args="1000 100 0"
 ```
 
+**Note**: if your maven version does not support profiles, then you have to specify the main class as well: `mvn exec:java -Dexec.mainClass="com.trivadis.kafkaws.producer.KafkaProducerSync" -Dexec.args="0"`
+
 Use `kafkacat` or `kafka-console-consumer` to consume the messages from the topic `test-java-topic`.
 
 ```bash
@@ -554,6 +556,8 @@ mvn clean package -Dmaven.test.skip=true
 
 mvn exec:java@consumer -Dexec.args="0"
 ```
+
+**Note**: if your maven version does not support profiles, then you have to specify the main class as well: `mvn exec:java -Dexec.mainClass="com.trivadis.kafkaws.consumer.KafkaConsumerAuto" -Dexec.args="0"`
 
 on the console you should see an output similar to the one below, with some Debug messages whenever the auto-commit is happening
 
