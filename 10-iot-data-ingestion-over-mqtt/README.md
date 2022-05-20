@@ -64,7 +64,7 @@ In this workshop we show two options for consuming from MQTT
 To start consuming using through a command line, perform the following docker command:
 
 ```bash
-docker run -it --rm efrecon/mqtt-client sub -h $DOCKER_HOST_IP -p 1883 -t "truck/+/position" -v
+docker run -it --rm --network kafka-workshop efrecon/mqtt-client sub -h mosquitto-1 -p 1883 -t "truck/+/position" -v
 ```
 
 The consumed messages will show up in the terminal.
