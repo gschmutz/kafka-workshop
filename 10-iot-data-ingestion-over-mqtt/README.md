@@ -64,14 +64,14 @@ In this workshop we show two options for consuming from MQTT
 To start consuming using through a command line, perform the following docker command:
 
 ```bash
-docker run -it --rm efrecon/mqtt-client sub -h $DOCKER_HOST_IP -p 1883 -t "truck/+/position" -v
+docker run -it --rm --network kafka-workshop efrecon/mqtt-client sub -h mosquitto-1 -p 1883 -t "truck/+/position" -v
 ```
 
 The consumed messages will show up in the terminal.
 
 #### Using HiveMQ Web UI  
 
-To start consuming using the MQTT UI ([HiveMQ Web UI](https://www.hivemq.com/docs/3.4/web-ui/introduction.html)), navigate to <http://dataplatform:28136> and connect using `dataplatform` for the **Host** field, `9001 ` for the **Port** field and then click on **Connect**: 
+To start consuming using the MQTT UI ([HiveMQ Web UI](https://www.hivemq.com/docs/3.4/web-ui/introduction.html)), navigate to <http://dataplatform:28136> and connect using `dataplatform` for the **Host** field, `9101 ` for the **Port** field and then click on **Connect**: 
 
 ![Alt Image Text](./images/mqtt-ui-connect.png "MQTT UI Connect")
 	
