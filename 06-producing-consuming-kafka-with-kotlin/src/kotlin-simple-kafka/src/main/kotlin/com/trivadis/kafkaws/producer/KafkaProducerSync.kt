@@ -28,9 +28,9 @@ fun runProducer(sendMessageCount: Int, waitMsInBetween: Int, id: Long) {
         repeat(sendMessageCount) { index ->
             val time = System.currentTimeMillis();
 
-            val record = "[" + id + "] Hello Kafka " + index + " => " + LocalDateTime.now()
+            val value = "[" + id + "] Hello Kafka " + index + " => " + LocalDateTime.now()
 
-            val m = producer.send(ProducerRecord(TOPIC, key, record)).get()
+            val m = producer.send(ProducerRecord(TOPIC, key, value)).get()
 
             val elapsedTime = System.currentTimeMillis() - time;
             println("Produced record to topic ${m.topic()} partition [${m.partition()}] @ offset ${m.offset()} time=${elapsedTime}")

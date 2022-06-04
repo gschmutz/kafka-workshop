@@ -29,9 +29,9 @@ fun runProducerAsync(sendMessageCount: Int, waitMsInBetween: Int, id: Long) {
         repeat(sendMessageCount) { index ->
             val time = System.currentTimeMillis();
 
-            val record = "[" + id + "] Hello Kafka " + index + " => " + LocalDateTime.now()
+            val value = "[" + id + "] Hello Kafka " + index + " => " + LocalDateTime.now()
 
-            producer.send(ProducerRecord(TOPIC, key, record)) { m: RecordMetadata, e: Exception? ->
+            producer.send(ProducerRecord(TOPIC, key, value)) { m: RecordMetadata, e: Exception? ->
                 when (e) {
                     // no exception, good to go!
                     null -> {
