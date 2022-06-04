@@ -258,7 +258,7 @@ services:
     restart: unless-stopped
   #  ================================== ksqlDB ========================================== #
   ksqldb-server-1:
-    image: confluentinc/ksqldb-server:0.25.1
+    image: confluentinc/ksqldb-server:0.26.0
     hostname: ksqldb-server-1
     container_name: ksqldb-server-1
     labels:
@@ -301,10 +301,10 @@ services:
       - ./plugins/ksqldb:/etc/ksqldb/ext
       - ./conf/ksqldb/etc/log4j.properties:/etc/ksqldb/log4j.properties
       - ./plugins/kafka-connect/connectors:/etc/kafka-connect/addl-plugins
-      - ./plugins/opentelemetry/agents:/tmp
+      - ./plugins/opentelemetry/agents:/otel
     restart: unless-stopped
   ksqldb-server-2:
-    image: confluentinc/ksqldb-server:0.25.1
+    image: confluentinc/ksqldb-server:0.26.0
     hostname: ksqldb-server-2
     container_name: ksqldb-server-2
     labels:
@@ -347,12 +347,12 @@ services:
       - ./plugins/ksqldb:/etc/ksqldb/ext
       - ./conf/ksqldb/etc/log4j.properties:/etc/ksqldb/log4j.properties
       - ./plugins/kafka-connect/connectors:/etc/kafka-connect/addl-plugins
-      - ./plugins/opentelemetry/agents:/tmp
+      - ./plugins/opentelemetry/agents:/otel
     restart: unless-stopped
   # Access the cli by running:
   # > docker exec -it ksqldb-cli ksql http://ksqldb-server-1:8088
   ksqldb-cli:
-    image: confluentinc/ksqldb-cli:0.25.1
+    image: confluentinc/ksqldb-cli:0.26.0
     container_name: ksqldb-cli
     hostname: ksqldb-cli
     labels:
@@ -410,7 +410,7 @@ services:
       SCHEMA_REGISTRY_DEBUG: 'False'
     volumes:
       - ./data-transfer:/data-transfer
-      - ./plugins/opentelemetry/agents:/tmp
+      - ./plugins/opentelemetry/agents:/otel
     restart: unless-stopped
   #  ================================== Schema Registry UI ========================================== #
   schema-registry-ui:
@@ -735,7 +735,7 @@ services:
     restart: unless-stopped
   #  ================================== Minio ========================================== #
   minio-1:
-    image: minio/minio:RELEASE.2022-05-04T07-45-27Z
+    image: minio/minio:RELEASE.2022-05-08T23-50-31Z
     container_name: minio-1
     hostname: minio-1
     labels:
@@ -749,6 +749,7 @@ services:
       MINIO_ROOT_USER: V42FCGRVMK24JJ8DHUYG
       MINIO_ROOT_PASSWORD: bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza
       MINIO_REGION_NAME: us-east-1
+      MINIO_SERVER_URL: http://${PUBLIC_IP}
       #MINIO_PUBLIC_IPS: minio-1
       #MINIO_DOMAIN: minio.io
       #MINIO_DEFAULT_BUCKETS: 'admin-bucket,'
