@@ -20,7 +20,7 @@ ID  | Title   | Descritpion
 5a | [Kafka from Spring Boot with Avro & Schema Registry](./05a-working-with-avro-and-springboot)  | learn how to use **Spring Boot** to consume and produce from/to Kafka using Avro for serialization with the Confluent Schema Registry.
 5b | [Kafka from Spring Boot using Cloud Stream](./05b-producing-consuming-kafka-with-springboot-cloud-stream)  | learn how to use **Spring Cloud Streams** to consume and produce from/to Kafka
 5c | [Kafka from Spring Boot using Cloud Stream with Avro & Schema Registry](./05c-working-with-avro-and-springboot-cloud-stream)  | learn how to use **Spring Cloud Streams** to consume and produce from/to Kafka using Avro for serialization with the Confluent Schema Registry.
-6 | [Simple Kafka Consumer & Producer from Kotlin](./07-producing-consuming-kafka-with-kotlin)  | learn how to produce and consume messages using the **Kotlin** with the Java API.
+6 | [Simple Kafka Consumer & Producer from Kotlin](./06-producing-consuming-kafka-with-kotlin)  | learn how to produce and consume messages using the **Kotlin** with the Java API.
 7 | [Kafka with Confluent's .NET client](./07-producing-consuming-kafka-with-dotnet)  | learn how to use **.NET** to consume and produce from/to Kafka
 7b | [Using Kafka from #C (.Net) with Avro & Schema Registry](./07b-working-with-avro-and-dotnet)  | learn how to use **.NET** to consume and produce messages from/to Kafka using Avro for serialization with the Confluent Schema Registry
 8 |[Kafka with Confluent's Python client](./08-producing-consuming-kafka-with-python)  | learn how to use **Python** to consume and produce from/to Kafka
