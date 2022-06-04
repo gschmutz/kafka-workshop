@@ -211,9 +211,9 @@ fun runProducer(sendMessageCount: Int, waitMsInBetween: Int, id: Long) {
         repeat(sendMessageCount) { index ->
             val time = System.currentTimeMillis();
 
-            val record = "[" + id + "] Hello Kafka " + index + " => " + LocalDateTime.now()
+            val value = "[" + id + "] Hello Kafka " + index + " => " + LocalDateTime.now()
 
-            val m = producer.send(ProducerRecord(TOPIC, record)).get()
+            val m = producer.send(ProducerRecord(TOPIC, value)).get()
 
             val elapsedTime = System.currentTimeMillis() - time;
             println("Produced record to topic ${m.topic()} partition [${m.partition()}] @ offset ${m.offset()} time=${elapsedTime}")
@@ -340,9 +340,9 @@ fun runProducer(sendMessageCount: Int, waitMsInBetween: Int, id: Long) {
         repeat(sendMessageCount) { index ->
             val time = System.currentTimeMillis();
 
-            val record = "[" + id + "] Hello Kafka " + index + " => " + LocalDateTime.now()
+            val value = "[" + id + "] Hello Kafka " + index + " => " + LocalDateTime.now()
 
-            val m = producer.send(ProducerRecord(TOPIC, key, record)).get()
+            val m = producer.send(ProducerRecord(TOPIC, key, value)).get()
 ```
 
 So let's run it for id=`10`
@@ -389,9 +389,9 @@ fun runProducerAsync(sendMessageCount: Int, waitMsInBetween: Int, id: Long) {
         repeat(sendMessageCount) { index ->
             val time = System.currentTimeMillis();
 
-            val record = "[" + id + "] Hello Kafka " + index + " => " + LocalDateTime.now()
+            val value = "[" + id + "] Hello Kafka " + index + " => " + LocalDateTime.now()
 
-            producer.send(ProducerRecord(TOPIC, key, record)) { m: RecordMetadata, e: Exception? ->
+            producer.send(ProducerRecord(TOPIC, key, value)) { m: RecordMetadata, e: Exception? ->
                 when (e) {
                     // no exception, good to go!
                     null -> {
