@@ -14,10 +14,8 @@ private val TOPIC = "test-kotlin-topic"
 private val BOOTSTRAP_SERVERS = "dataplatform:9092,dataplatform:9093"
 
 fun runProducerAsync(sendMessageCount: Int, waitMsInBetween: Int, id: Long) {
-    // Load properties from file
+    // Define properties.
     val props = Properties()
-
-    // Add additional properties.
     props[BOOTSTRAP_SERVERS_CONFIG] = BOOTSTRAP_SERVERS
     props[ACKS_CONFIG] = "all"
     props[KEY_SERIALIZER_CLASS_CONFIG] = LongSerializer::class.qualifiedName

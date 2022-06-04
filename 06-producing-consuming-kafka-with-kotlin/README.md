@@ -198,10 +198,8 @@ Kafka provides a synchronous send method to send a record to a topic. Let’s us
 
 ```kotlin
 fun runProducer(sendMessageCount: Int, waitMsInBetween: Int, id: Long) {
-    // Load properties from file
+    // Define properties.
     val props = Properties()
-
-    // Add additional properties.
     props[BOOTSTRAP_SERVERS_CONFIG] = BOOTSTRAP_SERVERS
     props[ACKS_CONFIG] = "all"
     props[KEY_SERIALIZER_CLASS_CONFIG] = LongSerializer::class.qualifiedName
@@ -325,10 +323,8 @@ If we specify an id <> `0` when runnning the producer, the id is used as the key
 
 ```kotlin
 fun runProducer(sendMessageCount: Int, waitMsInBetween: Int, id: Long) {
-    // Load properties from file
+    // Define properties.
     val props = Properties()
-
-    // Add additional properties.
     props[BOOTSTRAP_SERVERS_CONFIG] = BOOTSTRAP_SERVERS
     props[ACKS_CONFIG] = "all"
     props[KEY_SERIALIZER_CLASS_CONFIG] = LongSerializer::class.qualifiedName
@@ -374,10 +370,8 @@ private val TOPIC = "test-kotlin-topic"
 private val BOOTSTRAP_SERVERS = "dataplatform:9092,dataplatform:9093"
 
 fun runProducerAsync(sendMessageCount: Int, waitMsInBetween: Int, id: Long) {
-    // Load properties from file
+    // Define properties.
     val props = Properties()
-
-    // Add additional properties.
     props[BOOTSTRAP_SERVERS_CONFIG] = BOOTSTRAP_SERVERS
     props[ACKS_CONFIG] = "all"
     props[KEY_SERIALIZER_CLASS_CONFIG] = LongSerializer::class.qualifiedName
@@ -474,17 +468,15 @@ private val TOPIC = "test-kotlin-topic"
 private val BOOTSTRAP_SERVERS = "dataplatform:9092,dataplatform:9093"
 
 fun runConsumer(waitMsInBetween: Int) {
-    // Load properties from file
+    // Define properties.
     val props = Properties()
-
-    // Add additional properties.
     props[BOOTSTRAP_SERVERS_CONFIG] = BOOTSTRAP_SERVERS
     props[GROUP_ID_CONFIG] = "kotlin-simple-consumer"
     props[AUTO_COMMIT_INTERVAL_MS_CONFIG] = 10000
     props[KEY_DESERIALIZER_CLASS_CONFIG] = LongDeserializer::class.qualifiedName
     props[VALUE_DESERIALIZER_CLASS_CONFIG] = StringDeserializer::class.qualifiedName
 
-    val consumer = KafkaConsumer<String, String>(props).apply {
+    val consumer = KafkaConsumer<Long, String>(props).apply {
         subscribe(listOf(TOPIC))
     }
 
@@ -615,17 +607,15 @@ private val TOPIC = "test-kotlin-topic"
 private val BOOTSTRAP_SERVERS = "dataplatform:9092,dataplatform:9093"
 
 fun runConsumerManual(waitMsInBetween: Int) {
-    // Load properties from file
+    // Define properties.
     val props = Properties()
-
-    // Add additional properties.
     props[BOOTSTRAP_SERVERS_CONFIG] = BOOTSTRAP_SERVERS
     props[GROUP_ID_CONFIG] = "kotlin-simple-consumer"
     props[ENABLE_AUTO_COMMIT_CONFIG] = false
     props[KEY_DESERIALIZER_CLASS_CONFIG] = LongDeserializer::class.qualifiedName
     props[VALUE_DESERIALIZER_CLASS_CONFIG] = StringDeserializer::class.qualifiedName
 
-    val consumer = KafkaConsumer<String, String>(props).apply {
+    val consumer = KafkaConsumer<Long, String>(props).apply {
         subscribe(listOf(TOPIC))
     }
 

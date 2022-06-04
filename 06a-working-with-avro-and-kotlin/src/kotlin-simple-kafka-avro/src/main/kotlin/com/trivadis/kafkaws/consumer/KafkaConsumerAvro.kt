@@ -1,6 +1,9 @@
-@file:JvmName("KafkaConsumerManual")
+@file:JvmName("KafkaConsumerAvro")
 package com.trivadis.kafkaws.consumer
 
+import com.trivadis.kafkaws.avro.v1.Notification
+import io.confluent.kafka.serializers.KafkaAvroDeserializer
+import io.confluent.kafka.serializers.KafkaAvroSerializerConfig
 import org.apache.kafka.clients.consumer.ConsumerConfig.*
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.common.serialization.LongDeserializer
@@ -9,19 +12,21 @@ import java.time.Duration
 import java.util.*
 
 
-private val TOPIC = "test-kotlin-topic"
+private val TOPIC = "test-kotlin-avro-topic"
 private val BOOTSTRAP_SERVERS = "dataplatform:9092,dataplatform:9093"
+private val SCHEMA_REGISTRY_URL = "http://dataplatform:8081"
 
 fun runConsumerManual(waitMsInBetween: Int) {
     // Define properties.
     val props = Properties()
     props[BOOTSTRAP_SERVERS_CONFIG] = BOOTSTRAP_SERVERS
-    props[GROUP_ID_CONFIG] = "kotlin-simple-consumer"
+    props[GROUP_ID_CONFIG] = "kotlin-simple-avro-consumer"
     props[ENABLE_AUTO_COMMIT_CONFIG] = false
-    props[KEY_DESERIALIZER_CLASS_CONFIG] = LongDeserializer::class.qualifiedName
-    props[VALUE_DESERIALIZER_CLASS_CONFIG] = StringDeserializer::class.qualifiedName
+    props[KEY_DESERIALIZER_CLASS_CONFIG] = KafkaAvroDeserializer::class.qualifiedName
+    props[VALUE_DESERIALIZER_CLASS_CONFIG] = KafkaAvroDeserializer::class.qualifiedName
+    props[KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG] = SCHEMA_REGISTRY_URL
 
-    val consumer = KafkaConsumer<Long, String>(props).apply {
+    val consumer = KafkaConsumer<Long, Notification>(props).apply {
         subscribe(listOf(TOPIC))
     }
 
