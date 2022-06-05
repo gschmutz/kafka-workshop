@@ -1,8 +1,10 @@
 # Kafka from Spring Boot with Avro & Schema Registry
 
-In this workshop we will learn how to use the Spring Kafka abstraction with Avro message serialization from within a Spring Boot application. We will implement both a consumer and a producer. We are using the same Avro schema of [Workshop 4a: Working with Avro and Java](../04a-working-with-avro-and-java). 
+In this workshop we will learn how to use the Spring Kafka abstraction with Avro message serialization from within a Spring Boot application. We will implement both a consumer and a producer. 
 
-We will create two Spring Boot projects, one for the Producer and one for the Consumer, simulating two independent microservices interacting with eachother via events. Additionally we will create another Maven project called `meta` which holds the Avro Schema(s). A dependency to that project will be added to both Spring Boot projects.  
+We will create two Spring Boot projects, one for the **Producer** and one for the **Consumer**, simulating two independent microservices interacting with eachother via events. 
+
+Additionally we will create another Maven project called `meta` which holds the Avro Schema(s). A dependency to that project will be added to both Spring Boot projects.  
 
 ## Create the Avro Metadata Project
 
