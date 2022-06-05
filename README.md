@@ -23,6 +23,7 @@ ID  | Title   | Descritpion
 6 | [Simple Kafka Consumer & Producer from Kotlin](./06-producing-consuming-kafka-with-kotlin)  | learn how to produce and consume messages using the **Kotlin** with the Java API.
 6a | [Using Kafka from Kotlin with Avro & Schema Registry](./06a-working-with-avro-and-kotlin)  | learn how to produce and consume messages with **Kotlin** and the Kafka Java API using Avro for serialization with the Confluent Schema Registry.
 6b | [Using Kafka from Spring Boot with Kotlin using Kafka Spring](./06b-producing-consuming-kafka-with-kotlin-springboot)  | learn how to use **Kotlin** with **Spring Boot** to consume and produce from/to Kafka
+6c | [Using Kafka from Spring Boot with Kotlin and Avro & Schema Registry](./06c-working-with-avro-and-kotlin-springboot)  | learn how to use **Kotlin** with **Spring Boot** to consume and produce from/to Kafka using Avro for serialization with the Confluent Schema Registry. 
 7 | [Kafka with Confluent's .NET client](./07-producing-consuming-kafka-with-dotnet)  | learn how to use **.NET** to consume and produce from/to Kafka
 7b | [Using Kafka from #C (.Net) with Avro & Schema Registry](./07b-working-with-avro-and-dotnet)  | learn how to use **.NET** to consume and produce messages from/to Kafka using Avro for serialization with the Confluent Schema Registry
 8 |[Kafka with Confluent's Python client](./08-producing-consuming-kafka-with-python)  | learn how to use **Python** to consume and produce from/to Kafka
