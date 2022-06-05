@@ -12,7 +12,7 @@ import java.util.*
 private val TOPIC = "test-kotlin-topic"
 private val BOOTSTRAP_SERVERS = "dataplatform:9092,dataplatform:9093"
 
-fun runConsumer(waitMsInBetween: Int) {
+fun runConsumer(waitMsInBetween: Long) {
     // Define properties.
     val props = Properties()
     props[BOOTSTRAP_SERVERS_CONFIG] = BOOTSTRAP_SERVERS
@@ -35,7 +35,7 @@ fun runConsumer(waitMsInBetween: Int) {
             }
 
             // Simulate slow processing
-            Thread.sleep(waitMsInBetween.toLong());
+            Thread.sleep(waitMsInBetween);
         }
     }
 }
@@ -44,6 +44,6 @@ fun main(args: Array<String>) {
     if (args.size == 0) {
         runConsumer(10)
     } else {
-        runConsumer(args[0].toInt())
+        runConsumer(args[0].toLong())
     }
 }

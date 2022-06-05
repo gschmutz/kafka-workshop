@@ -336,7 +336,7 @@ private val TOPIC = "test-kotlin-avro-topic"
 private val BOOTSTRAP_SERVERS = "dataplatform:9092,dataplatform:9093"
 private val SCHEMA_REGISTRY_URL = "http://dataplatform:8081"
 
-fun runProducer(sendMessageCount: Int, waitMsInBetween: Int, id: Long) {
+fun runProducer(sendMessageCount: Int, waitMsInBetween: Long, id: Long) {
     // Define properties.
     val props = Properties()
     props[BOOTSTRAP_SERVERS_CONFIG] = BOOTSTRAP_SERVERS
@@ -361,7 +361,7 @@ fun runProducer(sendMessageCount: Int, waitMsInBetween: Int, id: Long) {
             println("Produced record to topic ${m.topic()} partition [${m.partition()}] @ offset ${m.offset()} time=${elapsedTime}")
 
             // Simulate slow processing
-            Thread.sleep(waitMsInBetween.toLong());
+            Thread.sleep(waitMsInBetween);
         }
 
         producer.flush()
@@ -376,7 +376,7 @@ fun main(args: Array<String>) {
     if (args.size == 0) {
         runProducer(100, 10, 0)
     } else {
-        runProducer(args[0].toInt(), args[1].toInt(), args[2].toLong())
+        runProducer(args[0].toInt(), args[1].toLong(), args[2].toLong())
     }
 }
 ```
@@ -482,7 +482,7 @@ private val TOPIC = "test-kotlin-avro-topic"
 private val BOOTSTRAP_SERVERS = "dataplatform:9092,dataplatform:9093"
 private val SCHEMA_REGISTRY_URL = "http://dataplatform:8081"
 
-fun runConsumerManual(waitMsInBetween: Int) {
+fun runConsumerManual(waitMsInBetween: Long) {
     // Define properties.
     val props = Properties()
     props[BOOTSTRAP_SERVERS_CONFIG] = BOOTSTRAP_SERVERS
@@ -507,7 +507,7 @@ fun runConsumerManual(waitMsInBetween: Int) {
             consumer.commitSync();
 
             // Simulate slow processing
-            Thread.sleep(waitMsInBetween.toLong());
+            Thread.sleep(waitMsInBetween);
         }
     }
 }
@@ -516,7 +516,7 @@ fun main(args: Array<String>) {
     if (args.size == 0) {
         runConsumerManual(10)
     } else {
-        runConsumerManual(args[0].toInt())
+        runConsumerManual(args[0].toLong())
     }
 }
 ```

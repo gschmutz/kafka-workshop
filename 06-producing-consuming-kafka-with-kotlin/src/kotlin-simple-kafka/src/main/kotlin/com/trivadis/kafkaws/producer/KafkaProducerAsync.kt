@@ -13,7 +13,7 @@ import java.util.*
 private val TOPIC = "test-kotlin-topic"
 private val BOOTSTRAP_SERVERS = "dataplatform:9092,dataplatform:9093"
 
-fun runProducerAsync(sendMessageCount: Int, waitMsInBetween: Int, id: Long) {
+fun runProducerAsync(sendMessageCount: Int, waitMsInBetween: Long, id: Long) {
     // Define properties.
     val props = Properties()
     props[BOOTSTRAP_SERVERS_CONFIG] = BOOTSTRAP_SERVERS
@@ -51,6 +51,6 @@ fun main(args: Array<String>) {
     if (args.size == 0) {
         runProducerAsync(100, 10, 0)
     } else {
-        runProducerAsync(args[0].toInt(), args[1].toInt(), args[2].toLong())
+        runProducerAsync(args[0].toInt(), args[1].toLong(), args[2].toLong())
     }
 }
