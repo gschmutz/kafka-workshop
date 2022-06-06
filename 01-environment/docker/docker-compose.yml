@@ -718,6 +718,10 @@ services:
     volumes:
       - ./data-transfer:/data-transfer
       - ./init/postgresql:/docker-entrypoint-initdb.d/
+    command:
+      - "postgres"
+      - "-c"
+      - "wal_level={{POSTGRESQL_wal_level | lower }}"      
     restart: unless-stopped
   #  ================================== Adminer ========================================== #
   adminer:
