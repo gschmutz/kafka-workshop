@@ -4,7 +4,7 @@ In this workshop we will see various CDC solutions in action
 
 1. Polling-based CDC using Kafka Connect
 2. Log-based CDC using Debezium and Kafka Connect
-3. Outbox Pattern using Debezium and Kafka Connect
+3. Transactional Outbox Pattern using Debezium and Kafka Connect
 
 ## Creating person Postgresql Database
 
@@ -101,9 +101,9 @@ Now let's create and start the JDBC Source connector
 curl -X "POST" "$DOCKER_HOST_IP:8083/connectors" \
      -H "Content-Type: application/json" \
      -d $'{
-  "name": "jdbc-driver-source",
+  "name": "person.jdbcsrc.cdc",
   "config": {
-    "connector.class": "JdbcSourceConnector",
+    "connector.class": "person.jdbcsrc.cdc",
     "tasks.max": "1",
     "connection.url":"jdbc:postgresql://postgresql/postgres?user=postgres&password=abc123!",
     "mode": "timestamp",
@@ -185,6 +185,14 @@ and now also add the `address`
 ```sql
 INSERT INTO person.address (id, person_id, street, zip_code, city)
 VALUES (3, 2, 'Somestreet 10', '9999', 'Somewhere');
+```
+
+#### Remove the connector
+
+We have successfully tested the query-based CDC using the JDBC Source connector. So let's remove the connector.
+
+```bash
+curl -X "DELETE" "http://$DOCKER_HOST_IP:8083/connectors/person.jdbcsrc.cdc"
 ```
 
 ## Log-based CDC using Debezium and Kafka Connect
@@ -553,9 +561,32 @@ to see the new topic `priv.person.cdc.v2` created
 kcat -b kafka-1:19092 -t priv.person.cdc.v2 -f '[%p] %k: %s\n' -q -s avro -r http://schema-registry-1:8081 
 ```
 
-## Outbox Pattern using Debezium and Kafka Connect
+#### Remove the connector
 
+We have successfully tested the log-based CDC connector. So let's remove the connector.
 
+```bash
+curl -X "DELETE" "http://$DOCKER_HOST_IP:8083/connectors/person.dbzsrc.cdc"
+```
+
+## Transactional Outbox Pattern using Debezium and Kafka Connect
+
+In this section we will see how we can use [Debezium](https://debezium.io/) and it's Postgresql connector to perform log-based CDC on an special `outbox` table, implementing the [Transactional Outbox Pattern](https://microservices.io/patterns/data/transactional-outbox.html).
+
+#### Download the Debezium connector (skip this, if you have done it before)
+
+The [Debezium connector](https://www.confluent.io/hub/debezium/debezium-connector-postgresql) is not installed as part of the stack. We can either add it when generating the `docker-compose.yml` using `platys` or we manually do it using the Confluent Hub CLI, which is part of the `kafka-connect-1` docker container. Install the connector by executing the following statement:
+
+```bash
+docker exec -ti kafka-connect-1 confluent-hub install debezium/debezium-connector-postgresql:1.9.2 --no-prompt --component-dir /etc/kafka-connect/cflthub-plugins --verbose
+```
+
+and then restart both `kafka-connect-1` and `kafka-connect-2` so that the Kafka Connect cluster picks up the newly installed connector:
+
+```bash
+docker restart kafka-connect-1 
+docker restart kafka-connect-2
+```
 
 #### Create the `outbox` table
 
@@ -581,8 +612,6 @@ CREATE TABLE outbox (
 );
 ```
 
-
-
 #### Create the Debezium connector
 
 ```bash
@@ -599,7 +628,7 @@ curl -X PUT \
   "database.password": "abc123!",  
   "database.dbname": "postgres",
   "schema.include.list": "person",
-  "table.include.list": "person.person,person.address",
+  "table.include.list": "person.outbox",
   "plugin.name": "pgoutput",
   "tombstones.on.delete": "false",
   "database.hostname": "postgresql",
@@ -610,10 +639,52 @@ curl -X PUT \
   "transforms.outbox.table.field.event.payload": "payload_json",
   "transforms.outbox.table.field.event.timestamp": "created_at",
   "transforms.outbox.route.by.field": "event_type",
-  "transforms.outbox.route.topic.replacement": "priv.ecomm.salesorder.${routedByValue}.event.v1",
+  "transforms.outbox.route.topic.replacement": "priv.${routedByValue}.event.v1",
   "topic.creation.default.replication.factor": 3,
-  "topic.creation.default.partitions": 8,
-  "topic.creation.default.cleanup.policy": "compact"
+  "topic.creation.default.partitions": 8
 }'
 ```
 
+#### Add data to `outbox` table
+
+Let' first simulate a `CustomerCreated` event:
+
+```sql
+INSERT INTO person.outbox (id, aggregate_id, created_at, event_type, payload_json)
+VALUES (gen_random_uuid(), 13256, current_timestamp, 'CustomerCreated', '{"id":13256,"personType":"IN","nameStyle":"0","firstName":"Carson","middleName":null,"lastName":"Washington","emailPromotion":1,"addresses":[{"addressTypeId":2,"id":22326,"addressLine1":"3809 Lancelot Dr.","addressLine2":null,"city":"Glendale","stateProvinceId":9,"postalCode":"91203","country":{"isoCode2":"US","isoCode3":"USA","numericCode":840,"shortName":"United States of America"},"lastChangeTimestamp":"2022-05-09T20:45:11.798376"}],"phones":[{"phoneNumber":"518-555-0192","phoneNumberTypeId":1,"phoneNumberType":"Cell"}],"emailAddresses":[{"id":12451,"emailAddress":"carson12@adventure-works.com"}]}');
+```
+
+A new Kafka topic `priv.CustomerCreated.event.v1` will get created with the message. 
+
+```bash
+kcat -b kafka-1:19092 -t priv.CustomerCreated.event.v1 -f '[%p] %k: %s\n' -q -s avro -r http://schema-registry-1:8081 
+```
+
+```bash
+[4] {"long": 13256}: {"string": "{\"id\":13256,\"personType\":\"IN\",\"nameStyle\":\"0\",\"firstName\":\"Carson\",\"middleName\":null,\"lastName\":\"Washington\",\"emailPromotion\":1,\"addresses\":[{\"addressTypeId\":2,\"id\":22326,\"addressLine1\":\"3809 Lancelot Dr.\",\"addressLine2\":null,\"city\":\"Glendale\",\"stateProvinceId\":9,\"postalCode\":\"91203\",\"country\":{\"isoCode2\":\"US\",\"isoCode3\":\"USA\",\"numericCode\":840,\"shortName\":\"United States of America\"},\"lastChangeTimestamp\":\"2022-05-09T20:45:11.798376\"}],\"phones\":[{\"phoneNumber\":\"518-555-0192\",\"phoneNumberTypeId\":1,\"phoneNumberType\":\"Cell\"}],\"emailAddresses\":[{\"id\":12451,\"emailAddress\":\"carson12@adventure-works.com\"}]}"}
+```
+
+Now let's also simulate another event, an `CustomerMoved` event
+
+```sql
+INSERT INTO person.outbox (id, aggregate_id, created_at, event_type, payload_json)
+VALUES (gen_random_uuid(), 13256, current_timestamp, 'CustomerMoved', '{"customerId": 13256, "address": {"addressTypeId":2,"id":22326,"addressLine1":"3809 Lancelot Dr.","addressLine2":null,"city":"Glendale","stateProvinceId":9,"postalCode":"91203","country":{"isoCode2":"US","isoCode3":"USA","numericCode":840,"shortName":"United States of America"},"lastChangeTimestamp":"2022-05-09T20:45:11.798376"}}');
+```
+
+this will end up in a new topic named `priv.CustomerMoved.event.v1`
+
+```bash
+kcat -b kafka-1:19092 -t priv.CustomerMoved.event.v1 -f '[%p] %k: %s\n' -q -s avro -r http://schema-registry-1:8081 
+```
+
+```bash
+[4] {"long": 13256}: {"string": "{\"customerId\": 13256, \"address\": {\"addressTypeId\":2,\"id\":22326,\"addressLine1\":\"3809 Lancelot Dr.\",\"addressLine2\":null,\"city\":\"Glendale\",\"stateProvinceId\":9,\"postalCode\":\"91203\",\"country\":{\"isoCode2\":\"US\",\"isoCode3\":\"USA\",\"numericCode\":840,\"shortName\":\"United States of America\"},\"lastChangeTimestamp\":\"2022-05-09T20:45:11.798376\"}}"}
+```
+
+#### Remove the connector
+
+We have successfully tested the transactional outbox using Debezium connector. So let's remove the connector.
+
+```bash
+curl -X "DELETE" "http://$DOCKER_HOST_IP:8083/connectors/person.dbzsrc.outbox"
+```
