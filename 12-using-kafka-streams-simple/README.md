@@ -12,7 +12,7 @@ Navigate to the **pom.xml** and double-click on it. The POM Editor will be displ
 
 Let's add some initial dependencies for our project. We will add some more dependencies to the POM throughout this workshop.
 
-First add the following property into the already existing `<properites>` section
+First add the following property into the already existing `<properties>` section
 
 
 ```xml
@@ -818,7 +818,7 @@ public class KafkaStreamsRunnerAggregateDSL {
 
 As we are reusing the topics from the previous solution, you might want to clear (empty) both the input and the out topic before starting the program. You can easily do that using AKHQ (navigate to the topic, i.e. <http://dataplatform:28107/ui/docker-kafka-server/topic/test-kstream-input-topic> and click on **Empty Topic** on the bottom). 
 
-Start the programm and then first run a `kafkacat` consumer on the output topic
+Start the program and then first run a `kafkacat` consumer on the output topic
 
 ```bash
 kafkacat -b dataplatform:9092 -t test-kstream-output-topic -s value=q -o end -f "%k,%s\n"
