@@ -1,4 +1,4 @@
-# Using Kafka Streams
+# Using Kafka Streams for Stream Analytics
 
 In this workshop we will learn how to process messages using the [KafkaStreams](https://kafka.apache.org/documentation/streams/) library.
 

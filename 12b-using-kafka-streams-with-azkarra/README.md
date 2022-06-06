@@ -1,4 +1,4 @@
-# Using Kafka Streams with Azkarra Streams
+# Using Kafka Streams with Azkarra Streams for Stream Analytics
 
 In this workshop we will learn how to process messages using the [Azkarra Streams](https://www.azkarrastreams.io) framework for Kafka Streams. Azkarra Streams is a lightweight java framework to make it easy to develop, deploy and manage streaming microservices based on Apache Kafka Streams.(Azkarra is Basque words meaning “Fast”).
 
