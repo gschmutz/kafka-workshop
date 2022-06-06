@@ -1,4 +1,4 @@
-# Working with Change Data Capture (CDC)
+# Working with Kafka Connect and Change Data Capture (CDC)
 
 In this workshop we will see various CDC solutions in action
 

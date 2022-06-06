@@ -35,3 +35,4 @@ ID  | Title   | Descritpion
 12a | [Stream Processing with .Net using Streamiz](./12a-stream-processing-using-dotnet-streamiz)  | learn how to use Streamiz from .NET to execute processing and analytics directly on a stream of data
 13 | [Static Data Ingestion into Kafka](./13-static-data-ingestion)  | use Kafka Connect to ingest data from relational database (static data) and then join it with a data stream using ksqlDB
 14 | [Using Confluent REST APIs (REST Proxy)](./14-using-rest-proxy)  | use Confluent REST Proxy to create topics and produce and consume messages (JSON and Avro) to these topics.
+14 | [Working with Kafka Connect and Change Data Capture (CDC)](./17-working-with-kafka-connect-and-cdc)  | uses Kafka Connect to demonstrate various way for doing CDC on a set of PostgreSQL tables.
