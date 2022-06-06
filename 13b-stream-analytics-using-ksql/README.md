@@ -14,9 +14,11 @@ In order to use KSQL, we need to connect to the KSQL engine using the KSQL CLI. 
 docker exec -it ksqldb-cli ksql http://ksqldb-server-1:8088
 ```
 
-You should see the KSQL command prompt:s
+You should see the KSQL command prompt:
 
 ```                  
+OpenJDK 64-Bit Server VM warning: Option UseConcMarkSweepGC was deprecated in version 9.0 and will likely be removed in a future release.
+
                   ===========================================
                   =       _              _ ____  ____       =
                   =      | | _____  __ _| |  _ \| __ )      =
@@ -24,13 +26,14 @@ You should see the KSQL command prompt:s
                   =      |   <\__ \ (_| | | |_| | |_) |     =
                   =      |_|\_\___/\__, |_|____/|____/      =
                   =                   |_|                   =
-                  =  Event Streaming Database purpose-built =
+                  =        The Database purpose-built       =
                   =        for stream processing apps       =
                   ===========================================
 
-Copyright 2017-2019 Confluent Inc.
+Copyright 2017-2022 Confluent Inc.
 
-CLI v0.6.0, Server v0.6.0 located at http://ksqldb-server-1:8088
+CLI v0.26.0, Server v0.26.0 located at http://ksqldb-server-1:8088
+Server Status: RUNNING
 
 Having trouble? Type 'help' (case-insensitive) for a rundown of how things work!
 
