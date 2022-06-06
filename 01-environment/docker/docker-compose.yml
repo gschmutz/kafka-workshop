@@ -192,15 +192,16 @@ services:
     volumes:
       - ./data-transfer:/data-transfer
       - ./plugins/kafka-connect/connectors:/etc/kafka-connect/addl-plugins
+      - ./plugins/kafka-connect/jars:/etc/kafka-connect/jars
       - ./plugins/opentelemetry/agents:/otel
-    command:
+#        command:
       # In the command section, $ are replaced with $$ to avoid the error 'Invalid interpolation format for "command" option'
       - bash
       - -c
       - |
         echo "Installing Connectors"
         mkdir -p /etc/kafka-connect/cflthub-plugins
-        for i in $$(echo "confluentinc/kafka-connect-jdbc:10.0.0,confluentinc/kafka-connect-mqtt:1.3.0,debezium/debezium-connector-postgresql:1.8.1" | sed "s/,/ /g")
+        for i in $$(echo "confluentinc/kafka-connect-jdbc:10.0.0,confluentinc/kafka-connect-mqtt:1.3.0" | sed "s/,/ /g")
         do
           confluent-hub install --no-prompt --component-dir /etc/kafka-connect/cflthub-plugins --verbose "$$i"
         done
@@ -209,7 +210,7 @@ services:
         /etc/confluent/docker/run &
         #
         sleep infinity
-    restart: unless-stopped
+#        restart: unless-stopped
   kafka-connect-2:
     image: confluentinc/cp-kafka-connect:7.1.0
     container_name: kafka-connect-2
@@ -254,24 +255,9 @@ services:
     volumes:
       - ./data-transfer:/data-transfer
       - ./plugins/kafka-connect/connectors:/etc/kafka-connect/addl-plugins
+      - ./plugins/kafka-connect/jars:/etc/kafka-connect/jars
       - ./plugins/opentelemetry/agents:/otel
-    command:
-      # In the command section, $ are replaced with $$ to avoid the error 'Invalid interpolation format for "command" option'
-      - bash
-      - -c
-      - |
-        echo "Installing Connectors"
-        mkdir -p /etc/kafka-connect/cflthub-plugins
-        for i in $$(echo "confluentinc/kafka-connect-jdbc:10.0.0,confluentinc/kafka-connect-mqtt:1.3.0,debezium/debezium-connector-postgresql:1.8.1" | sed "s/,/ /g")
-        do
-          confluent-hub install --no-prompt --component-dir /etc/kafka-connect/cflthub-plugins --verbose "$$i"
-        done
-        #
-        echo "Launching Kafka Connect worker"
-        /etc/confluent/docker/run &
-        #
-        sleep infinity      
-    restart: unless-stopped
+#        restart: unless-stopped
   #  ================================== ksqlDB ========================================== #
   ksqldb-server-1:
     image: confluentinc/ksqldb-server:0.26.0
@@ -285,13 +271,16 @@ services:
       - 8088:8088
       - 1095:1095
     environment:
-      #KSQL_KSQL_LOGGING_PROCESSING_TOPIC_NAME: 'ksql_processing_log'
+      KSQL_LOG4J_OPTS: -Dlog4j.configuration=file:/etc/ksqldb/log4j-rolling.properties
+      KSQL_KSQL_LOGGING_PROCESSING_TOPIC_NAME: ksql_processing_log
       KSQL_KSQL_LOGGING_PROCESSING_TOPIC_REPLICATION_FACTOR: 1
       KSQL_KSQL_LOGGING_PROCESSING_TOPIC_AUTO_CREATE: 'true'
       KSQL_KSQL_LOGGING_PROCESSING_STREAM_AUTO_CREATE: 'true'
+      KSQL_KSQL_LOGGING_PROCESSING_ROWS_INCLUDE: 'true'
       # For Demo purposes: improve resource utilization and avoid timeouts
       KSQL_KSQL_STREAMS_NUM_STREAM_THREADS: 1
       KSQL_PRODUCER_ENABLE_IDEMPOTENCE: 'true'
+      KSQL_KSQL_PERSISTENCE_DEFAULT_FORMAT_KEY: KAFKA
       KSQL_APPLICATION_ID: ksqldb-cluster
       KSQL_KSQL_SERVICE_ID: ksqldb-cluster
       KSQL_HOST_NAME: ksqldb-server-1
@@ -315,8 +304,9 @@ services:
     volumes:
       - ./data-transfer:/data-transfer
       - ./plugins/ksqldb:/etc/ksqldb/ext
-      - ./conf/ksqldb/etc/log4j.properties:/etc/ksqldb/log4j.properties
+#      - ./conf/ksqldb/etc/log4j.properties:/etc/ksqldb/log4j.properties
       - ./plugins/kafka-connect/connectors:/etc/kafka-connect/addl-plugins
+      - ./plugins/kafka-connect/jars:/etc/kafka-connect/jars
       - ./plugins/opentelemetry/agents:/otel
     restart: unless-stopped
   ksqldb-server-2:
@@ -331,13 +321,16 @@ services:
       - 8089:8088
       - 1096:1095
     environment:
-      #KSQL_KSQL_LOGGING_PROCESSING_TOPIC_NAME: 'ksql_processing_log'
+      KSQL_LOG4J_OPTS: -Dlog4j.configuration=file:/etc/ksqldb/log4j-rolling.properties
+      KSQL_KSQL_LOGGING_PROCESSING_TOPIC_NAME: ksql_processing_log
       KSQL_KSQL_LOGGING_PROCESSING_TOPIC_REPLICATION_FACTOR: 1
       KSQL_KSQL_LOGGING_PROCESSING_TOPIC_AUTO_CREATE: 'true'
       KSQL_KSQL_LOGGING_PROCESSING_STREAM_AUTO_CREATE: 'true'
+      KSQL_KSQL_LOGGING_PROCESSING_ROWS_INCLUDE: 'true'
       # For Demo purposes: improve resource utilization and avoid timeouts
       KSQL_KSQL_STREAMS_NUM_STREAM_THREADS: 1
       KSQL_PRODUCER_ENABLE_IDEMPOTENCE: 'true'
+      KSQL_KSQL_PERSISTENCE_DEFAULT_FORMAT_KEY: KAFKA
       KSQL_APPLICATION_ID: ksqldb-cluster
       KSQL_KSQL_SERVICE_ID: ksqldb-cluster
       KSQL_HOST_NAME: ksqldb-server-2
@@ -361,8 +354,9 @@ services:
     volumes:
       - ./data-transfer:/data-transfer
       - ./plugins/ksqldb:/etc/ksqldb/ext
-      - ./conf/ksqldb/etc/log4j.properties:/etc/ksqldb/log4j.properties
+#      - ./conf/ksqldb/etc/log4j.properties:/etc/ksqldb/log4j.properties
       - ./plugins/kafka-connect/connectors:/etc/kafka-connect/addl-plugins
+      - ./plugins/kafka-connect/jars:/etc/kafka-connect/jars
       - ./plugins/opentelemetry/agents:/otel
     restart: unless-stopped
   # Access the cli by running:
@@ -734,10 +728,6 @@ services:
     volumes:
       - ./data-transfer:/data-transfer
       - ./init/postgresql:/docker-entrypoint-initdb.d/
-    command:
-      - postgres
-      - -c
-      - wal_level=logical    
     restart: unless-stopped
   #  ================================== Adminer ========================================== #
   adminer:
@@ -755,7 +745,7 @@ services:
     restart: unless-stopped
   #  ================================== Minio ========================================== #
   minio-1:
-    image: minio/minio:RELEASE.2022-05-08T23-50-31Z
+    image: minio/minio:RELEASE.2022-05-19T18-20-59Z
     container_name: minio-1
     hostname: minio-1
     labels:
@@ -769,7 +759,6 @@ services:
       MINIO_ROOT_USER: V42FCGRVMK24JJ8DHUYG
       MINIO_ROOT_PASSWORD: bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza
       MINIO_REGION_NAME: us-east-1
-      MINIO_SERVER_URL: http://${PUBLIC_IP}
       #MINIO_PUBLIC_IPS: minio-1
       #MINIO_DOMAIN: minio.io
       #MINIO_DEFAULT_BUCKETS: 'admin-bucket,'
