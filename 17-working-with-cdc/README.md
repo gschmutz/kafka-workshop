@@ -47,23 +47,15 @@ CREATE TABLE "person"."address" (
 ALTER TABLE ONLY "person"."address" ADD CONSTRAINT "address_person_fk" FOREIGN KEY (person_id) REFERENCES person(id) NOT DEFERRABLE;
 ```
 
-Let's add a first person and address as a sample:
-
-```sqk
-INSERT INTO person (id, title, first_name, last_name, email)
-VALUES (1, 'Mr', 'Peter', 'Muster', 'peter.muster@somecorp.com');
-
-INSERT INTO address (id, person_id, street, zip_code, city)
-VALUES (1, 1, 'Somestreet 10', '9999', 'Somewhere');
-```
-
 ## Polling-based CDC using Kafka Connect
 
 To use the Polling-based CDC with Kafka Connect, we have to install the [JDBC Source Connector](https://www.confluent.io/hub/confluentinc/kafka-connect-jdbc) on our Kafka Connect cluster. 
 
-On the workshop environment, this has already been done. You can check the available connectors either from [Kafka Connect UI](http://192.168.1.162:28103/#/cluster/kafka-connect-1/select-connector) or by using the REST API `curl -XGET http://$DOCKER_HOST_IP:8083/connector-plugins | jq`
+On the workshop environment, this has already been done. You can check the available connectors either from [Kafka Connect UI](http://dataplatform:28103/#/cluster/kafka-connect-1/select-connector) or by using the REST API `curl -XGET http://$DOCKER_HOST_IP:8083/connector-plugins | jq`
 
-Let's create a topic for `person_address` and `person_person`
+#### Create the necessary topics
+
+Let's create a topic for the change records of the two tables 'person` and `address`: 
 
 ```bash
 docker exec -ti kafka-1 kafka-topics --bootstrap-server kafka-1:19092 --create --topic priv.person.cdc.v1 --partitions 8 --replication-factor 3
@@ -82,6 +74,26 @@ kcat -b kafka-1:19092 -t priv.address.cdc.v1 -f '[%p] %k: %s\n' -q
 ```
 
 By using the `-f` option we tell `kcat` to also print the partition number and the key for each message.
+
+#### Create some initial data in Postgresql
+
+Let's add a first person and address as a sample. In a terminal connect to Postgresql
+
+```bash
+docker exec -ti postgresql psql -d postgres -U postgres
+``` 
+
+execute the following SQL INSERT statements
+
+```sql
+INSERT INTO person.person (id, title, first_name, last_name, email)
+VALUES (1, 'Mr', 'Peter', 'Muster', 'peter.muster@somecorp.com');
+
+INSERT INTO person.address (id, person_id, street, zip_code, city)
+VALUES (1, 1, 'Somestreet 10', '9999', 'Somewhere');
+```
+
+#### Create a JDBC Source connector instance
 
 Now let's create and start the JDBC Source connector
 
@@ -121,6 +133,10 @@ You can find the documentation on the configuration settings [here](https://docs
 
 After a maximum of 10 seconds (which is the polling interval we set), we should see one message each in the two topic, one for the record in the `person` and one for the record in the `address` table. 
 
+You can also monitor the connector in the Kafka Connect UI: <http://dataplatform:28103/>
+
+#### Configuration options
+
 Let's discuss some of the configurations in the connector.
 
 The key get's extracted using two [Single Message Transforms (SMT)](https://docs.confluent.io/platform/current/connect/transforms/overview.html), the `ValueToKey` and the `ExtractField`. They are chained together to set the key for data coming from a JDBC Connector. During the transform, `ValueToKey` copies the message id field into the message key and then `ExtractField` extracts just the integer portion of that field.
@@ -140,30 +156,464 @@ To also add a suffix to the topic (we have added a prefix using the `topic.prefi
      "transforms.addSuffix.replacement":"$0.cdc.v1"
 ```
 
+#### Add more data
+
 Let's add some more data to the tables and check how quick the data will appear in the topics. 
 
-In a new terminal window, 
+In a new terminal window, again connect to postgresql
 
 ```bash
 docker exec -ti postgresql psql -d postgres -U postgres
 ``` 
+
+Add a new `address` to `person` with `id=1`.
 
 ```sql
 INSERT INTO person.address (id, person_id, street, zip_code, city)
 VALUES (2, 1, 'Holiday 10', '1999', 'Ocean Somewhere');
 ```
 
-Now let's add a new person, first without an address
+Now let's add a new `person`, first without an `address`
 
 ```sql
 INSERT INTO person.person (id, title, first_name, last_name, email)
-VALUES (2, 'Ms', 'Karen', 'Muster', 'peter.muster@somecorp.com');
+VALUES (2, 'Ms', 'Karen', 'Muster', 'karen.muster@somecorp.com');
 ```
 
-and now also add the address
+and now also add the `address`
 
 ```sql
 INSERT INTO person.address (id, person_id, street, zip_code, city)
 VALUES (3, 2, 'Somestreet 10', '9999', 'Somewhere');
+```
+
+## Log-based CDC using Debezium and Kafka Connect
+
+In this section we will see how we can use [Debezium](https://debezium.io/) and it's Postgresql connector to perform log-based CDC on the two tables.
+
+
+#### Download the Debezium connector
+
+The [Debezium connector](https://www.confluent.io/hub/debezium/debezium-connector-postgresql) is not installed as part of the stack. We can either add it when generating the `docker-compose.yml` using `platys` or we manually do it using the Confluent Hub CLI, which is part of the `kafka-connect-1` docker container. Install the connector by executing the following statement:
+
+```bash
+docker exec -ti kafka-connect-1 confluent-hub install debezium/debezium-connector-postgresql:1.9.2 --no-prompt --component-dir /etc/kafka-connect/cflthub-plugins --verbose
+```
+
+and then restart both `kafka-connect-1` and `kafka-connect-2` so that the Kafka Connect cluster picks up the newly installed connector:
+
+```bash
+docker restart kafka-connect-1 
+docker restart kafka-connect-2
+```
+
+#### Create some initial data in Postgresql
+
+Let's add a first person and address as a sample. In a terminal connect to Postgresql
+
+```bash
+docker exec -ti postgresql psql -d postgres -U postgres
+``` 
+
+and execute the following SQL TRUNCATE followed by INSERT statements
+
+```sql
+TRUNCATE person.person CASCADE;
+
+INSERT INTO person.person (id, title, first_name, last_name, email)
+VALUES (1, 'Mr', 'Peter', 'Muster', 'peter.muster@somecorp.com');
+
+INSERT INTO person.address (id, person_id, street, zip_code, city)
+VALUES (1, 1, 'Somestreet 10', '9999', 'Somewhere');
+```
+
+#### Create the Debezium connector
+
+Now with the connector installed and the Kafka Connect cluster restarted, let's create and start the connector:
+
+```bash
+curl -X PUT \
+  "http://$DOCKER_HOST_IP:8083/connectors/person.dbzsrc.cdc/config" \
+  -H 'Content-Type: application/json' \
+  -H 'Accept: application/json' \
+  -d '{
+  "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
+  "tasks.max": "1",
+  "database.server.name": "postgresql",
+  "database.port": "5432",
+  "database.user": "postgres",
+  "database.password": "abc123!",  
+  "database.dbname": "postgres",
+  "schema.include.list": "person",
+  "table.include.list": "person.person,person.address",
+  "plugin.name": "pgoutput",
+  "tombstones.on.delete": "false",
+  "database.hostname": "postgresql",
+  "topic.creation.default.replication.factor": 3,
+  "topic.creation.default.partitions": 8,
+  "topic.creation.default.cleanup.policy": "compact"
+}'
+```
+
+#### Check the data in the two Kafka topics
+
+Now let's start two consumers, one on each topic, in separate terminal windows. This time the data is in Avro, as we did not overwrite the serializers. By default the topics are formatted using this naming convention: `<db-host>.<schema>.<table>`
+
+```bash
+kcat -b kafka-1:19092 -t postgresql.person.person -f '[%p] %k: %s\n' -q -s avro -r http://schema-registry-1:8081
+```
+
+and you should get the change record for `person` table
+
+```json
+[0] {"id": 1}: {"before": null, "after": {"Value": {"id": 1, "title": {"string": "Mr"}, "first_name": {"string": "Peter"}, "last_name": {"string": "Muster"}, "email": {"string": "peter.muster@somecorp.com"}, "modifieddate": 1654534797865686}}, "source": {"version": "1.8.1.Final", "connector": "postgresql", "name": "postgresql", "ts_ms": 1654534797866, "snapshot": {"string": "false"}, "db": "postgres", "sequence": {"string": "[\"23426176\",\"23426176\"]"}, "schema": "person", "table": "person", "txId": {"long": 556}, "lsn": {"long": 23426176}, "xmin": null}, "op": "c", "ts_ms": {"long": 1654534798250}, "transaction": null}
+```
+
+We can see that the key is also Avro-serialized (`{"id": 1}`).
+
+Now do the same for the `postgresql.person.address` topic
+
+```bash
+kcat -b kafka-1:19092 -t postgresql.person.address -f '[%p] %k: %s\n' -q -s avro -r http://schema-registry-1:8081 
+```
+
+and you should get the change record for the `address` table.
+
+Let's use `jq` to format the value only (by removing the `-f` parameter). 
+
+```
+kcat -b kafka-1:9092 -t postgresql.person.person -f '%s\n' -q -s avro -r http://schema-registry-1:8081 -u | jq
+```
+
+we can see that the change record is wrapped inside the `after` field. The `op` field show the operation, which shows `c` for create/insert.
+
+```json
+{
+  "before": null,
+  "after": {
+    "Value": {
+      "id": 1,
+      "title": {
+        "string": "Mr"
+      },
+      "first_name": {
+        "string": "Peter"
+      },
+      "last_name": {
+        "string": "Muster"
+      },
+      "email": {
+        "string": "peter.muster@somecorp.com"
+      },
+      "modifieddate": 1654534797865686
+    }
+  },
+  "source": {
+    "version": "1.8.1.Final",
+    "connector": "postgresql",
+    "name": "postgresql",
+    "ts_ms": 1654534797866,
+    "snapshot": {
+      "string": "false"
+    },
+    "db": "postgres",
+    "sequence": {
+      "string": "[\"23426176\",\"23426176\"]"
+    },
+    "schema": "person",
+    "table": "person",
+    "txId": {
+      "long": 556
+    },
+    "lsn": {
+      "long": 23426176
+    },
+    "xmin": null
+  },
+  "op": "c",
+  "ts_ms": {
+    "long": 1654534798250
+  },
+  "transaction": null
+}
+```
+
+Now let's do an update of the `person` table (keep the `kcat` running). 
+
+```sql
+UPDATE person.person SET first_name = UPPER(first_name);
+```
+
+and you should get the new change record
+
+```json
+{
+  "before": null,
+  "after": {
+    "Value": {
+      "id": 1,
+      "title": {
+        "string": "Mr"
+      },
+      "first_name": {
+        "string": "PETER"
+      },
+      "last_name": {
+        "string": "Muster"
+      },
+      "email": {
+        "string": "peter.muster@somecorp.com"
+      },
+      "modifieddate": 1654534797865686
+    }
+  },
+  "source": {
+    "version": "1.8.1.Final",
+    "connector": "postgresql",
+    "name": "postgresql",
+    "ts_ms": 1654535300862,
+    "snapshot": {
+      "string": "false"
+    },
+    "db": "postgres",
+    "sequence": {
+      "string": "[\"23426936\",\"23427224\"]"
+    },
+    "schema": "person",
+    "table": "person",
+    "txId": {
+      "long": 558
+    },
+    "lsn": {
+      "long": 23427224
+    },
+    "xmin": null
+  },
+  "op": "u",
+  "ts_ms": {
+    "long": 1654535301178
+  },
+  "transaction": null
+}
+```
+
+#### Also produce the before image of an Update
+
+You can see that there is `before` field but it is `null`. By default the Postgresql [`REPLICA IDENTITY`](https://www.postgresql.org/docs/9.6/sql-altertable.html#SQL-CREATETABLE-REPLICA-IDENTITY) will not produce the before image.
+
+Let's change it on the `person` table to see the difference
+
+```sql
+alter table person.person REPLICA IDENTITY FULL;
+```
+
+and then once more update the `person` table (keep the `kcat` running).
+
+```sql
+UPDATE person.person SET first_name = LOWER(first_name);
+```
+
+we can now see both the data `before` and `after` the UPDATE:
+
+```json
+{
+  "before": {
+    "Value": {
+      "id": 1,
+      "title": {
+        "string": "Mr"
+      },
+      "first_name": {
+        "string": "PETER"
+      },
+      "last_name": {
+        "string": "Muster"
+      },
+      "email": {
+        "string": "peter.muster@somecorp.com"
+      },
+      "modifieddate": 1654534797865686
+    }
+  },
+  "after": {
+    "Value": {
+      "id": 1,
+      "title": {
+        "string": "Mr"
+      },
+      "first_name": {
+        "string": "peter"
+      },
+      "last_name": {
+        "string": "Muster"
+      },
+      "email": {
+        "string": "peter.muster@somecorp.com"
+      },
+      "modifieddate": 1654534797865686
+    }
+  },
+  "source": {
+    "version": "1.8.1.Final",
+    "connector": "postgresql",
+    "name": "postgresql",
+    "ts_ms": 1654535554791,
+    "snapshot": {
+      "string": "false"
+    },
+    "db": "postgres",
+    "sequence": {
+      "string": "[\"23435472\",\"23435528\"]"
+    },
+    "schema": "person",
+    "table": "person",
+    "txId": {
+      "long": 560
+    },
+    "lsn": {
+      "long": 23435528
+    },
+    "xmin": null
+  },
+  "op": "u",
+  "ts_ms": {
+    "long": 1654535555154
+  },
+  "transaction": null
+}
+```
+
+#### Check the latency from the UPDATE until you consume the message from the topic
+
+Let's do an update on the `address` table and make sure that you see the `kcat` in another terminal window
+
+```sql
+UPDATE person.address SET street = UPPER(street);
+```
+
+```bash
+kcat -b kafka-1:19092 -t postgresql.person.address -f '[%p] %k: %s\n' -q -s avro -r http://schema-registry-1:8081 
+```
+
+You should see a very minimal latency between doing the update and the message in Kafka.
+
+#### Change the name of the Kafka Topic
+
+The topic name might not fit with your naming conventions. You can change the name using a [Single Message Transforms (SMT)](https://docs.confluent.io/platform/current/connect/transforms/overview.html) as we have already seen in the query-based CDC workshop above. 
+
+Let's remove the connector and delete the two topics
+
+```bash
+curl -X "DELETE" "http://$DOCKER_HOST_IP:8083/connectors/person.dbzsrc.cdc"
+
+docker exec -ti kafka-1 kafka-topics --delete --bootstrap-server kafka-1:19092 --topic postgresql.person.person
+docker exec -ti kafka-1 kafka-topics --delete --bootstrap-server kafka-1:19092 --topic postgresql.person.address
+```
+
+Now recreate the connector, this time adding the necessary `RegexRouter` SMT:
+
+
+```bash
+curl -X PUT \
+  "http://$DOCKER_HOST_IP:8083/connectors/person.dbzsrc.cdc/config" \
+  -H 'Content-Type: application/json' \
+  -H 'Accept: application/json' \
+  -d '{
+  "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
+  "tasks.max": "1",
+  "database.server.name": "postgresql",
+  "database.port": "5432",
+  "database.user": "postgres",
+  "database.password": "abc123!",  
+  "database.dbname": "postgres",
+  "schema.include.list": "person",
+  "table.include.list": "person.person,person.address",
+  "plugin.name": "pgoutput",
+  "tombstones.on.delete": "false",
+  "database.hostname": "postgresql",
+  "transforms":"dropPrefix",  
+  "transforms.dropPrefix.type": "org.apache.kafka.connect.transforms.RegexRouter",  
+  "transforms.dropPrefix.regex": "postgresql.person.(.*)",  
+  "transforms.dropPrefix.replacement": "priv.$1.cdc.v2",
+  "topic.creation.default.replication.factor": 3,
+  "topic.creation.default.partitions": 8,
+  "topic.creation.default.cleanup.policy": "compact"
+}'
+```
+
+Now let's do an update on `person` table once more 
+
+```sql
+UPDATE person.person SET first_name = UPPER(first_name);
+
+```
+to see the new topic `priv.person.cdc.v2` created
+
+```bash
+kcat -b kafka-1:19092 -t priv.person.cdc.v2 -f '[%p] %k: %s\n' -q -s avro -r http://schema-registry-1:8081 
+```
+
+## Outbox Pattern using Debezium and Kafka Connect
+
+
+
+#### Create the `outbox` table
+
+In a new terminal window, connect to Postgresql
+
+```bash
+docker exec -ti postgresql psql -d postgres -U postgres
+```
+
+Now create a new table `outbox`
+
+```sql
+SET search_path TO person;
+
+DROP TABLE IF EXISTS "outbox";
+CREATE TABLE outbox (
+    "id" uuid NOT NULL,
+    "aggregate_id" bigint,
+    "created_at" timestamp,
+    "event_type" character varying(255),
+    "payload_json" character varying(5000),
+    CONSTRAINT "outbox_pk" PRIMARY KEY ("id")
+);
+```
+
+
+
+#### Create the Debezium connector
+
+```bash
+curl -X PUT \
+  "http://$DOCKER_HOST_IP:8083/connectors/person.dbzsrc.outbox/config" \
+  -H 'Content-Type: application/json' \
+  -H 'Accept: application/json' \
+  -d '{
+  "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
+  "tasks.max": "1",
+  "database.server.name": "postgresql",
+  "database.port": "5432",
+  "database.user": "postgres",
+  "database.password": "abc123!",  
+  "database.dbname": "postgres",
+  "schema.include.list": "person",
+  "table.include.list": "person.person,person.address",
+  "plugin.name": "pgoutput",
+  "tombstones.on.delete": "false",
+  "database.hostname": "postgresql",
+  "transforms": "outbox",  
+  "transforms.outbox.type": "io.debezium.transforms.outbox.EventRouter",
+  "transforms.outbox.table.field.event.id": "id",
+  "transforms.outbox.table.field.event.key": "aggregate_id",
+  "transforms.outbox.table.field.event.payload": "payload_json",
+  "transforms.outbox.table.field.event.timestamp": "created_at",
+  "transforms.outbox.route.by.field": "event_type",
+  "transforms.outbox.route.topic.replacement": "priv.ecomm.salesorder.${routedByValue}.event.v1",
+  "topic.creation.default.replication.factor": 3,
+  "topic.creation.default.partitions": 8,
+  "topic.creation.default.cleanup.policy": "compact"
+}'
 ```
 
