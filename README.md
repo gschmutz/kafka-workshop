@@ -28,10 +28,10 @@ ID  | Title   | Descritpion
 7b | [Using Kafka from #C (.Net) with Avro & Schema Registry](./07b-working-with-avro-and-dotnet)  | learn how to use **.NET** to consume and produce messages from/to Kafka using Avro for serialization with the Confluent Schema Registry
 8 |[Kafka with Confluent's Python client](./08-producing-consuming-kafka-with-python)  | learn how to use **Python** to consume and produce from/to Kafka
 9 |[Kafka from Node.js](./09-working-with-nodejs)  | learn how to use **Node.js** to consume and produce from/to Kafka
-10 | [Working with Kafka Connect and Change Data Capture (CDC)](./10-working-with-kafka-connect-and-cdc)  | uses Kafka Connect to demonstrate various way for doing CDC on a set of PostgreSQL tables.
-12 | [Using Kafka Streams for Stream Analytics](./12-using-kafka-streams-simple)  | uses Kafka Streams to demonstrate analytics on data-in-motion.
-12a | [Using Kafka Streams from Spring Boot for Stream Analytics](./12a-using-kafka-streams-from-springboot)  | uses Kafka Streams from Spring Boot to demonstrate analytics on data-in-motion.
-12b | [Using Kafka Streams with Azkarra Streams for Stream Analytics](./12b-using-kafka-streams-with-azkarra)  | uses Kafka Streams with Azkarra Streams to demonstrate analytics on data-in-motion.
+10 | [Working with Kafka Connect and Change Data Capture (CDC)](./10-working-with-kafka-connect-and-cdc)  | uses **Kafka Connect** to demonstrate various way for doing CDC on a set of PostgreSQL tables.
+12 | [Using Kafka Streams for Stream Analytics](./12-using-kafka-streams-simple)  | uses **Kafka Streams** to demonstrate analytics on data-in-motion.
+12a | [Using Kafka Streams from Spring Boot for Stream Analytics](./12a-using-kafka-streams-from-springboot)  | uses **Kafka Streams** from **Spring Boot** to demonstrate analytics on data-in-motion.
+12b | [Using Kafka Streams with Azkarra Streams for Stream Analytics](./12b-using-kafka-streams-with-azkarra)  | uses **Kafka Streams** with **Azkarra Streams** to demonstrate analytics on data-in-motion.
 13 | [IoT Vehicle Tracking Workshop](./13-iot-vehicle-tracking-workshop)  | a multi-step end-to-end workshop around IoT Vehicle Tracking
 13a | [IoT Data Ingestion through MQTT into Kafka](./13a-iot-data-ingestion-over-mqtt)  | learn how to use Kafka Connect to ingest data from MQTT into Kafka
 13b | [Stream Analytics using ksqlDB](./13b-stream-analytics-using-ksql)  | learn how to use ksqlDB to execute processing and analytics directly on a stream of data
