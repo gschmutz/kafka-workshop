@@ -1,4 +1,4 @@
-# Stream Processing using ksqlDB
+# Stream Analytics using ksqlDB
 
 With the truck data continuously ingested into the `truck_movement` topic, let's perform some stream processing on the information. There are many possible solutions for performing analytics directly on the event stream. In the Kafka project, we can either use [Kafka Streams](https://kafka.apache.org/documentation/streams/) or [ksqlDB](http://ksqldb.io), a SQL abstraction on top of Kafka Streams. 
 

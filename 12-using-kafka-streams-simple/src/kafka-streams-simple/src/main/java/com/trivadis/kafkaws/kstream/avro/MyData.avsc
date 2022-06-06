@@ -1,0 +1,13 @@
+{
+  "type" : "record",
+  "name" : "MyData",
+  "namespace" : "com.trivadis.kafkaws.kstream.avro",
+  "fields" : [ {
+    "name" : "f1",
+    "type" : "string"
+  },
+    {
+      "name" : "f2",
+      "type" : "long"
+    }  ]
+}

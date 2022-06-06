@@ -1,4 +1,4 @@
-# Stream Processing using Streamiz
+# Stream Analytics using Streamiz
 
 Let's redo the simple message filtering process of the previous workshop, using the [Streamiz.Kafka.Net](https://lgouellec.github.io/kafka-streams-dotnet) instead of KSQL. Streamiz.Kafka.Net is a .NET stream processing library for Apache Kafka (TM).
 

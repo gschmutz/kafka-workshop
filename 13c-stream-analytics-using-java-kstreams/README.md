@@ -1,4 +1,4 @@
-# Stream Processing with Java using Kafka Streams
+# Stream Analytcis with Java using Kafka Streams
 
 Let's redo the simple message filtering process of the previous workshop, using Kafka Streams instead of KSQL.
 

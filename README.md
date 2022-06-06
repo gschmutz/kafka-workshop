@@ -28,11 +28,13 @@ ID  | Title   | Descritpion
 7b | [Using Kafka from #C (.Net) with Avro & Schema Registry](./07b-working-with-avro-and-dotnet)  | learn how to use **.NET** to consume and produce messages from/to Kafka using Avro for serialization with the Confluent Schema Registry
 8 |[Kafka with Confluent's Python client](./08-producing-consuming-kafka-with-python)  | learn how to use **Python** to consume and produce from/to Kafka
 9 |[Kafka from Node.js](./09-working-with-nodejs)  | learn how to use **Node.js** to consume and produce from/to Kafka
-16 |[Manipulating Consumer Offsets](./16-manipulating-consumer-offsets)  | learn how to use the `kafka-consumer-groups` CLI for manipulating consumer offsets
-10 | [IoT Data Ingestion through MQTT into Kafka](./10-iot-data-ingestion-over-mqtt)  | learn how to use Kafka Connect to ingest data from MQTT into Kafka
-11 | [Stream Processing using ksqlDB](./11-stream-processing-using-ksql)  | learn how to use ksqlDB to execute processing and analytics directly on a stream of data
-12 | [Stream Processing with using Kafka Streams](./12-stream-processing-using-java-kstreams)  | learn how to use Kafka Streams from Java to execute processing and analytics directly on a stream of data
-12a | [Stream Processing with .Net using Streamiz](./12a-stream-processing-using-dotnet-streamiz)  | learn how to use Streamiz from .NET to execute processing and analytics directly on a stream of data
-13 | [Static Data Ingestion into Kafka](./13-static-data-ingestion)  | use Kafka Connect to ingest data from relational database (static data) and then join it with a data stream using ksqlDB
+10 | [Working with Kafka Connect and Change Data Capture (CDC)](./10-working-with-kafka-connect-and-cdc)  | uses Kafka Connect to demonstrate various way for doing CDC on a set of PostgreSQL tables.
+13 | [IoT Vehicle Tracking Workshop](./13-iot-vehicle-tracking-workshop)  | a multi-step end-to-end workshop around IoT Vehicle Tracking
+13a | [IoT Data Ingestion through MQTT into Kafka](./13a-iot-data-ingestion-over-mqtt)  | learn how to use Kafka Connect to ingest data from MQTT into Kafka
+13b | [Stream Analytics using ksqlDB](./13b-stream-analytics-using-ksql)  | learn how to use ksqlDB to execute processing and analytics directly on a stream of data
+13c | [Stream Analytics with using Kafka Streams](./13c-stream-analytics-using-java-kstreams)  | learn how to use Kafka Streams from Java to execute processing and analytics directly on a stream of data
+13d | [Stream Analytics with .Net using Streamiz](./13d-stream-analytics-using-dotnet-streamiz)  | learn how to use Streamiz from .NET to execute processing and analytics directly on a stream of data
+13e | [Static Data Ingestion into Kafka](./13e-static-data-ingestion)  | use Kafka Connect to ingest data from relational database (static data) and then join it with a data stream using ksqlDB
 14 | [Using Confluent REST APIs (REST Proxy)](./14-using-rest-proxy)  | use Confluent REST Proxy to create topics and produce and consume messages (JSON and Avro) to these topics.
-14 | [Working with Kafka Connect and Change Data Capture (CDC)](./17-working-with-kafka-connect-and-cdc)  | uses Kafka Connect to demonstrate various way for doing CDC on a set of PostgreSQL tables.
+16 |[Manipulating Consumer Offsets](./16-manipulating-consumer-offsets)  | learn how to use the `kafka-consumer-groups` CLI for manipulating consumer offsets
+
