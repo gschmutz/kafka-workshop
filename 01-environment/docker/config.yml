@@ -64,7 +64,7 @@
       #kafka connect
       KAFKA_CONNECT_enable: true
       KAFKA_CONNECT_nodes: 2
-      KAFKA_CONNECT_connectors: confluentinc/kafka-connect-jdbc:10.0.0,confluentinc/kafka-connect-mqtt:1.3.0
+      KAFKA_CONNECT_connectors: confluentinc/kafka-connect-jdbc:10.0.0,confluentinc/kafka-connect-mqtt:1.3.0,debezium/debezium-connector-postgresql:1.9.2
 
       #ksqldb
       KAFKA_KSQLDB_enable: true
