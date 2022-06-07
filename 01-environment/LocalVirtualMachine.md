@@ -14,7 +14,7 @@ Install the following software
 
 In the Virtual Machine, start a terminal window and execute the following commands. 
 
-First let's add the environment variables. Make sure to adapt the network interface (**ens33** according to your environment. You can retrieve the interface name by using **ipconfig** on windows or **ifconfig* on Mac/Linux. 
+First let's add the environment variables. Make sure to adapt the network interface (**ens33** according to your environment. You can retrieve the interface name by using **ipconfig** on windows or **ifconfig** on Mac/Linux. 
 
 ```
 # Prepare Environment Variables
