@@ -175,16 +175,22 @@ From the total of 4 new transactions, you should only see two in the result, the
 
 ## Project columns on Stream
 
+Let's see how we can only show the columns we want to see
+
 ```ksql
 SELECT email_address, amount
 FROM transaction_s
 EMIT CHANGES;
 ```
 
+In the 2nd terminal, insert a new transaction
+
 ```ksql
 INSERT INTO transaction_s (email_address, tx_id, card_number, timestamp, amount) 
 VALUES ('tim.gallagher@acme.com', '8227233d-0b66-4e69-b49b-3cd08b21ab7d', '99989898909808', FROM_UNIXTIME(UNIX_TIMESTAMP()), 55.65);
 ```
+
+And you should see
 
 ```
 +---------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------+
@@ -193,9 +199,62 @@ VALUES ('tim.gallagher@acme.com', '8227233d-0b66-4e69-b49b-3cd08b21ab7d', '99989
 |tim.gallagher@acme.com                                                                                                                                   |55.65                                                                                                                                                    |
 ```
 
+## Counting Values
+
+Now let's see how we can do some stateful processing. Let's start with a simple count of values. 
+
+In the first terminal perform
+
+```sql
+SELECT email_address, COUNT(*)
+FROM transaction_s
+GROUP BY email_address
+EMIT CHANGES;
+```
+
+Now in the 2nd terminal add some new transactions
+
+```sql  
+INSERT INTO transaction_s (email_address, tx_id, card_number, timestamp, amount) 
+VALUES ('peter.muster@acme.com', '05ed7709-8a18-4e0d-9608-27894750bd43', '352642227248344', FROM_UNIXTIME(UNIX_TIMESTAMP()), 99.95);
+```
+
+We can see that the count starts with 0 and will only increase from now. How can we make the result a bit more meaningful? By adding a time window to the query.
+
+## Counting Values over a Time Window
+
+Let's see the number of transactions within 30 seconds. We use a **tumbling*** window (Fixed-duration, non-overlapping, gap-less windows) first
+
+```sql
+SELECT email_address, COUNT(*) as count
+FROM transaction_s
+WINDOW TUMBLING (SIZE 30 SECONDS)
+GROUP BY email_address
+EMIT CHANGES;
+```
+
+we can easily switch to a **hopping** window (Fixed-duration, overlapping windows) with 10 seconds overlap
+
+```sql
+SELECT email_address, COUNT(*) as count
+FROM transaction_s
+WINDOW HOPPING (SIZE 30 SECONDS, ADVANCE BY 10 SECONDS)
+GROUP BY email_address
+EMIT CHANGES;
+```
+
+SELECT FROM_UNIXTIME(WINDOWSTART), FROM_UNIXTIMESTAMP(WINDOWEND), email_address, COUNT(*) as count
+FROM transaction_s
+WINDOW HOPPING (SIZE 30 SECONDS, ADVANCE BY 10 SECONDS)
+GROUP BY email_address
+EMIT CHANGES;
+
+
 ## Join Stream with a Table 
 
-And a table of `customer` and put some data in it
+Now let's see how we can enrich the stream of data (transactions) with some static data (customer). We want to do a join between the stream and a table holding all the customer data.
+
+Create the table `customer_t` and put some data in it
 
 ```sql
 DROP TABLE customer_t;
@@ -218,28 +277,59 @@ ON (tra.email_address = cus.email_address)
 EMIT CHANGES;
 ```
 
+Insert a new message into the `transaction_s` stream
+
 ```sql  
 INSERT INTO transaction_s (email_address, tx_id, card_number, timestamp, amount) 
 VALUES ('peter.muster@acme.com', '05ed7709-8a18-4e0d-9608-27894750bd43', '352642227248344', FROM_UNIXTIME(UNIX_TIMESTAMP()), 99.95);
 ```
 
-## Counting Values
+```sql
+CREATE STREAM transaction_customer_s
+WITH (
+    KAFKA_TOPIC = 'transaction_customer',
+    VALUE_FORMAT = 'AVRO',
+    PARTITIONS = 8,
+    REPLICAS = 3
+) 
+AS
+SELECT * FROM transaction_s AS tra
+LEFT JOIN customer_t AS cus
+ON (tra.email_address = cus.email_address)
+EMIT CHANGES;
+```
 
 ```sql
-SELECT email_address, COUNT(*)
-FROM transaction_s
-GROUP BY email_address
+SELECT * 
+FROM transaction_customer_s
 EMIT CHANGES;
 ```
 
 
-## Counting Values over a Time Window
+## Anomalies
 
+```sql
+CREATE TABLE possible_anomalies WITH (
+    kafka_topic = 'possible_anomalies',
+    VALUE_AVRO_SCHEMA_FULL_NAME = 'io.ksqldb.tutorial.PossibleAnomaly'
+)   AS
+    SELECT card_number AS `card_number_key`,
+           as_value(card_number) AS `card_number`,
+           latest_by_offset(email_address) AS `email_address`,
+           count(*) AS `n_attempts`,
+           sum(amount) AS `total_amount`,
+           collect_list(tx_id) AS `tx_ids`,
+           WINDOWSTART as `start_boundary`,
+           WINDOWEND as `end_boundary`
+    FROM transactions
+    WINDOW TUMBLING (SIZE 30 SECONDS, RETENTION 1000 DAYS)
+    GROUP BY card_number
+    HAVING count(*) >= 3
+    EMIT CHANGES;
+```sql
 
-
-## Session Window
 
 ## Aggregating Values 
 
-Now let's use Kafka Streams to perform antoher stateful operations. We will group the messages by key and aggregate (create a sum of the values) the values of the messages per key over 60 seconds.
+Now let's use Kafka Streams to perform another stateful operations. We will group the messages by key and aggregate (create a sum of the values) the values of the messages per key over 60 seconds.
 
