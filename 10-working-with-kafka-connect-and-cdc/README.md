@@ -199,21 +199,7 @@ curl -X "DELETE" "http://$DOCKER_HOST_IP:8083/connectors/person.jdbcsrc.cdc"
 
 In this section we will see how we can use [Debezium](https://debezium.io/) and it's Postgresql connector to perform log-based CDC on the two tables.
 
-
-#### Download the Debezium connector
-
-The [Debezium connector](https://www.confluent.io/hub/debezium/debezium-connector-postgresql) is not installed as part of the stack. We can either add it when generating the `docker-compose.yml` using `platys` or we manually do it using the Confluent Hub CLI, which is part of the `kafka-connect-1` docker container. Install the connector by executing the following statement:
-
-```bash
-docker exec -ti kafka-connect-1 confluent-hub install debezium/debezium-connector-postgresql:1.9.2 --no-prompt --component-dir /etc/kafka-connect/cflthub-plugins --verbose
-```
-
-and then restart both `kafka-connect-1` and `kafka-connect-2` so that the Kafka Connect cluster picks up the newly installed connector:
-
-```bash
-docker restart kafka-connect-1 
-docker restart kafka-connect-2
-```
+The [Debezium connector](https://www.confluent.io/hub/debezium/debezium-connector-postgresql) comes pre-installed with the Dataplatform stack. 
 
 #### Create some initial data in Postgresql
 
@@ -573,20 +559,7 @@ curl -X "DELETE" "http://$DOCKER_HOST_IP:8083/connectors/person.dbzsrc.cdc"
 
 In this section we will see how we can use [Debezium](https://debezium.io/) and it's Postgresql connector to perform log-based CDC on an special `outbox` table, implementing the [Transactional Outbox Pattern](https://microservices.io/patterns/data/transactional-outbox.html).
 
-#### Download the Debezium connector (skip this, if you have done it before)
-
-The [Debezium connector](https://www.confluent.io/hub/debezium/debezium-connector-postgresql) is not installed as part of the stack. We can either add it when generating the `docker-compose.yml` using `platys` or we manually do it using the Confluent Hub CLI, which is part of the `kafka-connect-1` docker container. Install the connector by executing the following statement:
-
-```bash
-docker exec -ti kafka-connect-1 confluent-hub install debezium/debezium-connector-postgresql:1.9.2 --no-prompt --component-dir /etc/kafka-connect/cflthub-plugins --verbose
-```
-
-and then restart both `kafka-connect-1` and `kafka-connect-2` so that the Kafka Connect cluster picks up the newly installed connector:
-
-```bash
-docker restart kafka-connect-1 
-docker restart kafka-connect-2
-```
+The [Debezium connector](https://www.confluent.io/hub/debezium/debezium-connector-postgresql), which supports the Outbox Pattern comes pre-installed with the Dataplatform stack. 
 
 #### Create the `outbox` table
 
