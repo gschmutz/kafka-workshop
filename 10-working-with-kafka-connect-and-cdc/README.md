@@ -116,7 +116,7 @@ curl -X "POST" "$DOCKER_HOST_IP:8083/connectors" \
     "key.converter.schemas.enable": "false",
     "value.converter":"org.apache.kafka.connect.json.JsonConverter",
     "value.converter.schemas.enable": "false",
-    "name": "jdbc-driver-source",
+    "name": "person.jdbcsrc.cdc",
      "transforms":"createKey,extractInt,addSuffix",
      "transforms.createKey.type":"org.apache.kafka.connect.transforms.ValueToKey",
      "transforms.createKey.fields":"id",
