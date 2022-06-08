@@ -276,7 +276,7 @@ and you should get the change record for the `address` table.
 Let's use `jq` to format the value only (by removing the `-f` parameter). 
 
 ```
-kcat -b kafka-1:9092 -t postgresql.person.person -f '%s\n' -q -s avro -r http://schema-registry-1:8081 -u | jq
+kcat -b kafka-1:19092 -t postgresql.person.person -f '%s\n' -q -s avro -r http://schema-registry-1:8081 -u | jq
 ```
 
 we can see that the change record is wrapped inside the `after` field. The `op` field show the operation, which shows `c` for create/insert.
@@ -620,7 +620,7 @@ curl -X PUT \
 
 #### Add data to `outbox` table
 
-Let' first simulate a `CustomerCreated` event:
+Let's first simulate a `CustomerCreated` event:
 
 ```sql
 INSERT INTO person.outbox (id, aggregate_id, created_at, event_type, payload_json)
