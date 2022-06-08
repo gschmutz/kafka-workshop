@@ -70,6 +70,8 @@
       KAFKA_KSQLDB_enable: true
       KAFKA_KSQLDB_edition: 'oss'
       KAFKA_KSQLDB_nodes: 2
+      KAFKA_KSQLDB_suppress_enabled: true
+      KAFKA_KSQLDB_suppress_buffer_size_bytes: -1
 
       #confluent control center
       KAFKA_CCC_enable: true
