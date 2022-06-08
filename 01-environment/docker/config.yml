@@ -243,6 +243,7 @@
 
       POSTGRESQL_enable: true
       POSTGRESQL_volume_map_data: false
+      POSTGRESQL_wal_level: logical
       TIMESCALEDB_enable: false
       TIMESCALEDB_volume_map_data: false
 
