@@ -574,7 +574,7 @@ Now create a new table `outbox`
 ```sql
 SET search_path TO person;
 
-DROP TABLE IF EXISTS "outbox";
+DROP TABLE IF EXISTS "person"."outbox";
 CREATE TABLE outbox (
     "id" uuid NOT NULL,
     "aggregate_id" bigint,
