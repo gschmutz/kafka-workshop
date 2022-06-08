@@ -103,7 +103,7 @@ curl -X "POST" "$DOCKER_HOST_IP:8083/connectors" \
      -d $'{
   "name": "person.jdbcsrc.cdc",
   "config": {
-    "connector.class": "person.jdbcsrc.cdc",
+    "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
     "tasks.max": "1",
     "connection.url":"jdbc:postgresql://postgresql/postgres?user=postgres&password=abc123!",
     "mode": "timestamp",
