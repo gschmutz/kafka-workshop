@@ -103,7 +103,7 @@ curl -X "POST" "$DOCKER_HOST_IP:8083/connectors" \
      -d $'{
   "name": "person.jdbcsrc.cdc",
   "config": {
-    "connector.class": "person.jdbcsrc.cdc",
+    "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
     "tasks.max": "1",
     "connection.url":"jdbc:postgresql://postgresql/postgres?user=postgres&password=abc123!",
     "mode": "timestamp",
@@ -116,7 +116,7 @@ curl -X "POST" "$DOCKER_HOST_IP:8083/connectors" \
     "key.converter.schemas.enable": "false",
     "value.converter":"org.apache.kafka.connect.json.JsonConverter",
     "value.converter.schemas.enable": "false",
-    "name": "jdbc-driver-source",
+    "name": "person.jdbcsrc.cdc",
      "transforms":"createKey,extractInt,addSuffix",
      "transforms.createKey.type":"org.apache.kafka.connect.transforms.ValueToKey",
      "transforms.createKey.fields":"id",

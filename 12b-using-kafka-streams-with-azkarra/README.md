@@ -2,7 +2,7 @@
 
 In this workshop we will learn how to process messages using the [Azkarra Streams](https://www.azkarrastreams.io) framework for Kafka Streams. Azkarra Streams is a lightweight java framework to make it easy to develop, deploy and manage streaming microservices based on Apache Kafka Streams.(Azkarra is Basque words meaning “Fast”).
 
-We will create an Azkarra Streams application and implememt the same basic processor from Workshop 8 which consumes messages from a topic, processes them and produces the result into a new topic. We will be using the Kafka Streams High-Level DSL.
+We will create an Azkarra Streams application and implement the same basic processor from Workshop 8 which consumes messages from a topic, processes them and produces the result into a new topic. We will be using the Kafka Streams High-Level DSL.
 
 ## Setting up a Maven Project
 
@@ -267,16 +267,16 @@ mvn clean package && java -jar target/azkarra-kafkastreams-1.0-SNAPSHOT.jar
 
 ## Testing the Azkarra Streams application
 
-Start the programm and then first run a `kafkacat` consumer on the output topic
+Start the program and then first run a `kcat` consumer on the output topic
 
 ```bash
-kafkacat -b dataplatform:9092 -t test-kstream-azkarra-output-topic -s value=q -o end -f "%k,%s\n" -q
+kcat -b dataplatform:9092 -t test-kstream-azkarra-output-topic -s value=q -o end -f "%k,%s\n" -q
 ```
 
 Let's produce some messages to the input topic. Start a `kafkacat` producer
 
 ```bash
-kafkacat -b dataplatform:9092 -t test-kstream-azkarra-input-topic -P -K , 
+kcat -b dataplatform:9092 -t test-kstream-azkarra-input-topic -P -K , 
 ```
 
 and produce some values with `<key>,<value>` syntax, such as
@@ -328,7 +328,7 @@ Click on **Consumer Offsets** to monitor possible consumer lags of your Kafka St
 
 ### Interactive Queries
 
-If the Kafka Streams uses state stores, which our application here does, then the Azkarra UI allows to execute queries agains the state stores from the Dashbaord UI. This is a standard functionality of Kafka Streams, which is implemented and availble to use by Azkarra Streams. 
+If the Kafka Streams uses state stores, which our application here does, then the Azkarra UI allows to execute queries agains the state stores from the Dashboard UI. This is a standard functionality of Kafka Streams, which is implemented and available to use by Azkarra Streams. 
 
 Navigate to **Interactive Queries** in the menu on the left side. In the **Application** drop-down select the application, in the **Store** drop-down select the `count` state store, select `TimestampedWindow` for the **Type** and select `all` for the **Operation**. 
 

@@ -2,7 +2,7 @@
 
 In this workshop we will learn how to process messages using the [KafkaStreams](https://kafka.apache.org/documentation/streams/) library from Spring Boot. 
 
-We will create a Spring Boot application and implememt the same basic processor from Workshop 8 which consumes messages from a topic, processes them and produces the result into a new topic. We will be using the High-Level DSL.
+We will create a Spring Boot application and implement the same basic processor from Workshop 8 which consumes messages from a topic, processes them and produces the result into a new topic. We will be using the High-Level DSL.
 
 ## Create the Spring Boot Project
 
@@ -138,16 +138,16 @@ mvn spring-boot:run
 
 ## Use Console to test the application
 
-Start the programm and then first run a `kafkacat` consumer on the output topic
+Start the programm and then first run a `kcat` consumer on the output topic
 
 ```bash
-kafkacat -b dataplatform:9092 -t test-kstream-spring-output-topic
+kcat -b dataplatform:9092 -t test-kstream-spring-output-topic
 ```
 
-with that in place, in 2nd terminal produce some messages using `kafkacat` in producer mode on the input topic
+with that in place, in 2nd terminal produce some messages using `kcat` in producer mode on the input topic
 
 ```bash
-kafkacat -b dataplatform:9092 -t test-kstream-input-topic -P
+kcat -b dataplatform:9092 -t test-kstream-input-topic -P
 ```
 
 All the values produced should arrive on the consumer in uppercase.

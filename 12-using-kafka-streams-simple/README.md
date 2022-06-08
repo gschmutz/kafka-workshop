@@ -109,7 +109,7 @@ log4j.additivity.io.confluent.examples.streams.microservices=false
 
 We will use the topics `test-kstream-input-topic` and `test-kstream-output-topic` in all of the various KafkaStream implementations below. Addionally in one of the implementations, we need the compacted log topic `test-kstream-compacted-topic`. 
 
-Due to the fact that `auto.topic.create.enable` is set to `false`, we have to manually create the topic. 
+Due to the fact that `auto.topic.create.enable` is set kcat `false`, we have to manually create the topic. 
 
 Connect to the `kafka-1` container and execute the following `kafka-topics` command
 
@@ -143,7 +143,7 @@ This finishes the setup steps and our new project is ready to be used. Next we w
 
 Create a new Java package `com.trivadis.kafkaws.kstream.simple` and in it a Java class `KafkaStreamsRunnerDSL`. 
 
-Add the following code for the implemenation
+Add the following code for the implementation
 
 ```java
 package com.trivadis.kafkaws.kstream.simple;
@@ -199,16 +199,16 @@ public class KafkaStreamsRunnerDSL {
 }
 ```
 
-Start the programm and then first run a `kafkacat` consumer on the output topic
+Start the program and then first run a `kcat` consumer on the output topic
 
 ```bash
-kafkacat -b dataplatform:9092 -t test-kstream-output-topic
+kcat -b dataplatform:9092 -t test-kstream-output-topic
 ```
 
-with that in place, in 2nd terminal produce some messages using `kafkacat` in producer mode on the input topic
+with that in place, in 2nd terminal produce some messages using `kcat` in producer mode on the input topic
 
 ```bash
-kafkacat -b dataplatform:9092 -t test-kstream-input-topic -P
+kcat -b dataplatform:9092 -t test-kstream-input-topic -P
 ```
 
 All the values produced should arrive on the consumer in uppercase.
@@ -219,7 +219,7 @@ Now let's use Kafka Streams to perform joins. In this workshop we will join a da
 
 Create a new package `com.trivadis.kafkaws.kstream.tablejoin` and in it a Java class `KafkaStreamsRunnerTableJoinDSL `. 
 
-Add the following code for the implemenation
+Add the following code for the implementation
 
 ```java
 package com.trivadis.kafkaws.kstream.tablejoin;
@@ -275,10 +275,10 @@ public class KafkaStreamsRunnerTableJoinDSL {
 }
 ```
 
-First let's add the "static" data to the compacted log topic. This is the data we are doing the lookup against. In a terminal window run the following `kafkacat` command
+First let's add the "static" data to the compacted log topic. This is the data we are doing the lookup against. In a terminal window run the following `kcat` command
 
 ```bash
-kafkacat -b dataplatform:9092 -t test-kstream-compacted-topic -P -K , 
+kcat -b dataplatform:9092 -t test-kstream-compacted-topic -P -K , 
 ```
 
 produce some values with `<key>,<value>` syntax, such as
@@ -292,16 +292,16 @@ D,Entity D
 
 As we are reusing the topics from the previous solution, you might want to clear (empty) both the input and the out topic before starting the program. You can easily do that using AKHQ (navigate to the topic, i.e. <http://dataplatform:28107/ui/docker-kafka-server/topic/test-kstream-input-topic> and click on **Empty Topic** on the bottom). 
 
-Start the programm and in another terminal window run a `kafkacat` consumer on the output topic
+Start the program and in another terminal window run a `kcat` consumer on the output topic
 
 ```bash
-kafkacat -b dataplatform:9092 -t test-kstream-output-topic -o end -f "%k,%s\n" -q
+kcat -b dataplatform:9092 -t test-kstream-output-topic -o end -f "%k,%s\n" -q
 ```
 
-with that in place, in a 3rd terminal window, produce some messages using `kafkacat` in producer mode on the input topic
+with that in place, in a 3rd terminal window, produce some messages using `kcat` in producer mode on the input topic
 
 ```bash
-kafkacat -b dataplatform:9092 -t test-kstream-input-topic -P -K , 
+kcat -b dataplatform:9092 -t test-kstream-input-topic -P -K , 
 ```
 
 produce some values with `<key>,<value>` syntax, such as
@@ -329,7 +329,7 @@ A,AAA;Entity A
 
 you can see that there has been no output for the input of `E,EEE`, because there is no entry for key `E` in the compacted topic.
 
-Let's add the "entity" to the compacted topic, by entering the following value on the terminal where `kafkacat -b dataplatform:9092 -t test-kstream-compacted-topic -P -K ,` is still running
+Let's add the "entity" to the compacted topic, by entering the following value on the terminal where `kcat -b dataplatform:9092 -t test-kstream-compacted-topic -P -K ,` is still running
 
 ```bash
 E,Entity E
@@ -389,7 +389,7 @@ Topologies:
       <-- KSTREAM-SOURCE-0000000002
 ```
 
-You can use the [Kafka Streams Topology Visualizer](https://zz85.github.io/kafka-streams-viz/) utility to visualize the toplolgy in a graphical manner. Copy the string represenation into the **Input Kafka Topology** field and click **Update**. You should a visualization like the one below
+You can use the [Kafka Streams Topology Visualizer](https://zz85.github.io/kafka-streams-viz/) utility to visualize the topology in a graphical manner. Copy the string representation into the **Input Kafka Topology** field and click **Update**. You should a visualization like the one below
 
 ![Alt Image Text](./images/kafka-streams-topology-visualizer-join.png "Kafka Streams Topology Visulizer")
 
@@ -401,7 +401,7 @@ Now let's use Kafka Streams to perform some stateful operations. We will group t
 
 Create a new Java package `com.trivadis.kafkaws.kstream.count` and in it a Java class `KafkaStreamsRunnerCountDSL`. 
 
-Add the following code for the implemenation
+Add the following code for the implementation
 
 ```java
 package com.trivadis.kafkaws.kstream.count;
@@ -460,21 +460,21 @@ public class KafkaStreamsRunnerCountDSL {
 }
 ```
 
-We are deliberatly disabling the cache by setting the `CACHE_MAX_BYTES_BUFFERING_CONFIG` to the value of `0`. By that the output is shown immediately, otherwise it would take a while until the buffer is fulll, especially because we are manually sending messages.
+We are deliberately disabling the cache by setting the `CACHE_MAX_BYTES_BUFFERING_CONFIG` to the value of `0`. By that the output is shown immediately, otherwise it would take a while until the buffer is full, especially because we are manually sending messages.
 
 
 As we are reusing the topics from the previous solution, you might want to clear (empty) both the input and the out topic before starting the program. You can easily do that using AKHQ (navigate to the topic, i.e. <http://dataplatform:28107/ui/docker-kafka-server/topic/test-kstream-input-topic> and click on **Empty Topic** on the bottom). 
 
-Start the programm and then first run a `kafkacat` consumer on the output topic
+Start the programm and then first run a `kcat` consumer on the output topic
 
 ```bash
-kafkacat -b dataplatform:9092 -t test-kstream-output-topic -s value=q -o end -f "%k,%s\n"
+kcat -b dataplatform:9092 -t test-kstream-output-topic -s value=q -o end -f "%k,%s\n"
 ```
 
-with that in place, in 2nd terminal produce some messages using `kafkacat` in producer mode on the input topic
+with that in place, in 2nd terminal produce some messages using `kcat` in producer mode on the input topic
 
 ```bash
-kafkacat -b dataplatform:9092 -t test-kstream-input-topic -P -K , 
+kcat -b dataplatform:9092 -t test-kstream-input-topic -P -K , 
 ```
 
 produce some values with `<key>,<value>` syntax, such as
@@ -516,7 +516,7 @@ Now let's use Kafka Streams to perform a stateful operation on a Time Window. We
 
 Create a new Java package `com.trivadis.kafkaws.kstream.countwindowed` and in it a Java class `KafkaStreamsRunnerCountDSL`. 
 
-Add the following code for the implemenation
+Add the following code for the implementation
 
 ```java
 package com.trivadis.kafkaws.kstream.countwindowed;
@@ -581,16 +581,16 @@ public class KafkaStreamsRunnerCountWindowedDSL {
 
 As we are reusing the topics from the previous solution, you might want to clear (empty) both the input and the out topic before starting the program. You can easily do that using AKHQ (navigate to the topic, i.e. <http://dataplatform:28107/ui/docker-kafka-server/topic/test-kstream-input-topic> and click on **Empty Topic** on the bottom). 
 
-Start the programm and then first run a `kafkacat` consumer on the output topic
+Start the program and then first run a `kcat` consumer on the output topic
 
 ```bash
-kafkacat -b dataplatform:9092 -t test-kstream-output-topic -s value=q -o end -f "%k,%s\n"
+kcat -b dataplatform:9092 -t test-kstream-output-topic -s value=q -o end -f "%k,%s\n"
 ```
 
-with that in place, in 2nd terminal produce some messages using `kafkacat` in producer mode on the input topic
+with that in place, in 2nd terminal produce some messages using `kcat` in producer mode on the input topic
 
 ```bash
-kafkacat -b dataplatform:9092 -t test-kstream-input-topic -P -K , 
+kcat -b dataplatform:9092 -t test-kstream-input-topic -P -K , 
 ```
 
 produce some values with `<key>,<value>` syntax, such as
@@ -620,13 +620,13 @@ C : 2021-08-22T15:26+02:00[Europe/Zurich] to 2021-08-22T15:27+02:00[Europe/Zuric
 
 ## Session Window
 
-Session windows aggregate events (by key) into sessions. A session represents a period of activity followed by inactivity period. Once the defined time for inactivity elapses, the session is considered closed. Session windows are a bit different from other window types (hopping, tumbling) because they don’t have a fixed window size. As long as new records arrive for a key within the inactivity gap, the window continues to grow in size, meaning the amount of time the window spans, not the total number of records in the window. Another way to view session windows is that they are driven by behavior while other window types are solely time based.
+Session windows aggregate events (by key) into sessions. A session represents a period of activity followed by inactivity period. Once the defined time for inactivity elapses, the session is considered closed. Session windows are a bit different from other window types (hopping, tumbling) because they don’t have a fixed window size. As long as new records arrive for a key within the inactivity gap, the window continues to grow in size, meaning the amount of time the window spans, not the total number of records in the window. Another way to view session windows is that they are driven by behaviour while other window types are solely time based.
 
 Let's use Kafka Streams to perform a count on a session window.
 
 Create a new package `com.trivadis.kafkaws.kstream.countsession` and in it a Java class `KafkaStreamsRunnerCountSessionWindowedDSL`. 
 
-Add the following code for the implemenation
+Add the following code for the implementation
 
 ```java
 package com.trivadis.kafkaws.kstream.countsession;
@@ -691,16 +691,16 @@ public class KafkaStreamsRunnerCountSessionWindowedDSL {
 
 As we are reusing the topics from the previous solution, you might want to clear (empty) both the input and the out topic before starting the program. You can easily do that using AKHQ (navigate to the topic, i.e. <http://dataplatform:28107/ui/docker-kafka-server/topic/test-kstream-input-topic> and click on **Empty Topic** on the bottom). 
 
-Start the programm and then first run a `kafkacat` consumer on the output topic
+Start the program and then first run a `kcat` consumer on the output topic
 
 ```bash
-kafkacat -b dataplatform:9092 -t test-kstream-output-topic -s value=q -o end -f "%k,%s\n"
+kcat -b dataplatform:9092 -t test-kstream-output-topic -s value=q -o end -f "%k,%s\n"
 ```
 
-with that in place, in 2nd terminal produce some messages using `kafkacat` in producer mode on the input topic
+with that in place, in 2nd terminal produce some messages using `kcat` in producer mode on the input topic
 
 ```bash
-kafkacat -b dataplatform:9092 -t test-kstream-input-topic -P -K , 
+kcat -b dataplatform:9092 -t test-kstream-input-topic -P -K , 
 ```
 
 produce a first value with key `A`
@@ -737,11 +737,11 @@ A : 2021-09-26T15:14:46.622+02:00[Europe/Zurich] to 2021-09-26T15:14:46.622+02:0
 
 ## Aggregating Values 
 
-Now let's use Kafka Streams to perform antoher stateful operations. We will group the messages by key and aggregate (create a sum of the values) the values of the messages per key over 60 seconds.
+Now let's use Kafka Streams to perform another stateful operations. We will group the messages by key and aggregate (create a sum of the values) the values of the messages per key over 60 seconds.
 
 Create a new Java package `com.trivadis.kafkaws.kstream.aggregate` and in it a Java class `KafkaStreamsRunnerAggregateDSL`. 
 
-Add the following code for the implemenation
+Add the following code for the implementation
 
 ```java
 package com.trivadis.kafkaws.kstream.aggregate;
@@ -818,16 +818,16 @@ public class KafkaStreamsRunnerAggregateDSL {
 
 As we are reusing the topics from the previous solution, you might want to clear (empty) both the input and the out topic before starting the program. You can easily do that using AKHQ (navigate to the topic, i.e. <http://dataplatform:28107/ui/docker-kafka-server/topic/test-kstream-input-topic> and click on **Empty Topic** on the bottom). 
 
-Start the program and then first run a `kafkacat` consumer on the output topic
+Start the program and then first run a `kcat` consumer on the output topic
 
 ```bash
-kafkacat -b dataplatform:9092 -t test-kstream-output-topic -s value=q -o end -f "%k,%s\n"
+kcat -b dataplatform:9092 -t test-kstream-output-topic -s value=q -o end -f "%k,%s\n"
 ```
 
-with that in place, in 2nd terminal produce some messages using `kafkacat` in producer mode on the input topic
+with that in place, in 2nd terminal produce some messages using `kcat` in producer mode on the input topic
 
 ```bash
-kafkacat -b dataplatform:9092 -t test-kstream-input-topic -P -K , 
+kcat -b dataplatform:9092 -t test-kstream-input-topic -P -K , 
 ```
 
 produce some values with `<key>,<value>` syntax, where the value has to be a numeric value, such as
@@ -980,16 +980,16 @@ In our case we want to access both the key and the value of the message. If the 
 
 As we are reusing the topics from the previous solution, you might want to clear (empty) both the input and the out topic before starting the program. You can easily do that using AKHQ (navigate to the topic, i.e. <http://dataplatform:28107/ui/docker-kafka-server/topic/test-kstream-input-topic> and click on **Empty Topic** on the bottom). 
 
-Start the programm and then first run a `kafkacat` consumer on the output topic
+Start the programm and then first run a `kcat` consumer on the output topic
 
 ```bash
-kafkacat -b dataplatform:9092 -t test-kstream-output-topic -o end -f "%k,%s\n" -q
+kcat -b dataplatform:9092 -t test-kstream-output-topic -o end -f "%k,%s\n" -q
 ```
 
-with that in place, in 2nd terminal produce some messages using `kafkacat` in producer mode on the input topic
+with that in place, in 2nd terminal produce some messages using `kcat` in producer mode on the input topic
 
 ```bash
-kafkacat -b dataplatform:9092 -t test-kstream-input-topic -P -K , 
+kcat -b dataplatform:9092 -t test-kstream-input-topic -P -K , 
 ```
 
 produce some values with `<key>,<value>` syntax, such as
@@ -1031,7 +1031,7 @@ A Kafka Streams application typically runs on multiple instances. The state that
 
 Create a new Java package `com.trivadis.kafkaws.kstream.interactivequery` and in it a Java class `KafkaStreamsRunnerInteractiveQueryDSL `. 
 
-Add the following code for the implemenation
+Add the following code for the implementation
 
 ```java
 package com.trivadis.kafkaws.kstream.interactivequery;
@@ -1114,10 +1114,10 @@ As we are reusing the topics from the previous solution, you might want to clear
 
 Start the topology
 
-In a terminal produce some messages using `kafkacat` in producer mode on the input topic
+In a terminal produce some messages using `kcat` in producer mode on the input topic
 
 ```bash
-kafkacat -b dataplatform:9092 -t test-kstream-input-topic -P -K , 
+kcat -b dataplatform:9092 -t test-kstream-input-topic -P -K , 
 ```
 
 produce some values with `<key>,<value>` syntax, such as
@@ -1349,7 +1349,7 @@ public class KafkaStreamsRunnerAvroDSL {
 
 As we are reusing the topics from the previous solution, you might want to clear (empty) both the input and the out topic before starting the program. You can easily do that using AKHQ (navigate to the topic, i.e. <http://dataplatform:28107/ui/docker-kafka-server/topic/test-kstream-input-topic> and click on **Empty Topic** on the bottom). 
 
-Let's start the programm and in a first terminal window, run a `kcat` Avro consumer on the output topic. We have to use `Kafkacat` (now named `kcat`) version 1.6 or later, in order to get avro support. That's why we can't use the one installed as an ubuntu package, as it is still on version `1.5` and we are using the container of the platform
+Let's start the programm and in a first terminal window, run a `kcat` Avro consumer on the output topic. We have to use `kcat` (now named `kcat`) version 1.6 or later, in order to get avro support. That's why we can't use the one installed as an ubuntu package, as it is still on version `1.5` and we are using the container of the platform
 
 ```bash
 docker exec -ti kcat kcat -b kafka-1:19092 -t test-kstream-output-topic -s value=avro -r http://dataplatform:8081 -q
@@ -1471,16 +1471,16 @@ public class ChangeCaseProcessor implements Processor<Void, String> {
 
 As we are reusing the topics from the previous solution, you might want to clear (empty) both the input and the out topic before starting the program. You can easily do that using AKHQ (navigate to the topic, i.e. <http://dataplatform:28107/ui/docker-kafka-server/topic/test-kstream-output-topic> and click on **Empty Topic** on the bottom). 
 
-Start the programm and then first run a `kafkacat` consumer on the output topic
+Start the programm and then first run a `kcat` consumer on the output topic
 
 ```bash
-kafkacat -b dataplatform:9092 -t test-kstream-output-topic
+kcat -b dataplatform:9092 -t test-kstream-output-topic
 ```
 
-with that in place, in 2nd terminal produce some messages using `kafkacat` in producer mode on the input topic
+with that in place, in 2nd terminal produce some messages using `kcat` in producer mode on the input topic
 
 ```bash
-kafkacat -b dataplatform:9092 -t test-kstream-input-topic -P
+kcat -b dataplatform:9092 -t test-kstream-input-topic -P
 ```
 
 All the values produced should arrive on the consumer in uppercase.
