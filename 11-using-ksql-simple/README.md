@@ -173,7 +173,7 @@ From the total of 4 new transactions, you should only see two in the result, the
 |scott.james@acme.com                                        |6b69ce08-8506-42c8-900b-079b3f918d97                        |9989898989098908                                            |2022-06-06T20:42:13.069                                     |1090.00                                                     |
 ```
 
-## Project columns on Stream
+## Project columns from Stream
 
 Let's see how we can only show the columns we want to see
 
@@ -226,7 +226,10 @@ We can see that the count starts with 0 and will only increase from now. How can
 Let's see the number of transactions within 30 seconds. We use a **tumbling*** window (Fixed-duration, non-overlapping, gap-less windows) first
 
 ```sql
-SELECT email_address, COUNT(*) as count
+SELECT FROM_UNIXTIME(WINDOWSTART)		as from_ts
+, FROM_UNIXTIMESTAMP(WINDOWEND)		as to_ts
+, email_address
+, COUNT(*) as count
 FROM transaction_s
 WINDOW TUMBLING (SIZE 30 SECONDS)
 GROUP BY email_address
@@ -236,19 +239,14 @@ EMIT CHANGES;
 we can easily switch to a **hopping** window (Fixed-duration, overlapping windows) with 10 seconds overlap
 
 ```sql
-SELECT email_address, COUNT(*) as count
+SELECT FROM_UNIXTIME(WINDOWSTART)		as from_ts
+, 	FROM_UNIXTIMESTAMP(WINDOWEND)		as to_ts
+, email_address, COUNT(*) as count
 FROM transaction_s
 WINDOW HOPPING (SIZE 30 SECONDS, ADVANCE BY 10 SECONDS)
 GROUP BY email_address
 EMIT CHANGES;
 ```
-
-SELECT FROM_UNIXTIME(WINDOWSTART), FROM_UNIXTIMESTAMP(WINDOWEND), email_address, COUNT(*) as count
-FROM transaction_s
-WINDOW HOPPING (SIZE 30 SECONDS, ADVANCE BY 10 SECONDS)
-GROUP BY email_address
-EMIT CHANGES;
-
 
 ## Join Stream with a Table 
 
@@ -265,10 +263,16 @@ CREATE TABLE customer_t (email_address VARCHAR PRIMARY KEY, first_name VARCHAR, 
 			REPLICAS=3);
 ```
 
+The table is backed by the a topic called `customer`. This topic is automatically created using the settings you provide. If it should be a compacted log topic (which could make sense), you have to create it manually first, before creating the table. 
+
+Now let's add some data to the KSQL table:
+
 ```sql
 INSERT INTO customer_t (email_address, first_name, last_name, category) VALUES ('peter.muster@acme.com', 'Peter', 'Muster', 'A');
 INSERT INTO customer_t (email_address, first_name, last_name, category) VALUES ('barbara.sample@acme.com', 'Barbara', 'Sample', 'B');
 ```
+
+And join the table to the tranaction stream. We create another push query, which will continously run.
 
 ```sql
 SELECT * FROM transaction_s AS tra
@@ -277,12 +281,15 @@ ON (tra.email_address = cus.email_address)
 EMIT CHANGES;
 ```
 
-Insert a new message into the `transaction_s` stream
+In the 2nd terminal, insert a new message into the `transaction_s` stream
 
 ```sql  
 INSERT INTO transaction_s (email_address, tx_id, card_number, timestamp, amount) 
 VALUES ('peter.muster@acme.com', '05ed7709-8a18-4e0d-9608-27894750bd43', '352642227248344', FROM_UNIXTIME(UNIX_TIMESTAMP()), 99.95);
 ```
+and you should see the result of the join in the 1st terminal windw. 
+
+If we are happy with the result, we can materialized it by a CSAS (CREATE STREAM AS SELECT) Statement. 
 
 ```sql
 CREATE STREAM transaction_customer_s
@@ -299,12 +306,55 @@ ON (tra.email_address = cus.email_address)
 EMIT CHANGES;
 ```
 
+If you describe the stream, then you will see that KSQL has derived the column names so that they are unique (using the aliases)
+
+```sql
+ksql> describe transaction_customer_s;
+
+Name                 : TRANSACTION_CUSTOMER_S
+ Field             | Type                   
+--------------------------------------------
+ TRA_EMAIL_ADDRESS | VARCHAR(STRING)  (key) 
+ TRA_TX_ID         | VARCHAR(STRING)        
+ TRA_CARD_NUMBER   | VARCHAR(STRING)        
+ TRA_TIMESTAMP     | TIMESTAMP              
+ TRA_AMOUNT        | DECIMAL(12, 2)         
+ CUS_EMAIL_ADDRESS | VARCHAR(STRING)        
+ CUS_FIRST_NAME    | VARCHAR(STRING)        
+ CUS_LAST_NAME     | VARCHAR(STRING)        
+ CUS_CATEGORY      | VARCHAR(STRING)        
+--------------------------------------------
+For runtime statistics and query details run: DESCRIBE <Stream,Table> EXTENDED;
+```
+
+You can of course also provide your own column aliases by listing the columns in the SELECT list, instead of just using the `*`.
+
+Now you can get the result either by querying the new stream `transaction_customer_s` or by consuming the underlying topic called `transaction_customer`.
+
 ```sql
 SELECT * 
 FROM transaction_customer_s
 EMIT CHANGES;
 ```
 
+## Total amount of transaction value by category
+
+```ksql
+SELECT cus_category, SUM(tra_amount) 
+FROM transaction_customer_s
+WINDOW TUMBLING (SIZE 30 SECONDS)
+GROUP BY cus_category
+EMIT CHANGES;
+```
+
+To materialize the result, we can create a table
+
+CREATE TABLE total_amount_per_category_t
+SELECT cus_category, SUM(tra_amount) 
+FROM transaction_customer_s
+WINDOW TUMBLING (SIZE 30 SECONDS)
+GROUP BY cus_category
+EMIT CHANGES;
 
 ## Anomalies
 
@@ -328,8 +378,4 @@ CREATE TABLE possible_anomalies WITH (
     EMIT CHANGES;
 ```sql
 
-
-## Aggregating Values 
-
-Now let's use Kafka Streams to perform another stateful operations. We will group the messages by key and aggregate (create a sum of the values) the values of the messages per key over 60 seconds.
 
