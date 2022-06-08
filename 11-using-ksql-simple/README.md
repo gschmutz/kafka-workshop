@@ -272,7 +272,7 @@ INSERT INTO customer_t (email_address, first_name, last_name, category) VALUES (
 INSERT INTO customer_t (email_address, first_name, last_name, category) VALUES ('barbara.sample@acme.com', 'Barbara', 'Sample', 'B');
 ```
 
-And join the table to the tranaction stream. We create another push query, which will continously run.
+And join the table to the transaction stream. We create another push query, which will continuously run.
 
 ```sql
 SELECT * FROM transaction_s AS tra
@@ -340,7 +340,8 @@ EMIT CHANGES;
 ## Total amount of transaction value by category
 
 ```ksql
-SELECT cus_category, SUM(tra_amount) 
+SELECT cus_category		category
+, 	SUM(tra_amount) 		amount
 FROM transaction_customer_s
 WINDOW TUMBLING (SIZE 30 SECONDS)
 GROUP BY cus_category
@@ -349,14 +350,74 @@ EMIT CHANGES;
 
 To materialize the result, we can create a table
 
+
+```sql
 CREATE TABLE total_amount_per_category_t
-SELECT cus_category, SUM(tra_amount) 
+AS 
+SELECT cus_category		category
+, 	SUM(tra_amount) 		amount
 FROM transaction_customer_s
 WINDOW TUMBLING (SIZE 30 SECONDS)
 GROUP BY cus_category
 EMIT CHANGES;
+```
 
-## Anomalies
+We haven't specified an underlying topic, so KSQL will create one with the same name. You can cross-check by doing a DESCRIBE ... EXTENDED
+
+```sql
+ksql> describe total_amount_per_category_t extended;
+
+Name                 : TOTAL_AMOUNT_PER_CATEGORY_T
+Type                 : TABLE
+Timestamp field      : Not set - using <ROWTIME>
+Key format           : KAFKA
+Value format         : AVRO
+Kafka topic          : TOTAL_AMOUNT_PER_CATEGORY_T (partitions: 8, replication: 3)
+Statement            : CREATE TABLE TOTAL_AMOUNT_PER_CATEGORY_T WITH (KAFKA_TOPIC='TOTAL_AMOUNT_PER_CATEGORY_T', PARTITIONS=8, REPLICAS=3) AS SELECT
+  TRANSACTION_CUSTOMER_S.CUS_CATEGORY CATEGORY,
+  SUM(TRANSACTION_CUSTOMER_S.TRA_AMOUNT) AMOUNT
+FROM TRANSACTION_CUSTOMER_S TRANSACTION_CUSTOMER_S
+WINDOW TUMBLING ( SIZE 30 SECONDS )
+GROUP BY TRANSACTION_CUSTOMER_S.CUS_CATEGORY
+EMIT CHANGES;
+
+ Field    | Type
+-------------------------------------------------------------------
+ CATEGORY | VARCHAR(STRING)  (primary key) (Window type: TUMBLING)
+ AMOUNT   | DECIMAL(12, 2)
+-------------------------------------------------------------------
+
+Queries that write from this TABLE
+-----------------------------------
+CTAS_TOTAL_AMOUNT_PER_CATEGORY_T_45 (RUNNING) : CREATE TABLE TOTAL_AMOUNT_PER_CATEGORY_T WITH (KAFKA_TOPIC='TOTAL_AMOUNT_PER_CATEGORY_T', PARTITIONS=8, REPLICAS=3) AS SELECT   TRANSACTION_CUSTOMER_S.CUS_CATEGORY CATEGORY,   SUM(TRANSACTION_CUSTOMER_S.TRA_AMOUNT) AMOUNT FROM TRANSACTION_CUSTOMER_S TRANSACTION_CUSTOMER_S WINDOW TUMBLING ( SIZE 30 SECONDS )  GROUP BY TRANSACTION_CUSTOMER_S.CUS_CATEGORY EMIT CHANGES;
+
+For query topology and execution plan please run: EXPLAIN <QueryId>
+
+Local runtime statistics
+------------------------
+
+
+(Statistics of the local KSQL server interaction with the Kafka topic TOTAL_AMOUNT_PER_CATEGORY_T)
+
+Consumer Groups summary:
+
+Consumer Group       : _confluent-ksql-ksqldb-clusterquery_CTAS_TOTAL_AMOUNT_PER_CATEGORY_T_45
+<no offsets committed by this group yet>
+```
+
+Push-query on table to get the changes
+
+```sql
+SELECT * FROM TOTAL_AMOUNT_PER_CATEGORY_T EMIT CHANGES;
+```
+
+Pull-query to get the current state for a category
+
+```sql
+SELECT * FROM TOTAL_AMOUNT_PER_CATEGORY_T  WHERE category = 'A';
+```
+
+## Anomalies (does not yet work!)
 
 ```sql
 CREATE TABLE possible_anomalies WITH (
