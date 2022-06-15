@@ -221,7 +221,7 @@ By default, the console producer waits for **1000ms** before sending messages, i
   * the `batch.size` parameter is set using the `--max-partition-memory-bytes` option on the command line which if not specified is **16384**. 
   * **Note:** even if you specify `linger.ms` and `batch.size` using `--producer-property` or `--producer.config`, they will be always overwritten by the above "specific" options!
 
-The console producer reads from stdin, and takes a bootstrap-server list (you should use it instead of the borker-list, which is deprecated). We specify 2 of the 3 brokers of the Streaming Platform.
+The console producer reads from stdin, and takes a bootstrap-server list (you should use it instead of the borker-list, which is deprecated). We specify 2 of the 3 brokers of the Data Platform.
 
 On the `>` prompt enter a few messages, execute each single message by hitting the **Enter** key.<br>
 
@@ -313,7 +313,7 @@ kafka-topics  --bootstrap-server kafka-1:19092,kafka-2:19093 --delete --topic te
 
 It is similar to the `kafka-console-producer` and `kafka-console-consumer` you have learnt and used above, but much more powerful and also simpler to use. 
 
-`kcat` is an open-source utility, available at <hhttps://github.com/edenhill/kcat>. It is not part of the Confluent platform and also not part of the Streaming Platform we run in docker. 
+`kcat` is an open-source utility, available at <hhttps://github.com/edenhill/kcat>. It is not part of the Confluent platform and also not part of the Data Platform we run in docker. 
 
 You can run **Kafkacat** as a standalone utility on any **Linux** or **Mac** computer and remotely connect to a running Kafka cluster. 
 
@@ -322,7 +322,7 @@ You can run **Kafkacat** as a standalone utility on any **Linux** or **Mac** com
 Officially `kcat` is either supported on **Linux** or **Mac OS-X**. There is no official support for **Windows** yet. There is a Docker image for `kcat` from Confluent as well.
 We will show how to install it on **Ubunut** and **Mac OS-X**. 
 
-In all the workshops we will assume that **Kcat** (used to be named **Kafkact** before version `1.7`) is installed locally on the Docker Host and that `streamingplatform` alias has been added to `/etc/hosts`. 
+In all the workshops we will assume that **Kcat** (used to be named **Kafkact** before version `1.7`) is installed locally on the Docker Host and that `dataplatform` alias has been added to `/etc/hosts`. 
 
 #### Ubuntu
 
@@ -643,7 +643,7 @@ curl -s "https://api.mockaroo.com/api/d5a195e0?count=20&key=ff7856d0"| kcat -b k
 
 ## Using Kafka Manager
 
-[Kafka Manger](https://github.com/yahoo/kafka-manager) is an open source tool created by Yahoo for managing a Kafka cluster. It has been started as part of the **streamingplatform** and can be reached on <http://streamingplatform:28044/>.
+[Kafka Manger](https://github.com/yahoo/kafka-manager) is an open source tool created by Yahoo for managing a Kafka cluster. It has been started as part of the **dataplatform** and can be reached on <http://dataplatform:28104/>.
 
 ![Alt Image Text](./images/kafka-manager-homepage.png "Kafka Manager Homepage")
 
