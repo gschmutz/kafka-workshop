@@ -61,11 +61,23 @@ This finishes the setup steps and our new project is ready to be used. Next we w
 
 ## Install the Avro CLI
 
+To use the [Avro CLI](https://www.nuget.org/packages/Apache.Avro.Tools/), you need to have the .NET SDK 5.0 (6.0 is not supported) 
+
+To Install it on CentOS, perform 
+
+```bash
+sudo yum install dotnet-sdk-5.0
+```
+
+Now you can install the Avro CLI
+
 ```bash
 dotnet tool install --global Apache.Avro.Tools --version 1.11.0
 ```
 
 ## Create the Avro Schema
+
+First create a new file `Notification.avsc` and add the following Avro schema
 
 ```JSON
 {
@@ -85,6 +97,14 @@ dotnet tool install --global Apache.Avro.Tools --version 1.11.0
 ```
 
 ## Generate a C# class for the schema
+
+Now you can generate the corresponding C# class using
+
+```bash
+avrogen -s Notification.avsc .
+```
+
+The following class will be generated
 
 ```csharp
 // ------------------------------------------------------------------------------
