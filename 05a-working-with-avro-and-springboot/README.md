@@ -128,11 +128,11 @@ Add the following Avro schema to the empty file.
 	        "type" : ["string", "null"]
 	    },
 	    {   "name" : "createdAt",
-            "type" : {
-              "type" : "long",
-              "logicalType" : "timestamp-millis"
+                "type" : {
+                   "type" : "long",
+                   "logicalType" : "timestamp-millis"
+                }
             }
-        }
   ]
 }
 ```
