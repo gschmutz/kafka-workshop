@@ -17,14 +17,14 @@ docker exec -ti postgresql psql -d postgres -U postgres
 If the table is not available, this is the code to run 
 
 ```sql
-CREATE SCHEMA IF NOT EXISTS person;
+CREATE SCHEMA IF NOT EXISTS cdc_demo;
 
-SET search_path TO person;
+SET search_path TO cdc_demo;
 
 DROP TABLE IF EXISTS address;
 DROP TABLE IF EXISTS person;
 
-CREATE TABLE "person"."person" (
+CREATE TABLE "cdc_demo"."person" (
     "id" integer NOT NULL,
     "title" character varying(8),
     "first_name" character varying(50),
@@ -34,7 +34,7 @@ CREATE TABLE "person"."person" (
     CONSTRAINT "person_pk" PRIMARY KEY ("id")
 );
 
-CREATE TABLE "person"."address" (
+CREATE TABLE "cdc_demo"."address" (
     "id" integer NOT NULL,
     "person_id" integer NOT NULL,
     "street" character varying(50),
@@ -44,7 +44,7 @@ CREATE TABLE "person"."address" (
     CONSTRAINT "address_pk" PRIMARY KEY ("id")
 );
 
-ALTER TABLE ONLY "person"."address" ADD CONSTRAINT "address_person_fk" FOREIGN KEY (person_id) REFERENCES person(id) NOT DEFERRABLE;
+ALTER TABLE ONLY "cdc_demo"."address" ADD CONSTRAINT "address_person_fk" FOREIGN KEY (person_id) REFERENCES person(id) NOT DEFERRABLE;
 ```
 
 ## Polling-based CDC using Kafka Connect
@@ -86,10 +86,10 @@ docker exec -ti postgresql psql -d postgres -U postgres
 execute the following SQL INSERT statements
 
 ```sql
-INSERT INTO person.person (id, title, first_name, last_name, email)
+INSERT INTO cdc_demo.person (id, title, first_name, last_name, email)
 VALUES (1, 'Mr', 'Peter', 'Muster', 'peter.muster@somecorp.com');
 
-INSERT INTO person.address (id, person_id, street, zip_code, city)
+INSERT INTO cdc_demo.address (id, person_id, street, zip_code, city)
 VALUES (1, 1, 'Somestreet 10', '9999', 'Somewhere');
 ```
 
@@ -169,21 +169,21 @@ docker exec -ti postgresql psql -d postgres -U postgres
 Add a new `address` to `person` with `id=1`.
 
 ```sql
-INSERT INTO person.address (id, person_id, street, zip_code, city)
+INSERT INTO cdc_demo.address (id, person_id, street, zip_code, city)
 VALUES (2, 1, 'Holiday 10', '1999', 'Ocean Somewhere');
 ```
 
 Now let's add a new `person`, first without an `address`
 
 ```sql
-INSERT INTO person.person (id, title, first_name, last_name, email)
+INSERT INTO cdc_demo.person (id, title, first_name, last_name, email)
 VALUES (2, 'Ms', 'Karen', 'Muster', 'karen.muster@somecorp.com');
 ```
 
 and now also add the `address`
 
 ```sql
-INSERT INTO person.address (id, person_id, street, zip_code, city)
+INSERT INTO cdc_demo.address (id, person_id, street, zip_code, city)
 VALUES (3, 2, 'Somestreet 10', '9999', 'Somewhere');
 ```
 
@@ -212,12 +212,12 @@ docker exec -ti postgresql psql -d postgres -U postgres
 and execute the following SQL TRUNCATE followed by INSERT statements
 
 ```sql
-TRUNCATE person.person CASCADE;
+TRUNCATE cdc_demo.person CASCADE;
 
-INSERT INTO person.person (id, title, first_name, last_name, email)
+INSERT INTO cdc_demo.person (id, title, first_name, last_name, email)
 VALUES (1, 'Mr', 'Peter', 'Muster', 'peter.muster@somecorp.com');
 
-INSERT INTO person.address (id, person_id, street, zip_code, city)
+INSERT INTO cdc_demo.address (id, person_id, street, zip_code, city)
 VALUES (1, 1, 'Somestreet 10', '9999', 'Somewhere');
 ```
 
@@ -238,8 +238,8 @@ curl -X PUT \
   "database.user": "postgres",
   "database.password": "abc123!",  
   "database.dbname": "postgres",
-  "schema.include.list": "person",
-  "table.include.list": "person.person,person.address",
+  "schema.include.list": "cdc_demo",
+  "table.include.list": "cdc_demo.person, cdc_demo.address",
   "plugin.name": "pgoutput",
   "tombstones.on.delete": "false",
   "database.hostname": "postgresql",
@@ -254,7 +254,7 @@ curl -X PUT \
 Now let's start two consumers, one on each topic, in separate terminal windows. This time the data is in Avro, as we did not overwrite the serializers. By default the topics are formatted using this naming convention: `<db-host>.<schema>.<table>`
 
 ```bash
-kcat -b kafka-1:19092 -t postgresql.person.person -f '[%p] %k: %s\n' -q -s avro -r http://schema-registry-1:8081
+kcat -b kafka-1:19092 -t postgresql.cdc_demo.person -f '[%p] %k: %s\n' -q -s avro -r http://schema-registry-1:8081
 ```
 
 and you should get the change record for `person` table
@@ -265,10 +265,10 @@ and you should get the change record for `person` table
 
 We can see that the key is also Avro-serialized (`{"id": 1}`).
 
-Now do the same for the `postgresql.person.address` topic
+Now do the same for the `postgresql.cdc_demo.address` topic
 
 ```bash
-kcat -b kafka-1:19092 -t postgresql.person.address -f '[%p] %k: %s\n' -q -s avro -r http://schema-registry-1:8081 
+kcat -b kafka-1:19092 -t postgresql.cdc_demo.address -f '[%p] %k: %s\n' -q -s avro -r http://schema-registry-1:8081 
 ```
 
 and you should get the change record for the `address` table.
@@ -276,7 +276,7 @@ and you should get the change record for the `address` table.
 Let's use `jq` to format the value only (by removing the `-f` parameter). 
 
 ```
-kcat -b kafka-1:19092 -t postgresql.person.person -f '%s\n' -q -s avro -r http://schema-registry-1:8081 -u | jq
+kcat -b kafka-1:19092 -t postgresql.cdc_demo.person -f '%s\n' -q -s avro -r http://schema-registry-1:8081 -u | jq
 ```
 
 we can see that the change record is wrapped inside the `after` field. The `op` field show the operation, which shows `c` for create/insert.
@@ -314,7 +314,7 @@ we can see that the change record is wrapped inside the `after` field. The `op` 
     "sequence": {
       "string": "[\"23426176\",\"23426176\"]"
     },
-    "schema": "person",
+    "schema": "cdc_demo",
     "table": "person",
     "txId": {
       "long": 556
@@ -335,7 +335,7 @@ we can see that the change record is wrapped inside the `after` field. The `op` 
 Now let's do an update of the `person` table (keep the `kcat` running). 
 
 ```sql
-UPDATE person.person SET first_name = UPPER(first_name);
+UPDATE cdc_demo.person SET first_name = UPPER(first_name);
 ```
 
 and you should get the new change record
@@ -373,7 +373,7 @@ and you should get the new change record
     "sequence": {
       "string": "[\"23426936\",\"23427224\"]"
     },
-    "schema": "person",
+    "schema": "cdc_demo",
     "table": "person",
     "txId": {
       "long": 558
@@ -398,13 +398,13 @@ You can see that there is `before` field but it is `null`. By default the Postgr
 Let's change it on the `person` table to see the difference
 
 ```sql
-alter table person.person REPLICA IDENTITY FULL;
+alter table cdc_demo.person REPLICA IDENTITY FULL;
 ```
 
 and then once more update the `person` table (keep the `kcat` running).
 
 ```sql
-UPDATE person.person SET first_name = LOWER(first_name);
+UPDATE cdc_demo.person SET first_name = LOWER(first_name);
 ```
 
 we can now see both the data `before` and `after` the UPDATE:
@@ -482,11 +482,11 @@ we can now see both the data `before` and `after` the UPDATE:
 Let's do an update on the `address` table and make sure that you see the `kcat` in another terminal window
 
 ```sql
-UPDATE person.address SET street = UPPER(street);
+UPDATE cdc_demo.address SET street = UPPER(street);
 ```
 
 ```bash
-kcat -b kafka-1:19092 -t postgresql.person.address -f '[%p] %k: %s\n' -q -s avro -r http://schema-registry-1:8081 
+kcat -b kafka-1:19092 -t postgresql.cdc_demo.address -f '[%p] %k: %s\n' -q -s avro -r http://schema-registry-1:8081 
 ```
 
 You should see a very minimal latency between doing the update and the message in Kafka.
@@ -520,14 +520,14 @@ curl -X PUT \
   "database.user": "postgres",
   "database.password": "abc123!",  
   "database.dbname": "postgres",
-  "schema.include.list": "person",
-  "table.include.list": "person.person,person.address",
+  "schema.include.list": "cdc_demo",
+  "table.include.list": "cdc_demo.person, cdc_demo.address",
   "plugin.name": "pgoutput",
   "tombstones.on.delete": "false",
   "database.hostname": "postgresql",
   "transforms":"dropPrefix",  
   "transforms.dropPrefix.type": "org.apache.kafka.connect.transforms.RegexRouter",  
-  "transforms.dropPrefix.regex": "postgresql.person.(.*)",  
+  "transforms.dropPrefix.regex": "postgresql.cdc_demo.(.*)",  
   "transforms.dropPrefix.replacement": "priv.$1.cdc.v2",
   "topic.creation.default.replication.factor": 3,
   "topic.creation.default.partitions": 8,
@@ -538,7 +538,7 @@ curl -X PUT \
 Now let's do an update on `person` table once more 
 
 ```sql
-UPDATE person.person SET first_name = UPPER(first_name);
+UPDATE cdc_demo.person SET first_name = UPPER(first_name);
 
 ```
 to see the new topic `priv.person.cdc.v2` created
@@ -572,10 +572,10 @@ docker exec -ti postgresql psql -d postgres -U postgres
 Now create a new table `outbox`
 
 ```sql
-SET search_path TO person;
+SET search_path TO cdc_demo;
 
-DROP TABLE IF EXISTS "person"."outbox";
-CREATE TABLE "person"."outbox" (
+DROP TABLE IF EXISTS "cdc_demo"."outbox";
+CREATE TABLE "cdc_demo"."outbox" (
     "id" uuid NOT NULL,
     "aggregate_id" bigint,
     "created_at" timestamp,
@@ -600,8 +600,8 @@ curl -X PUT \
   "database.user": "postgres",
   "database.password": "abc123!",  
   "database.dbname": "postgres",
-  "schema.include.list": "person",
-  "table.include.list": "person.outbox",
+  "schema.include.list": "cdc_demo",
+  "table.include.list": "cdc_demo.outbox",
   "plugin.name": "pgoutput",
   "tombstones.on.delete": "false",
   "database.hostname": "postgresql",
@@ -623,7 +623,7 @@ curl -X PUT \
 Let's first simulate a `CustomerCreated` event:
 
 ```sql
-INSERT INTO person.outbox (id, aggregate_id, created_at, event_type, payload_json)
+INSERT INTO cdc_demo.outbox (id, aggregate_id, created_at, event_type, payload_json)
 VALUES (gen_random_uuid(), 13256, current_timestamp, 'CustomerCreated', '{"id":13256,"personType":"IN","nameStyle":"0","firstName":"Carson","middleName":null,"lastName":"Washington","emailPromotion":1,"addresses":[{"addressTypeId":2,"id":22326,"addressLine1":"3809 Lancelot Dr.","addressLine2":null,"city":"Glendale","stateProvinceId":9,"postalCode":"91203","country":{"isoCode2":"US","isoCode3":"USA","numericCode":840,"shortName":"United States of America"},"lastChangeTimestamp":"2022-05-09T20:45:11.798376"}],"phones":[{"phoneNumber":"518-555-0192","phoneNumberTypeId":1,"phoneNumberType":"Cell"}],"emailAddresses":[{"id":12451,"emailAddress":"carson12@adventure-works.com"}]}');
 ```
 
@@ -640,7 +640,7 @@ kcat -b kafka-1:19092 -t priv.CustomerCreated.event.v1 -f '[%p] %k: %s\n' -q -s 
 Now let's also simulate another event, an `CustomerMoved` event
 
 ```sql
-INSERT INTO person.outbox (id, aggregate_id, created_at, event_type, payload_json)
+INSERT INTO cdc_demo.outbox (id, aggregate_id, created_at, event_type, payload_json)
 VALUES (gen_random_uuid(), 13256, current_timestamp, 'CustomerMoved', '{"customerId": 13256, "address": {"addressTypeId":2,"id":22326,"addressLine1":"3809 Lancelot Dr.","addressLine2":null,"city":"Glendale","stateProvinceId":9,"postalCode":"91203","country":{"isoCode2":"US","isoCode3":"USA","numericCode":840,"shortName":"United States of America"},"lastChangeTimestamp":"2022-05-09T20:45:11.798376"}}');
 ```
 
