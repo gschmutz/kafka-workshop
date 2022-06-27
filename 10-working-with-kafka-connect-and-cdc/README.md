@@ -6,7 +6,7 @@ In this workshop we will see various CDC solutions in action
 2. Log-based CDC using Debezium and Kafka Connect
 3. Transactional Outbox Pattern using Debezium and Kafka Connect
 
-## Creating person Postgresql Database
+## Creating Postgresql Database `cdc_demo `
 
 The `driver` table holds the information of the drivers working for us. Let's connect to the postgresql database running as part of the dataplatform and create the table
 
@@ -48,6 +48,10 @@ ALTER TABLE ONLY "cdc_demo"."address" ADD CONSTRAINT "address_person_fk" FOREIGN
 ```
 
 ## Polling-based CDC using Kafka Connect
+
+In this section we will see how we can use the [JDBC Source Connector](https://www.confluent.io/hub/confluentinc/kafka-connect-jdbc) to perform polling-based CDC on the two tables.
+
+![](./images/polling-based-cdc.png)
 
 To use the Polling-based CDC with Kafka Connect, we have to install the [JDBC Source Connector](https://www.confluent.io/hub/confluentinc/kafka-connect-jdbc) on our Kafka Connect cluster. 
 
@@ -109,7 +113,7 @@ curl -X "POST" "$DOCKER_HOST_IP:8083/connectors" \
     "mode": "timestamp",
     "timestamp.column.name":"modifieddate",
     "poll.interval.ms":"10000",
-    "table.whitelist":"person,address",
+    "table.whitelist":"cdc_demo.person,cdc_demo.address",
     "validate.non.null":"false",
     "topic.prefix":"priv.",
     "key.converter":"org.apache.kafka.connect.storage.StringConverter",
@@ -198,6 +202,8 @@ curl -X "DELETE" "http://$DOCKER_HOST_IP:8083/connectors/person.jdbcsrc.cdc"
 ## Log-based CDC using Debezium and Kafka Connect
 
 In this section we will see how we can use [Debezium](https://debezium.io/) and it's Postgresql connector to perform log-based CDC on the two tables.
+
+![](./images/log-based-cdc.png)
 
 The [Debezium connector](https://www.confluent.io/hub/debezium/debezium-connector-postgresql) comes pre-installed with the Dataplatform stack. 
 
@@ -558,6 +564,8 @@ curl -X "DELETE" "http://$DOCKER_HOST_IP:8083/connectors/person.dbzsrc.cdc"
 ## Transactional Outbox Pattern using Debezium and Kafka Connect
 
 In this section we will see how we can use [Debezium](https://debezium.io/) and it's Postgresql connector to perform log-based CDC on an special `outbox` table, implementing the [Transactional Outbox Pattern](https://microservices.io/patterns/data/transactional-outbox.html).
+
+![](./images/transactional-outbox.png)
 
 The [Debezium connector](https://www.confluent.io/hub/debezium/debezium-connector-postgresql), which supports the Outbox Pattern comes pre-installed with the Dataplatform stack. 
 
