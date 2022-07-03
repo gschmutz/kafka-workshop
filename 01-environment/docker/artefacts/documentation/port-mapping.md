@@ -73,6 +73,7 @@ Container Port(s) | Internal Port(s)           | Service (alternatives) |
 5434 | 5432 | marquez-db |
 5601 | 5601 | kibana |
 5602 | 5601 | datahub-kibana |
+5603 | 5601 | opensearch-dashboards |
 5672 | 5672 | activemq |
 5673 | 5672 | rabbitmq (amqp) |
 5701 | 5701 | hazelcast	-1 |
@@ -267,6 +268,8 @@ Container Port(s) | Internal Port(s)           | Service (alternatives) |
 29097 | 29097 | kafka-6 (docker-host)   |
 29098 | 29098 | kafka-7 (docker-host)   |
 29099 | 29099 | kafka-8 (docker-host)   |
+29200 | 9200 | opensearch-1 |
+29600 | 9600 | opensearch-1 |
 31010 | 31010 | dremio |
 39092 | 29092 | kafka-1 (localhost)   |
 39093 | 29093 | kafka-2 (localhost    |
@@ -427,6 +430,10 @@ Container Port(s) | Internal Port(s)           | Service (alternatives) |
 28272 | 7233 | airbyte-temporal |
 28273 | 1090 | mockserver |
 28274 | 8080 | kafka-webviewer |
+28275 | 8080 | elasticvue |
+28276 | 8080 | nocodb |
+28277 | 8080 | zilla |
+28278 | 9090 | zilla |
 
 ## Ports > 28500
 
