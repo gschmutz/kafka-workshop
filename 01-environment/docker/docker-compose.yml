@@ -276,7 +276,7 @@ services:
     restart: unless-stopped
   #  ================================== ksqlDB ========================================== #
   ksqldb-server-1:
-    image: confluentinc/ksqldb-server:0.26.0
+    image: confluentinc/cp-ksqldb-server:7.1.2
     hostname: ksqldb-server-1
     container_name: ksqldb-server-1
     labels:
@@ -288,10 +288,10 @@ services:
       - 1095:1095
     environment:
       #KSQL_LOG4J_OPTS: "-Dlog4j.configuration=file:/etc/ksqldb/log4j-rolling.properties"
-      KSQL_LOG4J_ROOT_LOGLEVEL: INFO
+      KSQL_LOG4J_ROOT_LOGLEVEL: ERROR
       KSQL_LOG4J_LOGGERS: org.apache.kafka.connect.runtime.rest=WARN,org.reflections=ERROR
-      KSQL_LOG4J_PROCESSING_LOG_BROKERLIST: kafka-1:19092,kafka-2:19093,kafka-3:19094
       KSQL_LOG4J_PROCESSING_LOG_TOPIC: ksql_processing_log
+      KSQL_LOG4J_PROCESSING_LOG_BROKERLIST: kafka-1:19092,kafka-2:19093,kafka-3:19094
       KSQL_KSQL_LOGGING_PROCESSING_TOPIC_NAME: ksql_processing_log
       KSQL_KSQL_LOGGING_PROCESSING_TOPIC_REPLICATION_FACTOR: 1
       KSQL_KSQL_LOGGING_PROCESSING_ROWS_INCLUDE: 'true'
@@ -330,7 +330,7 @@ services:
       - ./plugins/opentelemetry/agents:/otel
     restart: unless-stopped
   ksqldb-server-2:
-    image: confluentinc/ksqldb-server:0.26.0
+    image: confluentinc/cp-ksqldb-server:7.1.2
     hostname: ksqldb-server-2
     container_name: ksqldb-server-2
     labels:
@@ -342,10 +342,10 @@ services:
       - 1096:1095
     environment:
       #KSQL_LOG4J_OPTS: "-Dlog4j.configuration=file:/etc/ksqldb/log4j-rolling.properties"
-      KSQL_LOG4J_ROOT_LOGLEVEL: INFO
+      KSQL_LOG4J_ROOT_LOGLEVEL: ERROR
       KSQL_LOG4J_LOGGERS: org.apache.kafka.connect.runtime.rest=WARN,org.reflections=ERROR
-      KSQL_LOG4J_PROCESSING_LOG_BROKERLIST: kafka-1:19092,kafka-2:19093,kafka-3:19094
       KSQL_LOG4J_PROCESSING_LOG_TOPIC: ksql_processing_log
+      KSQL_LOG4J_PROCESSING_LOG_BROKERLIST: kafka-1:19092,kafka-2:19093,kafka-3:19094
       KSQL_KSQL_LOGGING_PROCESSING_TOPIC_NAME: ksql_processing_log
       KSQL_KSQL_LOGGING_PROCESSING_TOPIC_REPLICATION_FACTOR: 1
       KSQL_KSQL_LOGGING_PROCESSING_ROWS_INCLUDE: 'true'
