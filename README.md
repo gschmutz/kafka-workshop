@@ -37,7 +37,8 @@ ID  | Title   | Descritpion
 13b | [Stream Analytics using ksqlDB](./13b-stream-analytics-using-ksql)  | learn how to use ksqlDB to execute processing and analytics directly on a stream of data
 13c | [Stream Analytics with using Kafka Streams](./13c-stream-analytics-using-java-kstreams)  | learn how to use Kafka Streams from Java to execute processing and analytics directly on a stream of data
 13d | [Stream Analytics with .Net using Streamiz](./13d-stream-analytics-using-dotnet-streamiz)  | learn how to use Streamiz from .NET to execute processing and analytics directly on a stream of data
-13e | [Static Data Ingestion into Kafka](./13e-static-data-ingestion)  | use Kafka Connect to ingest data from relational database (static data) and then join it with a data stream using ksqlDB
+13e | [Stream Analytics using Spark Structured Streaming](./13e-stream-analytics-using-spark-structured-streaming)  | learn how to use Spark Structured Streaming to execute processing and analytics directly on a stream of data
+13f | [Static Data Ingestion into Kafka](./13f-static-data-ingestion)  | use Kafka Connect to ingest data from relational database (static data) and then join it with a data stream using ksqlDB
 14 | [Using Confluent REST APIs (REST Proxy)](./14-using-rest-proxy)  | use Confluent REST Proxy to create topics and produce and consume messages (JSON and Avro) to these topics.
 16 |[Manipulating Consumer Offsets](./16-manipulating-consumer-offsets)  | learn how to use the `kafka-consumer-groups` CLI for manipulating consumer offsets
 
