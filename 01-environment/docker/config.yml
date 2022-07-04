@@ -95,6 +95,7 @@
 
       # ===== Spark ========
       SPARK_enable: false
+      SPARK_base_version: 3.1
       # "hive" or "in-memory"
       SPARK_catalog: in-memory
       SPARK_workers: 2
