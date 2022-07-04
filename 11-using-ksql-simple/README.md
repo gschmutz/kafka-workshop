@@ -620,4 +620,16 @@ CREATE TABLE possible_anomalies WITH (
 
 Now create 3 transactions for the same credit card number within 30 seconds and it show up as a potential anomaly.
 
+## Rest API
 
+You can execute a ksqlDB `SELECT` directly over the [REST API](https://docs.ksqldb.io/en/latest/developer-guide/api/) using a `POST` on `/query-stream` endpoint
+
+```bash
+curl -X POST -H 'Content-Type: application/vnd.ksql.v1+json' -i http://dataplatform:8088/query-stream --data '{
+  "sql": "SELECT card_number, amount, tx_id FROM transaction_s EMIT CHANGES;",
+  "properties": {
+    "ksql.streams.auto.offset.reset": "latest"
+  }
+}'
+```
+This way we can directly get the data into a GUI client.
