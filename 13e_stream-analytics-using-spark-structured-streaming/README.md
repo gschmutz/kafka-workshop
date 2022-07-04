@@ -1,19 +1,19 @@
-# IoT Data Ingestion and Analytics - Stream Processing using Spark Structured Streaming
+# Using Spark Structured Streaming for Stream Analytics
 
-With the truck data continuously ingested into the `truck_movement` topic, let's now perform some stream processing on the data.
- 
-There are many possible solutions for performing analytics directly on the event stream. From the Kafka ecosystem, we can either use Kafka Streams or ksqlDB, a SQL abstraction on top of Kafka Streams. For this workshop we will be using KSQL. 
+In this workshop we will learn how to process messages using Spark Structured Streaming.
 
 ![Alt Image Text](./images/stream-processing-with-spark-overview.png "Schema Registry UI")
 
+With Spark Structured Streaming we assume the data to be available in JSON. Therefore we first transform it using ksqlDB using the ksqlDB stream created in workshop 13b.
 
+```sql
 CREATE STREAM truck_position_json_s
   WITH (kafka_topic='truck_position_json',
         value_format='JSON')
 AS
 SELECT * FROM truck_position_s
 EMIT CHANGES;
-
+```
 
 ## Using Python
 

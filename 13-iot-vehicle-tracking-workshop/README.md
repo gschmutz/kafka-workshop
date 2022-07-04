@@ -14,6 +14,7 @@ We will show the implementation step-by-step. For the streaming analytics step w
 	* [Stream Analytics using ksqlDB](../13b-stream-analytics-using-ksql)
 	* [Stream Analytcis with Java using Kafka Streams](../13c-stream-analytics-using-java-kstreams)
 	* [Stream Analytics using Streamiz](../13d-stream-analytics-using-dotnet-streamiz)
+	* [Stream Analytics using Spark Structured Streaming](../13e_stream-analytics-using-spark-structured-streaming)
 
-* [Static Data Ingestion into Kafka](../13e-static-data-ingestion)
+* [Static Data Ingestion into Kafka](../13f-static-data-ingestion)
 
