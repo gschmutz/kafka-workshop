@@ -15,7 +15,29 @@ SELECT * FROM truck_position_s
 EMIT CHANGES;
 ```
 
-## Using Python
+## Creating Spark environment in Zeppelin
+
+In a web browser navigate to Zeppelin on <http://dataplatform:28080>.
+
+Let's create a local Spark environment by adding a new interpreter. On the right corner, click on **Admin** and select **Interpreter**
+
+![Alt Image Text](./images/create-interpreter.png "Schema Registry UI")
+
+Click on **Create** to create a new Interpreter and set **Interpreter Name** to `spark-local` and select `spark` for the **Interpreter Group**.
+
+Scroll down to **Dependencies** and add `org.apache.spark:spark-sql-kafka-0-10_2.12:3.1.3` into the **Artifact** field.
+
+![Alt Image Text](./images/dependencies.png "Schema Registry UI")
+
+Click **Save** to create the interpreter.
+
+## Creating a new notebook in Zeppelin
+
+Create a new Notebook and select the `spark-local`
+
+![Alt Image Text](./images/create-notebook.png "Schema Registry UI")
+
+## Implement Spark Structured Streaming pipeline in Python
 
 ### Define Schema for truck_position events/messages
 
