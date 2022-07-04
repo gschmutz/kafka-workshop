@@ -602,7 +602,7 @@ CREATE TABLE possible_anomalies WITH (
     GROUP BY card_number
     HAVING count(*) >= 3
     EMIT CHANGES;
-```sql
+```
 
 Now create 3 transactions for the same credit card number within 30 seconds and it show up as a potential anomaly.
 
