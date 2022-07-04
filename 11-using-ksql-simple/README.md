@@ -217,6 +217,20 @@ And you should see
 |tim.gallagher@acme.com                                                                                                                                   |55.65                                                                                                                                                    |
 ```
 
+## Using Functions
+
+ksqlDB provides with a large set of [useful functions](https://docs.ksqldb.io/en/latest/developer-guide/ksqldb-reference/functions/). 
+
+Let's say that we want to mask the credit card number, then we can use either `MASK` to fully mask or `MASK_RIGHT`/`MASK_LEFT` or `MASK_KEEP_LEFT`/`MASK_KEEP_RIGHT` to partially mask a string field.
+
+```ksql
+SELECT email_address, MASK(card_number) card_number, MASK_KEEP_RIGHT(card_number, 4, 'X','x','n','-') card_number_masked_keep4, tx_id, amount
+FROM transaction_s
+EMIT CHANGES;
+```
+
+You can also implement your own [User-Defined Functions](https://docs.ksqldb.io/en/latest/reference/user-defined-functions/), by writing Java hooks.
+
 ## Counting Values
 
 Now let's see how we can do some stateful processing. Let's start with a simple count of values. 
