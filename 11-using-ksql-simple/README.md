@@ -42,6 +42,8 @@ ksql>
 We can use the show command to show topics as well as streams and tables. We have not yet created streams and tables, therefore we won't see anything.
 
 ```sql
+show streams;
+show tables;
 show topics;
 ```
 
@@ -132,7 +134,23 @@ Let's do the pull-query again (the one without the `EMIT CHANGES` clause).
 SELECT * FROM transaction_s 
 ```
 
-This time you can see the historical data which is stored by the stream (the underlying Kafka topic). **Note**: be careful with using a pull-query on a Stream, as it could be very resource intensive. 
+This time you can see the historical data which is stored by the stream (the underlying Kafka topic). 
+
+```sql
+ksql> SELECT * FROM transaction_s;
++-----------------------------+-----------------------------+-----------------------------+-----------------------------+-----------------------------+
+|EMAIL_ADDRESS                |TX_ID                        |CARD_NUMBER                  |TIMESTAMP                    |AMOUNT                       |
++-----------------------------+-----------------------------+-----------------------------+-----------------------------+-----------------------------+
+|barbara.sample@acme.com      |9fe397e3-990e-449a-afcc-7b652|999776673238348              |2022-07-03T19:05:37.451      |220.00                       |
+|                             |a005c99                      |                             |                             |                             |
+|peter.muster@acme.com        |0cf100ca-993c-427f-9ea5-e892e|352642227248344              |2022-07-03T19:05:37.406      |100.00                       |
+|                             |f350363                      |                             |                             |                             |
+Query Completed
+Query terminated
+ksql>
+```
+
+**Note**: be careful with using a pull-query on a Stream, as it could be very resource intensive. 
 
 
 ## Filter on the stream
@@ -219,38 +237,67 @@ INSERT INTO transaction_s (email_address, tx_id, card_number, timestamp, amount)
 VALUES ('peter.muster@acme.com', '05ed7709-8a18-4e0d-9608-27894750bd43', '352642227248344', FROM_UNIXTIME(UNIX_TIMESTAMP()), 99.95);
 ```
 
-We can see that the count starts with 0 and will only increase from now. How can we make the result a bit more meaningful? By adding a time window to the query.
+We can see that the count starts with 0 and will only increase from now. 
+
+How can we make the result a bit more meaningful? By adding a time window to the query!
 
 ## Counting Values over a Time Window
+
+### Tumbling Window
 
 Let's see the number of transactions within 30 seconds. We use a **tumbling*** window (Fixed-duration, non-overlapping, gap-less windows) first
 
 ```sql
-SELECT FROM_UNIXTIME(WINDOWSTART)		as from_ts
-, FROM_UNIXTIMESTAMP(WINDOWEND)		as to_ts
-, email_address
-, COUNT(*) as count
+SELECT FROM_UNIXTIME (windowstart)		as from_ts
+, 		FROM_UNIXTIME (windowend)			as to_ts
+,	 	email_address
+, 		COUNT(*) as count
 FROM transaction_s
 WINDOW TUMBLING (SIZE 30 SECONDS)
 GROUP BY email_address
 EMIT CHANGES;
 ```
 
-we can easily switch to a **hopping** window (Fixed-duration, overlapping windows) with 10 seconds overlap
+Now in a second window, `INSERT` some more messages. 
 
 ```sql
-SELECT FROM_UNIXTIME(WINDOWSTART)		as from_ts
-, 	FROM_UNIXTIMESTAMP(WINDOWEND)		as to_ts
-, email_address, COUNT(*) as count
++-----------------------------------------------------------------------+-----------------------------------------------------------------------+-----------------------------------------------------------------------+-----------------------------------------------------------------------+
+|FROM_TS                                                                |TO_TS                                                                  |EMAIL_ADDRESS                                                          |COUNT                                                                  |
++-----------------------------------------------------------------------+-----------------------------------------------------------------------+-----------------------------------------------------------------------+-----------------------------------------------------------------------+
+|2022-07-04T13:36:00.000                                                |2022-07-04T13:36:30.000                                                |peter.muster@acme.com                                                  |1                                                                      |
+|2022-07-04T13:36:00.000                                                |2022-07-04T13:36:30.000                                                |barbara.sample@acme.com                                                |1                                                                      |
+|2022-07-04T13:36:00.000                                                |2022-07-04T13:36:30.000                                                |peter.muster@acme.com                                                  |2                                                                      |
+|2022-07-04T13:36:00.000                                                |2022-07-04T13:36:30.000                                                |barbara.sample@acme.com                                                |2                                                                      |
+```
+
+You can see that a result is displayed before the time window is finished. The EMIT clause lets you control the output refinement of your push query. You can switch from `CHANGES` to `FINAL` to tell ksqlDB to wait for the time window to close before a result is returned.
+
+**Note:** `EMIT FINAL` is data driven, i.e., it emit results only if "stream-time" advanced beyond the window close time. "Stream-time" depends on the observed timestamps of your input record, and thus, if you stop sending input records, "stream-time" does not advance further. If you stop sending data, the last window might never be closed, and thus you never see a result for it.
+
+**Note:** There are some memory considerations with the `FINAL` feature that could cause unbounded growth and eventual an OOM exception. The feature is still in development/beta and we'll definitely document it when it's complete!
+
+### Hopping Window
+
+We can easily switch to a **hopping** window (Fixed-duration, overlapping windows) with 10 seconds overlap
+
+```sql
+SELECT FROM_UNIXTIME (WINDOWSTART)		as from_ts
+, 		FROM_UNIXTIME (WINDOWEND)			as to_ts
+, 		email_address
+, 		COUNT(*) as count
 FROM transaction_s
 WINDOW HOPPING (SIZE 30 SECONDS, ADVANCE BY 10 SECONDS)
 GROUP BY email_address
 EMIT CHANGES;
 ```
 
-## Join Stream with a Table 
+## Create a ksqlDB Table holding Customers
 
-Now let's see how we can enrich the stream of data (transactions) with some static data (customer). We want to do a join between the stream and a table holding all the customer data.
+A table is a mutable, partitioned collection that models change over time. In contrast with a stream, which represents a historical sequence of events, a table represents what is true as of "now". 
+
+Tables work by leveraging the keys of each row. If a sequence of rows shares a key, the last row for a given key represents the most up-to-date information for that key's identity. A background process periodically runs and deletes all but the newest rows for each key.
+
+Let's use a table to model customers. 
 
 Create the table `customer_t` and put some data in it
 
@@ -263,7 +310,7 @@ CREATE TABLE customer_t (email_address VARCHAR PRIMARY KEY, first_name VARCHAR, 
 			REPLICAS=3);
 ```
 
-The table is backed by the a topic called `customer`. This topic is automatically created using the settings you provide. If it should be a compacted log topic (which could make sense), you have to create it manually first, before creating the table. 
+The table is backed by the topic called `customer`. This topic is automatically created using the settings you provide. If it should be a compacted log topic (which could make sense), you have to create it manually first, before creating the table. 
 
 Now let's add some data to the KSQL table:
 
@@ -272,7 +319,58 @@ INSERT INTO customer_t (email_address, first_name, last_name, category) VALUES (
 INSERT INTO customer_t (email_address, first_name, last_name, category) VALUES ('barbara.sample@acme.com', 'Barbara', 'Sample', 'B');
 ```
 
-And join the table to the transaction stream. We create another push query, which will continuously run.
+With that in place, can we use a Pull-Query to retrieve a customer? Let's try that
+
+```sql
+SELECT *
+FROM customer_t
+WHERE email_address = 'peter.muster@acme.com';
+```
+
+will give an error
+
+```sql
+ksql> SELECT *
+>FROM customer_t
+>WHERE email_address = 'peter.muster@acme.com';
+The `CUSTOMER_T` table isn't queryable. To derive a queryable table, you can do 'CREATE TABLE QUERYABLE_CUSTOMER_T AS SELECT * FROM CUSTOMER_T'. See https://cnfl.io/queries for more info.
+Add EMIT CHANGES if you intended to issue a push query.
+```
+
+You can provide the `SOURCE` clause to enable running pull queries on the table. The `SOURCE` clause runs an internal query for the table to create a materialized state that's used by pull queries. When you create a `SOURCE` table, the table is created as read-only. For a read-only table, INSERT, DELETE TOPIC, and DROP TABLE statements aren't permitted.
+
+That's why we reuse the topic `customer` from the table created above, just to see a `SOURCE` table in action. In a real-life situation, usually the data behind the table is created directly either by a connector or a stream processing application. 
+
+Let's create a new `SOURCE` table by adding the `SOURCE` keyword:
+
+```sql
+DROP TABLE customer_st;
+CREATE SOURCE TABLE customer_st (email_address VARCHAR PRIMARY KEY, first_name VARCHAR, last_name VARCHAR, category VARCHAR)
+	WITH (KAFKA_TOPIC='customer', 
+			VALUE_FORMAT='AVRO', 
+			PARTITIONS=8, 
+			REPLICAS=3);
+```
+
+Now on that table a pull-query works:
+
+```sql
+SELECT *
+FROM customer_st
+WHERE email_address = 'peter.muster@acme.com';
+```
+
+Let's drop that table as we no longer need it
+
+```sql
+DROP TABLE customer_st;
+```
+
+## Join Stream with a Table 
+
+Now let's see how we can enrich the stream of data (transactions) with some static data (customer). We want to do a join between the stream and a table (`customer_t`) holding all the customer data, we just created.
+
+So let's join the table to the transaction stream. We create another push query, which will continuously run.
 
 ```sql
 SELECT * FROM transaction_s AS tra
@@ -287,9 +385,25 @@ In the 2nd terminal, insert a new message into the `transaction_s` stream
 INSERT INTO transaction_s (email_address, tx_id, card_number, timestamp, amount) 
 VALUES ('peter.muster@acme.com', '05ed7709-8a18-4e0d-9608-27894750bd43', '352642227248344', FROM_UNIXTIME(UNIX_TIMESTAMP()), 99.95);
 ```
-and you should see the result of the join in the 1st terminal windw. 
+and you should see the result of the join in the 1st terminal window. 
 
-If we are happy with the result, we can materialized it by a CSAS (CREATE STREAM AS SELECT) Statement. 
+```bash
+ksql> SELECT * FROM transaction_s AS tra
+>LEFT JOIN customer_t AS cus
+>ON (tra.email_address = cus.email_address)
+>EMIT CHANGES;
++---------------------+---------------------+---------------------+---------------------+---------------------+---------------------+---------------------+---------------------+---------------------+
+|TRA_EMAIL_ADDRESS    |TRA_TX_ID            |TRA_CARD_NUMBER      |TRA_TIMESTAMP        |TRA_AMOUNT           |CUS_EMAIL_ADDRESS    |CUS_FIRST_NAME       |CUS_LAST_NAME        |CUS_CATEGORY         |
++---------------------+---------------------+---------------------+---------------------+---------------------+---------------------+---------------------+---------------------+---------------------+
+|peter.muster@acme.com|0cf100ca-993c-427f-9e|352642227248344      |2022-07-04T15:44:14.8|100.00               |peter.muster@acme.com|Peter                |Muster               |A                    |
+|                     |a5-e892ef350363      |                     |98                   |                     |                     |                     |                     |                     |
+|barbara.sample@acme.c|9fe397e3-990e-449a-af|999776673238348      |2022-07-04T15:44:14.9|220.00               |barbara.sample@acme.c|Barbara              |Sample               |B                    |
+|om                   |cc-7b652a005c99      |                     |76                   |                     |om                   |                     |                     |                     |
+
+Press CTRL-C to interrupt
+```
+
+If we are happy with the result, we can materialise it by using a CSAS (CREATE STREAM AS SELECT) statement. 
 
 ```sql
 CREATE STREAM transaction_customer_s
@@ -300,7 +414,8 @@ WITH (
     REPLICAS = 3
 ) 
 AS
-SELECT * FROM transaction_s AS tra
+SELECT * 
+FROM transaction_s AS tra
 LEFT JOIN customer_t AS cus
 ON (tra.email_address = cus.email_address)
 EMIT CHANGES;
@@ -327,9 +442,9 @@ Name                 : TRANSACTION_CUSTOMER_S
 For runtime statistics and query details run: DESCRIBE <Stream,Table> EXTENDED;
 ```
 
-You can of course also provide your own column aliases by listing the columns in the SELECT list, instead of just using the `*`.
+You can of course also provide your own column aliases by listing the columns in the `SELECT` list, instead of just using the `*`.
 
-Now you can get the result either by querying the new stream `transaction_customer_s` or by consuming the underlying topic called `transaction_customer`.
+Now you can get the result either by querying the new stream `transaction_customer_s` 
 
 ```sql
 SELECT * 
@@ -337,27 +452,44 @@ FROM transaction_customer_s
 EMIT CHANGES;
 ```
 
+or by consuming directly from the underlying topic called `transaction_customer`.
+
+```bash
+docker run -it --network=host edenhill/kcat:1.7.1 -b dataplatform -t transaction_customer -s value=avro -r http://dataplatform:8081
+```
+
 ## Total amount of transaction value by category
 
+Now with the enriched stream of transactions and customers, we can get the total amount of transactions by customer category over a tumbling window of 30 seconds.
+
 ```ksql
-SELECT cus_category		category
-, 	SUM(tra_amount) 		amount
+SELECT cus_category					AS category
+, 	SUM(tra_amount) 					AS amount
+,  FROM_UNIXTIME (WINDOWSTART)	AS from_ts
+,  FROM_UNIXTIME (WINDOWEND)		AS to_ts
 FROM transaction_customer_s
-WINDOW TUMBLING (SIZE 30 SECONDS)
+WINDOW TUMBLING (SIZE 30 SECONDS, RETENTION 120 SECONDS, GRACE PERIOD 60 SECONDS)
 GROUP BY cus_category
 EMIT CHANGES;
 ```
 
-To materialize the result, we can create a table
+We create a **tumbling window** of 30 seconds size, with a **grace period** of 60 seconds (accepting out-of-order events which are older than 1 minute) and a **window retention** of 120 seconds (the number of windows in the past that ksqlDB retains, so that they are available for Pull-Queries).
+
+**Note:** the specified retention period should be larger than the sum of window size and any grace period.
+
+
+To materialise the result, we can create another table
 
 
 ```sql
 CREATE TABLE total_amount_per_category_t
 AS 
-SELECT cus_category		category
-, 	SUM(tra_amount) 		amount
+SELECT cus_category					AS category
+, 	SUM(tra_amount) 					AS amount
+,  FROM_UNIXTIME (WINDOWSTART)	AS from_ts
+,  FROM_UNIXTIME (WINDOWEND)		AS to_ts
 FROM transaction_customer_s
-WINDOW TUMBLING (SIZE 30 SECONDS)
+WINDOW TUMBLING (SIZE 30 SECONDS, RETENTION 120 SECONDS, GRACE PERIOD 60 SECONDS)
 GROUP BY cus_category
 EMIT CHANGES;
 ```
@@ -377,7 +509,7 @@ Statement            : CREATE TABLE TOTAL_AMOUNT_PER_CATEGORY_T WITH (KAFKA_TOPI
   TRANSACTION_CUSTOMER_S.CUS_CATEGORY CATEGORY,
   SUM(TRANSACTION_CUSTOMER_S.TRA_AMOUNT) AMOUNT
 FROM TRANSACTION_CUSTOMER_S TRANSACTION_CUSTOMER_S
-WINDOW TUMBLING ( SIZE 30 SECONDS )
+WINDOW TUMBLING ( SIZE 30 SECONDS , RETENTION 120 SECONDS , GRACE PERIOD 60 SECONDS )
 GROUP BY TRANSACTION_CUSTOMER_S.CUS_CATEGORY
 EMIT CHANGES;
 
@@ -389,7 +521,7 @@ EMIT CHANGES;
 
 Queries that write from this TABLE
 -----------------------------------
-CTAS_TOTAL_AMOUNT_PER_CATEGORY_T_45 (RUNNING) : CREATE TABLE TOTAL_AMOUNT_PER_CATEGORY_T WITH (KAFKA_TOPIC='TOTAL_AMOUNT_PER_CATEGORY_T', PARTITIONS=8, REPLICAS=3) AS SELECT   TRANSACTION_CUSTOMER_S.CUS_CATEGORY CATEGORY,   SUM(TRANSACTION_CUSTOMER_S.TRA_AMOUNT) AMOUNT FROM TRANSACTION_CUSTOMER_S TRANSACTION_CUSTOMER_S WINDOW TUMBLING ( SIZE 30 SECONDS )  GROUP BY TRANSACTION_CUSTOMER_S.CUS_CATEGORY EMIT CHANGES;
+CTAS_TOTAL_AMOUNT_PER_CATEGORY_T_19 (RUNNING) : CREATE TABLE TOTAL_AMOUNT_PER_CATEGORY_T WITH (KAFKA_TOPIC='TOTAL_AMOUNT_PER_CATEGORY_T', PARTITIONS=8, REPLICAS=3) AS SELECT   TRANSACTION_CUSTOMER_S.CUS_CATEGORY CATEGORY,   SUM(TRANSACTION_CUSTOMER_S.TRA_AMOUNT) AMOUNT FROM TRANSACTION_CUSTOMER_S TRANSACTION_CUSTOMER_S WINDOW TUMBLING ( SIZE 30 SECONDS , RETENTION 120 SECONDS , GRACE PERIOD 60 SECONDS )  GROUP BY TRANSACTION_CUSTOMER_S.CUS_CATEGORY EMIT CHANGES;
 
 For query topology and execution plan please run: EXPLAIN <QueryId>
 
@@ -401,8 +533,9 @@ Local runtime statistics
 
 Consumer Groups summary:
 
-Consumer Group       : _confluent-ksql-ksqldb-clusterquery_CTAS_TOTAL_AMOUNT_PER_CATEGORY_T_45
+Consumer Group       : _confluent-ksql-ksqldb-clusterquery_CTAS_TOTAL_AMOUNT_PER_CATEGORY_T_19
 <no offsets committed by this group yet>
+ksql>
 ```
 
 Push-query on table to get the changes
@@ -411,13 +544,45 @@ Push-query on table to get the changes
 SELECT * FROM TOTAL_AMOUNT_PER_CATEGORY_T EMIT CHANGES;
 ```
 
+
 Pull-query to get the current state for a category
 
 ```sql
 SELECT * FROM TOTAL_AMOUNT_PER_CATEGORY_T  WHERE category = 'A';
 ```
 
-## Anomalies (does not yet work!)
+Pull-query to get the current state for category with the `windowstart` and `windowend` converted to a readable timestamp
+
+```sql
+SELECT category
+,	amount
+,	FROM_UNIXTIME (WINDOWSTART)		AS from_ts
+, 	FROM_UNIXTIME (WINDOWEND)			AS to_ts
+FROM TOTAL_AMOUNT_PER_CATEGORY_T
+WHERE category = 'A';
+```
+
+Insert a transaction with Event Time (`ROWTIME`) 60 seconds ago:
+
+```sql
+INSERT INTO transaction_s (ROWTIME, email_address, tx_id, card_number, timestamp, amount)
+VALUES (UNIX_TIMESTAMP() - 60000, 'peter.muster@acme.com', '0cf100ca-993c-427f-9ea5-e892ef350363', '352642227248344', FROM_UNIXTIME(UNIX_TIMESTAMP()), 100.00);
+```
+
+It will be counted in the previous window. 
+
+Insert a transaction with Event Time (`ROWTIME`) 3 minutes ago:
+
+```sql
+INSERT INTO transaction_s (ROWTIME, email_address, tx_id, card_number, timestamp, amount)
+VALUES (UNIX_TIMESTAMP() - 180000, 'peter.muster@acme.com', '0cf100ca-993c-427f-9ea5-e892ef350363', '352642227248344', FROM_UNIXTIME(UNIX_TIMESTAMP()), 100.00);
+```
+
+it will not be treated as a late arrival, as if falls out of the grace period. 
+
+## Anomalies
+
+If a single credit card is transacted many times within a short duration, there's probably something suspicious going on. A table is an ideal choice to model this because you want to aggregate events over time and find activity that spans multiple events.
 
 ```sql
 CREATE TABLE possible_anomalies WITH (
@@ -432,11 +597,13 @@ CREATE TABLE possible_anomalies WITH (
            collect_list(tx_id) AS `tx_ids`,
            WINDOWSTART as `start_boundary`,
            WINDOWEND as `end_boundary`
-    FROM transactions
+    FROM transaction_s
     WINDOW TUMBLING (SIZE 30 SECONDS, RETENTION 1000 DAYS)
     GROUP BY card_number
     HAVING count(*) >= 3
     EMIT CHANGES;
 ```sql
+
+Now create 3 transactions for the same credit card number within 30 seconds and it show up as a potential anomaly.
 
 
