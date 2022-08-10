@@ -1,6 +1,6 @@
 # (Virtual) machine running Ubuntu Linux
 
-This document describes how to install the workshop environment on a Ubuntu Machine, which could be running in a virtual machine, either in the cloud or on your local machine.
+This document describes how to install the workshop environment on a Ubuntu Machine, which could be running in a virtual machine, either in the cloud, on a remote server or on your local machine.
 
 The VM should be configured with at least 8 GB and 4 CPUs.
 
@@ -120,6 +120,8 @@ platys -v
 
 In a terminal terminal window execute the following commands. 
 
+### Setup environment variables
+
 If your virtual machine is running in the cloud or on a remote server, set the `PUBLIC_IP` variable to the IP Address you use to reach it
 
 ```bash
@@ -138,7 +140,9 @@ Additionally set the `DOCKER_HOST_IP` to the IP address of the machine (make sur
 export DOCKER_HOST_IP=$(ip addr show $NETWORK_NAME | grep "inet\b" | awk '{print $2}' | cut -d/ -f1)
 ```
 
-Now let's checkout the Kafka Workshop project from GitHub:
+### Clone Workshop GitHub project
+
+Now let's clone the Kafka Workshop project from GitHub:
 
 ```
 cd 
@@ -146,6 +150,8 @@ git clone https://github.com/${GITHUB_OWNER}/${GITHUB_PROJECT}.git
 cd ${GITHUB_PROJECT}/${DATAPLATFORM_HOME}
 export DATAPLATFORM_HOME=$PWD
 ```
+
+### Persist Environment variables
 
 Finally let's persist the 3 environment variables `PUBLIC_IP`, `DOCKER_HOST_IP` and `DATAPLATFORM_HOME`, so that they are available after a logout.
 
@@ -156,6 +162,8 @@ printf "export DATAPLATFORM_HOME=$DATAPLATFORM_HOME\n" >> /home/$USER/.bash_prof
 printf "\n" >> /home/$USER/.bash_profile
 sudo chown ${USER}:${USER} /home/$USER/.bash_profile
 ```
+
+### Settings for Elasticsearch
 
 For Elasticsearch to run properly, we have to increase the `vm.max_map_count` parameter like shown below.  
 
@@ -173,11 +181,21 @@ docker-compose up -d
 
 If started the first time, the necessary docker images will be downloaded from the public docker registry. Therefore you need internet access from your machine.
 
+Depending on the speed of the network, the download takes a few minutes (around 5 minutes).
+
 Once this is done, the docker container will start one by one, and at the end the output should be similar to the one below. 
 
 ![Alt Image Text](./images/start-env-docker.png "StartDocker")
 
 Your instance is now ready to use. Complete the post installation steps documented the [here](README.md).
+
+In a web browser navigate to `http://<public-ip>` to access the markdown page with the relevant information about the docker compose stack.
+
+![Alt Image Text](./images/markdown-info.png "markdown")
+
+Click on link **All available services which are part of the platform are listed here** to navigate to the list of services:
+
+![Alt Image Text](./images/markdown-info-services.png "markdown")
 
 ## Stop environment
 
