@@ -439,6 +439,8 @@ mvn exec:java@producer -Dexec.args="1000 10 0"
 
 In a browser, navigate to <http://dataplatform:28039> and you should see the home page of the Schema Registry UI. Le's make sure that the schema has been registered automatically.
 
+![Alt Image Text](./images/schema-registry.png "Schema Registry UI")
+
 ## Create a Kafka Consumer using Avro for serialization
 
 First create a new Java Package `com.trivadis.kafkaws.consumer` in the folder **src/main/java**.
