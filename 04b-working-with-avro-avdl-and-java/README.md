@@ -114,7 +114,16 @@ Copy the following block right after the `<version>` tag, before the closing `</
 						</goals>
 						<configuration>
 							<mainClass>com.trivadis.kafkaws.producer.KafkaProducerAvro</mainClass>
-						</configuration>						
+						</configuration>
+					</execution>
+					<execution>
+						<id>consumer</id>
+						<goals>
+							<goal>java</goal>
+						</goals>
+						<configuration>
+							<mainClass>com.trivadis.kafkaws.consumer.KafkaConsumerAvro</mainClass>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>

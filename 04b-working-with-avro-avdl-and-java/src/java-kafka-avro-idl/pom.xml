@@ -108,7 +108,7 @@
 							<goal>java</goal>
 						</goals>
 						<configuration>
-							<mainClass>com.trivadis.kafkaws.producer.KafkaConsumerAvro</mainClass>
+							<mainClass>com.trivadis.kafkaws.consumer.KafkaConsumerAvro</mainClass>
 						</configuration>
 					</execution>
 				</executions>
