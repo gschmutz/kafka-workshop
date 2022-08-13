@@ -15,7 +15,7 @@
 	<description>Kafka Consumer with Avro project for Spring Boot</description>
 	<properties>
 		<java.version>11</java.version>
-		<confluent.version>6.2.0</confluent.version>
+		<confluent.version>7.2.0</confluent.version>
 	</properties>
 	<dependencies>
 		<dependency>

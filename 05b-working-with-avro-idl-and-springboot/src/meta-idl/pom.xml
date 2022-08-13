@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.trivadis.kafkaws.meta</groupId>
-    <artifactId>meta</artifactId>
+    <artifactId>meta-idl</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <properties>
@@ -40,11 +40,31 @@
                         <configuration>
                             <stringType>String</stringType>
                             <fieldVisibility>private</fieldVisibility>
-                            <sourceDirectory>${project.basedir}/src/main/avro</sourceDirectory>
+                            <sourceDirectory>${project.basedir}/src/main/avdl/</sourceDirectory>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
+
+            <plugin>
+                <groupId>com.trivadis.plugins</groupId>
+                <artifactId>avdl2avsc-maven-plugin</artifactId>
+                <version>1.0.1-SNAPSHOT</version>
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>genschema</goal>
+                        </goals>
+                        <configuration>
+                            <inputAvdlDirectory>${basedir}/src/main/avdl</inputAvdlDirectory>
+                            <outputSchemaDirectory>${basedir}/target/generated-sources/avro/schema
+                            </outputSchemaDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
             <plugin>
                 <groupId>io.confluent</groupId>
                 <artifactId>kafka-schema-registry-maven-plugin</artifactId>
@@ -54,7 +74,7 @@
                         <param>http://${env.DATAPLATFORM_IP}:8081</param>
                     </schemaRegistryUrls>
                     <subjects>
-                        <test-spring-avro-topic-value>src/main/avro/Notification-v1.avsc</test-spring-avro-topic-value>
+                        <test-spring-avro-idl-topic-value>target/generated-sources/avro/schema/NotificationSentEvent.avsc</test-spring-avro-idl-topic-value>
                     </subjects>
                 </configuration>
                 <goals>
@@ -69,6 +89,14 @@
         <pluginRepository>
             <id>confluent</id>
             <url>https://packages.confluent.io/maven/</url>
+        </pluginRepository>
+        <pluginRepository>
+            <id>Avdl2Avsc Maven Repo</id>
+            <url>https://github.com/TrivadisPF/avdl2avsc-maven-plugin/raw/mvn-repo/</url>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
+            </snapshots>
         </pluginRepository>
     </pluginRepositories>
 

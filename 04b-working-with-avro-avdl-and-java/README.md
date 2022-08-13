@@ -1,7 +1,7 @@
 # Using Kafka from Java with Avro IDL & Schema Registry
 
 In this workshop we will learn how to produce and consume messages using the [Kafka Java API](https://kafka.apache.org/documentation/#api) using Avro for serialising and deserialising messages. 
-Compared to 4a, here we will use the [Avro IDL language](https://avro.apache.org/docs/current/idl-language/) for defining the Avro Schema. The advantage of using the Avro IDL language is first better readability when a schema get's more complex, better [IDE support](https://avro.apache.org/docs/current/idl-language/#ide-support) and the possibility for importing schema definitions from another file.
+Compared to workshop 4a, here we will use the [Avro IDL language](https://avro.apache.org/docs/current/idl-language/) for defining the Avro Schema. The advantage of using the Avro IDL language is first better readability when a schema get's more complex, better [IDE support](https://avro.apache.org/docs/current/idl-language/#ide-support) and the possibility for importing schema definitions from another file.
 But for the Schema Registry, we will still need the schemas in the JSON language, but the can be generated from the IDL (using Avro Tools).
 
 ## Create the project in your Java IDE
@@ -29,11 +29,11 @@ Copy the following block right after the `<version>` tag, before the closing `</
 
 ```xml
    <properties>
-       <kafka.version>2.7.0</kafka.version>
-       <confluent.version>5.1.0</confluent.version>
-       <avro.version>1.8.2</avro.version>
-       <java.version>1.8</java.version>
-       <slf4j-version>1.7.5</slf4j-version>
+		<kafka.version>3.0.0</kafka.version>
+		<confluent.version>7.2.0</confluent.version>
+		<avro.version>1.11.0</avro.version>
+		<java.version>1.8</java.version>
+		<slf4j-version>1.7.5</slf4j-version>
 
        <!-- use utf-8 encoding -->
        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -268,7 +268,9 @@ protocol NotificationProtocol {
 }
 ```
 
-This represent the Notification message. We will use another schema to define the `NotificationSentEvent` event and import the `Notification` object.
+This represent the Notification object. 
+
+We will use another schema to define the `NotificationSentEvent` event and import the `Notification` object. Create a new file `NotificationSentEvent-v1.avdl` in the `avdl` folder and add the folllowing schema defintion:
 
 ```
 @namespace("com.trivadis.kafkaws.avro.v1")

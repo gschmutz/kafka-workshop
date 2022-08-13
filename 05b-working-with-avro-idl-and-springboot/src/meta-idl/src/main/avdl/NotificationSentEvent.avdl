@@ -1,0 +1,8 @@
+@namespace("com.trivadis.kafkaws.avro.v1")
+protocol NotificationSentEventProtocol {
+	import idl "Notification.avdl";
+
+	record NotificationSentEvent {
+		Notification  notification;
+	}
+}

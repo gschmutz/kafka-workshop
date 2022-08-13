@@ -1,6 +1,9 @@
-# Kafka from Spring Boot with Avro & Schema Registry
+# Kafka from Spring Boot with Avro IDL & Schema Registry
 
 In this workshop we will learn how to use the Spring Kafka abstraction with Avro message serialization from within a Spring Boot application. We will implement both a consumer and a producer. 
+
+Compared to workshop 5a, here we will use the [Avro IDL language](https://avro.apache.org/docs/current/idl-language/) for defining the Avro Schema. The advantage of using the Avro IDL language is first better readability when a schema get's more complex, better [IDE support](https://avro.apache.org/docs/current/idl-language/#ide-support) and the possibility for importing schema definitions from another file.
+But for the Schema Registry, we will still need the schemas in the JSON language, but the can be generated from the IDL (using Avro Tools).
 
 We will create two Spring Boot projects, one for the **Producer** and one for the **Consumer**, simulating two independent microservices interacting with each other via events. 
 
@@ -12,7 +15,7 @@ First we will define the Avro schema and generate the classes. As both Mircorser
 
 ### Create a new Maven project
 
-From your IDE (screenshot taken from IntelliJ), create a new Maven project and use `meta` for the **Name**, `com.trivadis.kafkaws.meta` for the **GroupId** and leave the **Version** as is.
+From your IDE (screenshot taken from IntelliJ), create a new Maven project and use `meta-idl` for the **Name**, `com.trivadis.kafkaws.meta` for the **GroupId** and leave the **Version** as is.
 
 ![Alt Image Text](./images/create-mvn-project.png "Schema Registry UI")
 
@@ -64,11 +67,31 @@ Now add the following section at the end before the `</project>` element.
                         <configuration>
                             <stringType>String</stringType>
                             <fieldVisibility>private</fieldVisibility>
-                            <sourceDirectory>${project.basedir}/src/main/avro</sourceDirectory>
+                            <sourceDirectory>${project.basedir}/src/main/avdl/</sourceDirectory>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
+
+            <plugin>
+                <groupId>com.trivadis.plugins</groupId>
+                <artifactId>avdl2avsc-maven-plugin</artifactId>
+                <version>1.0.1-SNAPSHOT</version>
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>genschema</goal>
+                        </goals>
+                        <configuration>
+                            <inputAvdlDirectory>${basedir}/src/main/avdl</inputAvdlDirectory>
+                            <outputSchemaDirectory>${basedir}/target/generated-sources/avro/schema
+                            </outputSchemaDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
             <plugin>
                 <groupId>io.confluent</groupId>
                 <artifactId>kafka-schema-registry-maven-plugin</artifactId>
@@ -78,7 +101,7 @@ Now add the following section at the end before the `</project>` element.
                         <param>http://${env.DATAPLATFORM_IP}:8081</param>
                     </schemaRegistryUrls>
                     <subjects>
-                        <test-java-avro-topic-value>src/main/avro/Notification-v1.avsc</test-java-avro-topic-value>
+                        <test-spring-avro-idl-topic-value>target/generated-sources/avro/schema/NotificationSentEvent.avsc</test-spring-avro-idl-topic-value>
                     </subjects>
                 </configuration>
                 <goals>
@@ -92,10 +115,11 @@ Now add the following section at the end before the `</project>` element.
 
 The first plugin will make sure, that classes are generated based on the Avro schema, whenever a `mvn compile` is executed.
 
-To second plugin will help to register the Avro schema(s) via Maven into the Confluent Schema Registry.
+The second plugin will generate schemas with the JSON dialect from schemas with IDL dialect, which we will use to define our Avro schemas.
 
+To thrid plugin will help to register the Avro schema(s) via Maven into the Confluent Schema Registry.
 
-We also have to specify the additional Maven repository, where the plugins can be found. Add the following XML fragment at the end right before the `project` element.
+We also have to specify the additional Maven repositories, where the plugins can be found. Add the following XML fragment at the end right before the `project` element.
 
 ```xml
     <pluginRepositories>
@@ -103,48 +127,58 @@ We also have to specify the additional Maven repository, where the plugins can b
             <id>confluent</id>
             <url>https://packages.confluent.io/maven/</url>
         </pluginRepository>
+        <pluginRepository>
+            <id>Avdl2Avsc Maven Repo</id>
+            <url>https://github.com/TrivadisPF/avdl2avsc-maven-plugin/raw/mvn-repo/</url>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
+            </snapshots>
+        </pluginRepository>        
     </pluginRepositories>
 ```
 
 ### Create an Avro Schema representing the Avro Message to send
 
-First create a new Folder `avro` under the existing folder **src/main/**.
+First create a new Folder `avdl` under the existing folder **src/main/**.
 
-Create a new File `Notification-v1.avsc` in the folder  **src/main/avro** just created above.
+Create a new File `Notification.avdl` in the folder  **src/main/avdl** just created above.
 
-Add the following Avro schema to the empty file.  
+Add the following Avro schema to the empty file, using the Avro IDL language. 
 
-```json
-{
-  "type" : "record",
-  "namespace" : "com.trivadis.kafkaws.avro.v1",
-  "name" : "Notification",
-  "description" : "A simple Notification Event message",
-  "fields" : [
-	    {   "name" : "id",
-	        "type" : ["long", "null"]
-	    },
-	    {   "name" : "message",
-	        "type" : ["string", "null"]
-	    },
-	    {   "name" : "createdAt",
-                "type" : {
-                   "type" : "long",
-                   "logicalType" : "timestamp-millis"
-                }
-            }
-  ]
+```
+@namespace("com.trivadis.kafkaws.avro.v1")
+protocol NotificationProtocol {
+		record Notification {
+			union {null, long} id;
+			union {null, string}  message;
+			timestamp_ms createdAt;
+		}
 }
 ```
 
-The Maven plugin added above will make sure, that classes are generated based on the Avro schema, whenever a `mvn compile` is executed. Let's exactly do that on the still rather empty project. 
+This represent the Notification object. 
 
-```bash
+We will use another schema to define the `NotificationSentEvent` event and import the `Notification` object. Create a new file `NotificationSentEvent-v1.avdl` in the `avdl` folder and add the folllowing schema defintion:
+
+```
+@namespace("com.trivadis.kafkaws.avro.v1")
+protocol NotificationSentEventProtocol {
+	import idl "Notification.avdl";
+
+	record NotificationSentEvent {
+		Notification  notification;
+	}
+}
+```
+
+Let's now run a Maven compile to generate both the Avro JSON schema as well as the Java code for the Avro Serialization/Deserialization.
+
+```
 mvn compile
 ```
 
-After running this command, refresh the project in your IDE and you should see a new folder named `target/generated-sources/avro`. Navigate into this folder and you should see one generated Java class named `Notification`.
-
+After running this command, refresh the project and you should see a new folder named `target/generated-sources/avro`. Expand into this folder and you should see both the generated Java classes as well as a `schema` folder with the two `avsc` schemas. We get two classes for each IDL file, one for the `protocol` and one for the `record`, although we will only use the one for the `record` definitions, `Notification.java` and `NotificationSentEvent.java`. 
 
 ### Register the Avro Schema with the registry
 
@@ -178,7 +212,7 @@ First we create and test the Producer microservice.
 
 First, let’s navigate to [Spring Initializr](https://start.spring.io/) to generate our project. Our project will need the Apache Kafka support. 
 
-Select Generate a **Maven Project** with **Java** and Spring Boot **2.6.4**. Enter `com.trivadis.kafkaws` for the **Group**, `spring-boot-kafka-producer-avro` for the **Artifact** field and `Kafka Producer with Avro project for Spring Boot` for the **Description** field. 
+Select Generate a **Maven Project** with **Java** and Spring Boot **2.7.0**. Enter `com.trivadis.kafkaws` for the **Group**, `spring-boot-kafka-producer-avro-idl` for the **Artifact** field and `Kafka Producer with Avro project for Spring Boot` for the **Description** field. 
 
 Click on **Add Dependencies** and search for the  **Spring for Apache Kafka** dependency. 
 
@@ -206,7 +240,7 @@ In oder to use the Avro serializer and the class generated above, we have to add
 		
 		<dependency>
 			<groupId>com.trivadis.kafkaws.meta</groupId>
-			<artifactId>meta</artifactId>
+			<artifactId>meta-idl</artifactId>
 			<version>1.0-SNAPSHOT</version>
 		</dependency>
 ```
@@ -239,6 +273,7 @@ Now create a simple Java class `KafkaEventProducer` within the `com.trivadis.kaf
 package com.trivadis.kafkaws.springbootkafkaproducer;
 
 import com.trivadis.kafkaws.avro.v1.Notification;
+import com.trivadis.kafkaws.avro.v1.NotificationSentEvent;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -260,17 +295,17 @@ public class KafkaEventProducer {
     private static final Logger LOGGER = LoggerFactory.getLogger(KafkaEventProducer.class);
 
     @Autowired
-    private KafkaTemplate<Long, Notification> kafkaTemplate;
+    private KafkaTemplate<Long, NotificationSentEvent> kafkaTemplate;
 
     @Value("${topic.name}")
     String kafkaTopic;
 
-    public void produce(Integer id, Long key, Notification notification) {
+    public void produce(Integer id, Long key, NotificationSentEvent notificationSentEvent) {
         long time = System.currentTimeMillis();
 
-        SendResult<Long, Notification> result = null;
+        SendResult<Long, NotificationSentEvent> result = null;
         try {
-            result = kafkaTemplate.send(kafkaTopic, key, notification).get(10, TimeUnit.SECONDS);
+            result = kafkaTemplate.send(kafkaTopic, key, notificationSentEvent).get(10, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (ExecutionException e) {
@@ -282,7 +317,7 @@ public class KafkaEventProducer {
         long elapsedTime = System.currentTimeMillis() - time;
         System.out.printf("[" + id + "] sent record(key=%s value=%s) "
                         + "meta(partition=%d, offset=%d) time=%d\n",
-                key, notification, result.getRecordMetadata().partition(),
+                key, notificationSentEvent, result.getRecordMetadata().partition(),
                 result.getRecordMetadata().offset(), elapsedTime);
     }
 }
@@ -372,13 +407,15 @@ public class SpringBootKafkaProducerApplication implements CommandLineRunner {
 		Long key = (id > 0) ? id : null;
 
 		for (int index = 0; index < sendMessageCount; index++) {
-			Notification notification = Notification.newBuilder()
-												.setId(id)
-												.setMessage("[" + id + "] Hello Kafka " + index)
-												.setCreatedAt(Instant.now())
-												.build();
+			NotificationSentEvent notificationSentEvent = NotificationSentEvent.newBuilder()
+					.setNotification(
+							Notification.newBuilder()
+									.setId(id)
+									.setMessage("[" + id + "] Hello Kafka " + index)
+									.setCreatedAt(Instant.now()).build()
+					).build();
 
-			kafkaEventProducer.produce(index, key, notification);
+			kafkaEventProducer.produce(index, key, notificationSentEvent);
 
 			// Simulate slow processing
 			Thread.sleep(waitMsInBetween);
@@ -389,7 +426,7 @@ public class SpringBootKafkaProducerApplication implements CommandLineRunner {
 }
 ```
 
-The difference here to the non-avro version is, that we are using the builder of the generated `Nofification` class to create an instance of a notification, which we then pass as the value to the `produce()` method.
+The difference here to the non-avro version is, that we are using the builder of the generated `Nofification` and `NotificationSentEvent` class to create an instance of a notification, which we then pass as the value to the `produce()` method.
 
 ### Configure Kafka through application.yml configuration file
 
@@ -399,7 +436,7 @@ Add the following settings to configure the Kafka cluster and the name of the to
 
 ```yml
 topic:
-  name: test-spring-avro-topic
+  name: test-spring-avro-idl-topic
   replication-factor: 3
   partitions: 8
 
@@ -439,7 +476,7 @@ mvn package -Dmaven.test.skip=true
 In a terminal window start consuming from the output topic:
 
 ```bash
-kafkacat -b $DATAPLATFORM_IP -t test-spring-avro-topic -s avro -r http://$DATAPLATFORM_IP:8081 -o end
+kafkacat -b $DATAPLATFORM_IP -t test-spring-avro-idl-topic -s avro -r http://$DATAPLATFORM_IP:8081 -o end
 ```
 
 ### Run the application
@@ -494,7 +531,7 @@ In oder to use the Avro deserializer and the Avro generated classes, we have to 
 		
 		<dependency>
 			<groupId>com.trivadis.kafkaws.meta</groupId>
-			<artifactId>meta</artifactId>
+			<artifactId>meta-idl</artifactId>
 			<version>1.0-SNAPSHOT</version>
 		</dependency>
 ```
@@ -524,9 +561,10 @@ We also have to specify the additional Maven repository
 Start by creating a simple Java class `KafkaEventConsumer` within the `com.trivadis.kafkaws.springbootkafkaconsumer` package, which we will use to consume messages from Kafka. 
 
 ```java
-package com.trivadis.kafkaws.springbootkafkaconsumeravro;
+ppackage com.trivadis.kafkaws.springbootkafkaconsumeravro;
 
 import com.trivadis.kafkaws.avro.v1.Notification;
+import com.trivadis.kafkaws.avro.v1.NotificationSentEvent;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -538,8 +576,8 @@ public class KafkaEventConsumer {
     private static final Logger LOGGER = LoggerFactory.getLogger(KafkaEventConsumer.class);
 
     @KafkaListener(topics = "${topic.name}", groupId = "simple-consumer-group")
-    public void receive(ConsumerRecord<Long, Notification> consumerRecord) {
-        Notification value = consumerRecord.value();
+    public void receive(ConsumerRecord<Long, NotificationSentEvent> consumerRecord) {
+        NotificationSentEvent value = consumerRecord.value();
         Long key = consumerRecord.key();
         LOGGER.info("received key = '{}' with payload='{}'", key, value);
     }
@@ -558,7 +596,7 @@ Add the following settings to configure the Kafka cluster and the name of the tw
 
 ```yml
 topic:
-  name: test-spring-avro-topic
+  name: test-spring-avro-idl-topic
 
 spring:
   kafka:

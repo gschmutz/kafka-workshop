@@ -1,0 +1,8 @@
+@namespace("com.trivadis.kafkaws.avro.v1")
+protocol NotificationProtocol {
+	record Notification {
+		union {null, long} id;
+		union {null, string}  message;
+		timestamp_ms createdAt;
+	}
+}

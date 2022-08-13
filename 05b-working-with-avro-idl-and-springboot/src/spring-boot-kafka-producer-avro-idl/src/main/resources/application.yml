@@ -1,0 +1,18 @@
+topic:
+  name: test-spring-avro-idl-topic
+  replication-factor: 3
+  partitions: 8
+
+spring:
+  kafka:
+    bootstrap-servers:
+      - ${DATAPLATFORM_IP}:9092
+      - ${DATAPLATFORM_IP}:9093
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.LongSerializer
+      value-serializer: io.confluent.kafka.serializers.KafkaAvroSerializer
+      properties:
+        auto.register.schemas: false
+        use.latest.version: true
+    properties:
+      schema.registry.url: http://${DATAPLATFORM_IP}:8081
