@@ -22,3 +22,8 @@ Extend the Path by editing `/home/oracle/.bash_profile` and add `/home/oracle/VS
 export PATH=$PATH:$LAB_BASE:/u00/app/oracle/local/bdkafkadev/bin:.:/home/oracle/VSCode-linux-x64
 ```
 
+## IntelliJ IDEA
+
+Download IntelliJ Community from <https://www.jetbrains.com/idea/download/#section=linux> as a TAR ball and untar it to `/home/oracle`
+
+From a terminal window run `./idea-IC-222.4167.29/bin/idea.sh` to start the IDE. Confirm the **JETBRAINS COMMUNITY EDITION TERMS** by enabling the checkbox and then click **Continue**.
