@@ -503,7 +503,7 @@ public class KafkaConsumerAvro {
 
 ## Register in Schema Registry using Maven
 
-In the test above, the Avro schema has been registered in the schema registry when starting the Producer for the first time. To register an Avro schema through Maven automatically, you can use the following Maven plugin. 
+In the test above, the Avro schema has been registered in the schema registry when starting the Producer for the first time. To register an JSON schema through Maven automatically, you can use the `kafka-schema-registry-maven-plugin` Maven plugin. 
 
 Add the following definition to the `pom.xml`.
 
@@ -511,13 +511,16 @@ Add the following definition to the `pom.xml`.
 			<plugin>
 				<groupId>io.confluent</groupId>
 				<artifactId>kafka-schema-registry-maven-plugin</artifactId>
-				<version>3.2.0</version>
+				<version>7.0.0</version>
 				<configuration>
 					<schemaRegistryUrls>
-						<param>http://dataplatform:8081</param>
+						<param>http://${DATAPLATFORM_IP}:8081</param>
 					</schemaRegistryUrls>
+					<schemaTypes>
+						<test-java-json-topic>JSON</test-java-json-topic>
+					</schemaTypes>
 					<subjects>
-						<test-java-avro-topic-value>src/main/avro/Notification-v1.avsc</test-java-avro-topic-value>
+						<test-java-json-topic>src/main/jsonschema/Notification-v1.json</test-java-json-topic>
 					</subjects>
 				</configuration>
 				<goals>

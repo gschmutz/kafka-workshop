@@ -551,7 +551,7 @@ public class KafkaConsumerProtobuf {
 
 ## Register in Schema Registry using Maven
 
-In the test above, the Protocol Buffer schema has been registered in the schema registry when starting the Producer for the first time. To register an Protocol Buffer schema through Maven automatically, you can use the following Maven plugin.
+In the test above, the Protocol Buffer schema has been registered in the schema registry when starting the Producer for the first time. To register a Protocol Buffer schema through Maven automatically, you can use the `kafka-schema-registry-maven-plugin` Maven plugin.
 
 Add the following definition to the `pom.xml`.
 
