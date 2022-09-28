@@ -17971,8 +17971,8 @@
     },
     {
       "type": "arrow",
-      "version": 165,
-      "versionNonce": 922813638,
+      "version": 210,
+      "versionNonce": 467204204,
       "isDeleted": false,
       "id": "UYA1V1sdjrnjLMTQ5HEd8",
       "fillStyle": "hachure",
@@ -17985,13 +17985,13 @@
       "y": 422.3990845953167,
       "strokeColor": "#000000",
       "backgroundColor": "transparent",
-      "width": 100.185546875,
-      "height": 30.72265625,
+      "width": 117.142578125,
+      "height": 149.35546875,
       "seed": 1757473862,
       "groupIds": [],
       "strokeSharpness": "round",
       "boundElements": [],
-      "updated": 1655378641597,
+      "updated": 1664368091196,
       "link": null,
       "locked": false,
       "startBinding": null,
@@ -18005,8 +18005,8 @@
           0
         ],
         [
-          -91.1181640625,
-          16.71875
+          -108.0751953125,
+          149.35546875
         ],
         [
           9.0673828125,
