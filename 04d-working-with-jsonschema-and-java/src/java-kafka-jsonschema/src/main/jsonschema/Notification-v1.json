@@ -1,0 +1,19 @@
+{
+  "$id": "https://mycompany.com/myrecord",
+  "$schema": "https://json-schema.org/draft/2019-09/schema",
+  "type": "object",
+  "title": "Notification",
+  "description": "Json schema for Notification",
+  "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "message": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "message"
+  ]
+}
