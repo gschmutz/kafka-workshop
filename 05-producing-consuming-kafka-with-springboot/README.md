@@ -6,7 +6,7 @@ We will create two Spring Boot projects, one for the **Producer** and one for th
 
 ## Create the Spring Boot Producer
 
-First we create an test the Producer microservice.
+First we create and test the Producer microservice.
 
 ### Creating the Spring Boot Project
 
