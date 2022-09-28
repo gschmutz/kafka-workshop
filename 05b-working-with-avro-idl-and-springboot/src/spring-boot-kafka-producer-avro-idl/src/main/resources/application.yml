@@ -8,6 +8,7 @@ spring:
     bootstrap-servers:
       - ${DATAPLATFORM_IP}:9092
       - ${DATAPLATFORM_IP}:9093
+      - ${DATAPLATFORM_IP}:9094
     producer:
       key-serializer: org.apache.kafka.common.serialization.LongSerializer
       value-serializer: io.confluent.kafka.serializers.KafkaAvroSerializer
