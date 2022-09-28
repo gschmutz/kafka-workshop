@@ -379,7 +379,7 @@ Now run it using the `mvn exec:java` command. It will generate 1000 messages, wa
 mvn exec:java@producer -Dexec.args="1000 10 0"
 ```
 
-**Note:** if your maven version does not support profiles, then you have to specify the main class as well: `mvn exec:java -Dexec.mainClass="com.trivadis.kafkaws.producer.KafkaProducerSync" -Dexec.args="1000 100 0"`
+**Note:** if your maven version does not support profiles, then you have to specify the main class as well: `mvn exec:java -Dexec.mainClass="com.trivadis.kafkaws.producer.KafkaProducerAvro" -Dexec.args="1000 100 0"`
 
 You can see that `kcat` shows some special, non-printable characters. This is due to the Avro format. If you want to display the Avro, you can use the `kafka-avro-console-consumer` CLI, which is part of the Schema Registry.
 
