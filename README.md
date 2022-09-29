@@ -11,7 +11,7 @@ All the workshops can be done on a container-based infrastructure using Docker C
 
 ID  | Title   | Descritpion
 ------------- | ------------- | -------------
-2 | [Getting started with Apache Kafka](./02-working-with-kafka-broker) | Create topics from the command line, use the Console Producer and Console Consumer to publish and consume messages and show how to use `kafakcat`.
+2 | [Getting started with Apache Kafka](./02-working-with-kafka-broker) | Create topics from the command line, use the Console Producer and Console Consumer to publish and consume messages and show how to use `kcat` (used to be `kafakcat`).
 3 | [Testing Consumer Scalability and Kafka Failover](./03-understanding-failover)  | demonstrates consumer failover and broker failover and load balancing over various consumers within a consumer group
 4 | [Simple Kafka Consumer & Producer from Java](./04-producing-consuming-kafka-with-java)  | learn how to produce and consume simple messages using the **Kafka Java API**. Secondly we will see how to produce/consume complex objects using JSON serialization.
 4a | [Simple Kafka Consumer & Producer from Java with Avro & Schema Registry](./04a-working-with-avro-and-java)  | learn how to produce and consume messages using the **Kafka Java API** using Avro for serialization with the Confluent Schema Registry.
