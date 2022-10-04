@@ -8,7 +8,7 @@
 	<properties>
 		<kafka.version>2.8.0</kafka.version>
 		<confluent.version>6.0.0</confluent.version>
-		<protobuf.version>3.19.4</protobuf.version>
+		<protobuf.version>3.19.6</protobuf.version>
 		<java.version>1.8</java.version>
 		<slf4j-version>1.7.5</slf4j-version>
 
