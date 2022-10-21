@@ -1,7 +1,7 @@
 # =======================================================================
 # Platform Name            kafka-workshop
 # Platform Stack:          trivadis/platys-modern-data-platform
-# Platform Stack Version:  1.15.0-preview
+# Platform Stack Version:  1.16.0-preview
 # =======================================================================
 version: '3.5'
 networks:
@@ -16,7 +16,7 @@ networks:
 services:
   #  ================================== Zookeeper ========================================== #
   zookeeper-1:
-    image: confluentinc/cp-zookeeper:7.1.2
+    image: confluentinc/cp-zookeeper:7.2.2
     container_name: zookeeper-1
     hostname: zookeeper-1
     labels:
@@ -34,7 +34,7 @@ services:
     restart: unless-stopped
 #  ================================== Kafka ========================================== #
   kafka-1:
-    image: confluentinc/cp-kafka:7.1.2
+    image: confluentinc/cp-kafka:7.2.2
     container_name: kafka-1
     hostname: kafka-1
     labels:
@@ -72,7 +72,7 @@ services:
       - ./data-transfer:/data-transfer
     restart: unless-stopped
   kafka-2:
-    image: confluentinc/cp-kafka:7.1.2
+    image: confluentinc/cp-kafka:7.2.2
     container_name: kafka-2
     hostname: kafka-2
     labels:
@@ -110,7 +110,7 @@ services:
       - ./data-transfer:/data-transfer
     restart: unless-stopped
   kafka-3:
-    image: confluentinc/cp-kafka:7.1.2
+    image: confluentinc/cp-kafka:7.2.2
     container_name: kafka-3
     hostname: kafka-3
     labels:
@@ -149,7 +149,7 @@ services:
     restart: unless-stopped
   #  ================================== Kafka Connect ========================================== #
   kafka-connect-1:
-    image: confluentinc/cp-kafka-connect:7.1.2
+    image: confluentinc/cp-kafka-connect:7.2.2
     container_name: kafka-connect-1
     hostname: kafka-connect-1
     labels:
@@ -171,6 +171,9 @@ services:
       CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: 3
       CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: 3
       CONNECT_OFFSET_FLUSH_INTERVAL_MS: 10000
+      CONNECT_ACCESS_CONTROL_ALLOW_ORIGIN: '*'
+      CONNECT_ACCESS_CONTROL_ALLOW_METHODS: GET,POST,PUT,DELETE
+      CONNECT_ACCESS_CONTROL_ALLOW_HEADERS: origin,content-type,accept,authorization
       CONNECT_KEY_CONVERTER: io.confluent.connect.avro.AvroConverter
       CONNECT_KEY_CONVERTER_SCHEMA_REGISTRY_URL: http://schema-registry-1:8081
       CONNECT_VALUE_CONVERTER: io.confluent.connect.avro.AvroConverter
@@ -212,7 +215,7 @@ services:
         sleep infinity
     restart: unless-stopped
   kafka-connect-2:
-    image: confluentinc/cp-kafka-connect:7.1.2
+    image: confluentinc/cp-kafka-connect:7.2.2
     container_name: kafka-connect-2
     hostname: kafka-connect-2
     labels:
@@ -234,6 +237,9 @@ services:
       CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: 3
       CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: 3
       CONNECT_OFFSET_FLUSH_INTERVAL_MS: 10000
+      CONNECT_ACCESS_CONTROL_ALLOW_ORIGIN: '*'
+      CONNECT_ACCESS_CONTROL_ALLOW_METHODS: GET,POST,PUT,DELETE
+      CONNECT_ACCESS_CONTROL_ALLOW_HEADERS: origin,content-type,accept,authorization
       CONNECT_KEY_CONVERTER: io.confluent.connect.avro.AvroConverter
       CONNECT_KEY_CONVERTER_SCHEMA_REGISTRY_URL: http://schema-registry-1:8081
       CONNECT_VALUE_CONVERTER: io.confluent.connect.avro.AvroConverter
@@ -276,7 +282,7 @@ services:
     restart: unless-stopped
   #  ================================== ksqlDB ========================================== #
   ksqldb-server-1:
-    image: confluentinc/cp-ksqldb-server:7.1.2
+    image: confluentinc/cp-ksqldb-server:7.2.2
     hostname: ksqldb-server-1
     container_name: ksqldb-server-1
     labels:
@@ -287,7 +293,6 @@ services:
       - 8088:8088
       - 1095:1095
     environment:
-      #KSQL_LOG4J_OPTS: "-Dlog4j.configuration=file:/etc/ksqldb/log4j-rolling.properties"
       KSQL_LOG4J_ROOT_LOGLEVEL: INFO
       KSQL_LOG4J_LOGGERS: org.apache.kafka.connect.runtime.rest=WARN,org.reflections=ERROR
       KSQL_LOG4J_PROCESSING_LOG_TOPIC: ksql_processing_log
@@ -308,7 +313,7 @@ services:
       KSQL_BOOTSTRAP_SERVERS: kafka-1:19092,kafka-2:19093,kafka-3:19094
       KSQL_CACHE_MAX_BYTES_BUFFERING: 0
       KSQL_RESPONSE_HTTP_HEADERS_CONFIG: ''
-      KSQL_KSQL_CONNECT_URL: http://kafka-connect-1:8083,http://kafka-connect-2:8084
+      KSQL_KSQL_CONNECT_URL: http://kafka-connect-1:8083
       KSQL_KSQL_SCHEMA_REGISTRY_URL: http://schema-registry-1:8081
       KSQL_KSQL_INTERNAL_TOPIC_REPLICAS: 1
       KSQL_KSQL_SINK_REPLICAS: 1
@@ -324,13 +329,12 @@ services:
     volumes:
       - ./data-transfer:/data-transfer
       - ./plugins/ksqldb:/etc/ksqldb/ext
-#      - ./conf/ksqldb/etc/log4j.properties:/etc/ksqldb/log4j.properties
       - ./plugins/kafka-connect/connectors:/etc/kafka-connect/addl-plugins
       - ./plugins/kafka-connect/jars:/etc/kafka-connect/jars
       - ./plugins/opentelemetry/agents:/otel
     restart: unless-stopped
   ksqldb-server-2:
-    image: confluentinc/cp-ksqldb-server:7.1.2
+    image: confluentinc/cp-ksqldb-server:7.2.2
     hostname: ksqldb-server-2
     container_name: ksqldb-server-2
     labels:
@@ -341,7 +345,6 @@ services:
       - 8089:8088
       - 1096:1095
     environment:
-      #KSQL_LOG4J_OPTS: "-Dlog4j.configuration=file:/etc/ksqldb/log4j-rolling.properties"
       KSQL_LOG4J_ROOT_LOGLEVEL: INFO
       KSQL_LOG4J_LOGGERS: org.apache.kafka.connect.runtime.rest=WARN,org.reflections=ERROR
       KSQL_LOG4J_PROCESSING_LOG_TOPIC: ksql_processing_log
@@ -362,7 +365,7 @@ services:
       KSQL_BOOTSTRAP_SERVERS: kafka-1:19092,kafka-2:19093,kafka-3:19094
       KSQL_CACHE_MAX_BYTES_BUFFERING: 0
       KSQL_RESPONSE_HTTP_HEADERS_CONFIG: ''
-      KSQL_KSQL_CONNECT_URL: http://kafka-connect-1:8083,http://kafka-connect-2:8084
+      KSQL_KSQL_CONNECT_URL: http://kafka-connect-1:8083
       KSQL_KSQL_SCHEMA_REGISTRY_URL: http://schema-registry-1:8081
       KSQL_KSQL_INTERNAL_TOPIC_REPLICAS: 1
       KSQL_KSQL_SINK_REPLICAS: 1
@@ -378,7 +381,6 @@ services:
     volumes:
       - ./data-transfer:/data-transfer
       - ./plugins/ksqldb:/etc/ksqldb/ext
-#      - ./conf/ksqldb/etc/log4j.properties:/etc/ksqldb/log4j.properties
       - ./plugins/kafka-connect/connectors:/etc/kafka-connect/addl-plugins
       - ./plugins/kafka-connect/jars:/etc/kafka-connect/jars
       - ./plugins/opentelemetry/agents:/otel
@@ -386,7 +388,7 @@ services:
   # Access the cli by running:
   # > docker exec -it ksqldb-cli ksql http://ksqldb-server-1:8088
   ksqldb-cli:
-    image: confluentinc/ksqldb-cli:0.26.0
+    image: confluentinc/ksqldb-cli:0.28.2
     container_name: ksqldb-cli
     hostname: ksqldb-cli
     labels:
@@ -400,7 +402,7 @@ services:
     restart: unless-stopped
   #  ================================== Confluent REST Proxy ========================================== #
   kafka-rest-1:
-    image: confluentinc/cp-kafka-rest:7.1.2
+    image: confluentinc/cp-kafka-rest:7.2.2
     container_name: kafka-rest-1
     hostname: kafka-rest-1
     labels:
@@ -414,12 +416,15 @@ services:
       KAFKA_REST_LISTENERS: http://0.0.0.0:8086
       KAFKA_REST_SCHEMA_REGISTRY_URL: http://schema-registry-1:8081
       KAFKA_REST_HOST_NAME: kafka-rest-1
+      KAFKA_REST_ACCESS_CONTROL_ALLOW_ORIGIN: '*'
+      KAFKA_REST_ACCESS_CONTROL_ALLOW_METHODS: GET,POST,PUT,DELETE
+      KAFKA_REST_ACCESS_CONTROL_ALLOW_HEADERS: origin,content-type,accept,authorization
     volumes:
       - ./data-transfer:/data-transfer
     restart: unless-stopped
   #  ================================== Confluent Schema Registry ========================================== #
   schema-registry-1:
-    image: confluentinc/cp-schema-registry:7.1.2
+    image: confluentinc/cp-schema-registry:7.2.2
     hostname: schema-registry-1
     container_name: schema-registry-1
     labels:
@@ -591,7 +596,7 @@ services:
     restart: unless-stopped
   #  ================================== NiFi ========================================== #
   nifi-1:
-    image: apache/nifi:1.16.3
+    image: apache/nifi:1.17.0
     container_name: nifi-1
     hostname: nifi-1
     labels:
@@ -703,11 +708,12 @@ services:
       com.platys.webui.url: http://${PUBLIC_IP}:28888
     ports:
       - 28888:8888
+      - 14040-14044:4040-4044
+    user: root
     environment:
-      JUPYTER_ENABLE_LAB: 'true'
-      JUPYTER_TOKEN: abc123!
-      GRANT_SUDO: 'true'
-      TINI_SUBREAPER: 'true'
+      JUPYTER_ENABLE_LAB: "'yes'"
+      GRANT_SUDO: "'yes'"
+      DOCKER_STACKS_JUPYTER_CMD: lab
       CORE_CONF_fs_s3a_endpoint: http://minio-1:9000
       CORE_CONF_fs_s3a_path_style_access: 'true'
       HIVE_SITE_CONF_fs_s3a_endpoint: http://minio-1:9000
@@ -730,6 +736,14 @@ services:
       - ./plugins/jupyter/aws-java-sdk-bundle-1.11.375.jar:/usr/local/spark/jars/aws-java-sdk-bundle-1.11.375.jar
       - ./plugins/jupyter/hadoop-aws-3.2.1.jar:/usr/local/spark/jars/hadoop-aws-3.2.1.jar
       - ./plugins/jupyter/guava-27.1-jre.jar:/usr/local/spark/jars/guava-14.0.1.jar
+    # - ./custom-conf/jupyter/spark-defaults.conf:/usr/local/spark-3.1.1-bin-hadoop3.2/conf/spark-defaults.conf
+    #  - "./conf/jupyter/spark-defaults.conf:/usr/local/spark-3.1.1-bin-hadoop3.2/conf/spark-defaults.conf"
+    command:
+      # In the command section, $ are replaced with $$ to avoid the error 'Invalid interpolation format for "command" option'
+      - bash
+      - -c
+      - |
+        start-notebook.sh
     restart: unless-stopped
   #  ================================== PostgreSQL ========================================== #
   postgresql:
@@ -747,6 +761,7 @@ services:
       - POSTGRES_MULTIPLE_DATABASES=demodb
       - POSTGRES_MULTIPLE_USERS=demo
       - POSTGRES_MULTIPLE_PASSWORDS=abc123!
+      - POSTGRES_MULTIPLE_ADDL_ROLES=
       - PGDATA=/var/lib/postgresql/data/pgdata
       - DB_SCHEMA=demo
     volumes:
@@ -770,10 +785,11 @@ services:
       - 28131:8080
     volumes:
       - ./data-transfer:/data-transfer
+    command: php -S 0.0.0.0:8080 -t /var/www/html
     restart: unless-stopped
   #  ================================== Minio ========================================== #
   minio-1:
-    image: minio/minio:RELEASE.2022-05-19T18-20-59Z
+    image: minio/minio:RELEASE.2022-08-08T18-34-09Z
     container_name: minio-1
     hostname: minio-1
     labels:
@@ -848,7 +864,7 @@ services:
     restart: unless-stopped
   #  ================================== Wetty ========================================== #
   wetty:
-    image: svenihoney/wetty:latest
+    image: wettyoss/wetty:latest
     container_name: wetty
     hostname: wetty
     labels:
@@ -858,10 +874,10 @@ services:
     ports:
       - 3001:3000
     environment:
-      - REMOTE_SSH_SERVER=${DOCKER_HOST_IP}
-      - REMOTE_SSH_PORT=22
-      - REMOTE_SSH_USER=
-      - WETTY_PORT=3000
+      - SSHHOST=${DOCKER_HOST_IP}
+      - SSHPORT=22
+      - SSHUSER=
+      - PORT=3000
     volumes:
       - ./data-transfer:/data-transfer
     restart: unless-stopped
@@ -893,7 +909,7 @@ services:
       DATAPLATFORM_HOME: ${DATAPLATFORM_HOME}
       PLATYS_PLATFORM_NAME: kafka-workshop
       PLATYS_PLATFORM_STACK: trivadis/platys-modern-data-platform
-      PLATYS_PLATFORM_STACK_VERSION: 1.15.0-preview
+      PLATYS_PLATFORM_STACK_VERSION: 1.16.0-preview
       PLATYS_COPY_COOKBOOK_DATA: 'True'
     volumes:
       - ./artefacts/templates:/templates

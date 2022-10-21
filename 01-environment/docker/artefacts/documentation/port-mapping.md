@@ -1,4 +1,4 @@
-# `modern-data-platform` - Port Mappings - 1.15.0
+# `modern-data-platform` - Port Mappings - 1.16.0
 
 This table reserves the external ports for the various services. Not all services have to be used in the platform at a given time. But by reserving, we can assure that there are no conflicts if a service is added at a later time.
 
@@ -8,6 +8,7 @@ Container Port(s) | Internal Port(s)           | Service (alternatives) |
 --------------------|------------------|-----------------------|
 21 | 21 | ftp |
 80 | 80 | markdown-viewer or firefox |
+1337 | 1337 | konga | 
 1433 | 1433 | sqlserver |
 1521 | 1521 | oracledb-ee |
 1522 | 1521 | oracledb-xe |
@@ -91,7 +92,9 @@ Container Port(s) | Internal Port(s)           | Service (alternatives) |
 6381 | 6379 | redis-replica-1 |
 6382 | 6379 | redis-replica-1 |
 6385 | 6379 | redash-redis |
+6386 | 6379 | tyk-redis |
 6831 | 6831 | jaeger (udp) |
+6749 | 6749 | curity |
 6832 | 6832 | jaeger (udp) |
 6875 | 6875 | materialize-1 |
 7000 | 7000 | yb-master |
@@ -101,6 +104,8 @@ Container Port(s) | Internal Port(s)           | Service (alternatives) |
 7199 | 7199 | cassandra-1 |
 7200 | 7199 | cassandra-2 |
 7201 | 7199 | cassandra-3 |
+7202 | 7199 | cassandra-4 |
+7203 | 7199 | cassandra-5 |
 7474 | 7474 | neo4j-1 |
 7475 | 7474 | neo4j-2 |
 7476 | 7474 | neo4j-3 |
@@ -108,7 +113,10 @@ Container Port(s) | Internal Port(s)           | Service (alternatives) |
 7687 | 7687 | neo4j-1 |
 7688 | 7687 | neo4j-2 |
 7689 | 7687 | neo4j-3 |
-8000 | 80 | markdown-viewer |
+8000 | 8000 | kong (proxy) |
+8001 | 8001 | kong (admin api) |
+8002 | 8002 | kong (admin gui) |
+8008 | 80 | markdown-viewer |
 8024 | 8024 | axon-server |
 8047 | 8047 | drill |
 8048 | 8048 | kafka-eagle |
@@ -125,9 +133,13 @@ Container Port(s) | Internal Port(s)           | Service (alternatives) |
 8088 | 8088 | ksqldb-server-1 |
 8089 | 8088 | ksqldb-server-2 |
 8090 | 8088 | ksqldb-server-3 |
+8100 | 8100 | kong-map |
 8124 | 8124 | axon-server |
 8161 | 8161 | activemq |
 8200 | 8200 | vault |
+8443 | 8443 | kong (proxy ssl) |
+8444 | 8444 | kong (admin api ssl) |
+8446 | 8443 | curity |
 8787 | 8787 | r-studio |
 8812 | 8812 | questdb |
 8888 | 8888 | hue |
@@ -155,6 +167,8 @@ Container Port(s) | Internal Port(s)           | Service (alternatives) |
 9160 | 9160 | cassandra-1 |
 9161 | 9160 | cassandra-2 |
 9162 | 9160 | cassandra-3 |
+9163 | 9160 | cassandra-4 |
+9164 | 9160 | cassandra-5 |
 9083 | 9083 | hive-metastore |
 9021 | 9021 | control-center (dc1) |
 9022 | 9021 | control-center (dc2) |
@@ -201,6 +215,11 @@ Container Port(s) | Internal Port(s)           | Service (alternatives) |
 13133 | 13133 | otel-collector |
 14250 | 14250 | jaeger (model.proto port)
 14271 | 14271 | jaeger (admin port) |
+14040 | 4040 | jupyter (spark ui) |
+14041 | 4041 | jupyter (spark ui) |
+14042 | 4042 | jupyter (spark ui) |
+14043 | 4043 | jupyter (spark ui) |
+14044 | 4044 | jupyter (spark ui) |
 15433 | 5433| yb-tserver-1 |
 15672 | 15672 | rabbitmq (ui) |
 16379 | 6379| yb-tserver-1 |
@@ -252,14 +271,17 @@ Container Port(s) | Internal Port(s)           | Service (alternatives) |
 27017 | 27017 | mongodb-1 |
 27018 | 27017 | mongodb-2 |
 27019 | 27017 | mongodb-3 |
+27020 | 27017 | mongodb-3 |
 28080 | 8080 | zeppelin |
 28081 | 8080 | presto-1 |
 28082 | 8080 | trino-1 |
 28085 | 8080 | azkarra-worker-1 |
 28888 | 8888 | jupyter |
 29042 | 9042 | cassandra-1 |
-29043 | 9042 | cassandra-1 |
-29044 | 9042 | cassandra-1 |
+29043 | 9042 | cassandra-2 |
+29044 | 9042 | cassandra-3 |
+29045 | 9042 | cassandra-4 |
+29046 | 9042 | cassandra-5 |
 29092 | 29092 | kafka-1 (docker-host)   |
 29093 | 29093 | kafka-2 (docker-host    |
 29094 | 29094 | kafka-3 (docker-host)   |
@@ -434,6 +456,14 @@ Container Port(s) | Internal Port(s)           | Service (alternatives) |
 28276 | 8080 | nocodb |
 28277 | 8080 | zilla |
 28278 | 9090 | zilla |
+28279 | 80 | azure-storage-explorer |
+28280 | 8080 | tyk-gateway |
+28281 | 3000 | tyk-dashboard |
+28282 | 80 | kafka-connector-board |
+28283 | 3000 | kpow |
+28284 | 8000 | jupyterhub |
+28285 | 80 | conduktor-platform |
+28286 | 80 | kong-admin-ui |
 
 ## Ports > 28500
 

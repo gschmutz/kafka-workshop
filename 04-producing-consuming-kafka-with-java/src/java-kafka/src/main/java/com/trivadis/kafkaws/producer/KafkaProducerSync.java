@@ -34,11 +34,10 @@ public class KafkaProducerSync {
         try (Producer<Long, String> producer = createProducer()) {
             for (int index = 0; index < sendMessageCount; index++) {
                 long time = System.currentTimeMillis();
-
                 ProducerRecord<Long, String> record
                         = new ProducerRecord<>(TOPIC, key,
                                 "[" + id + "] Hello Kafka " + index + " => " + LocalDateTime.now());
-
+                
                 RecordMetadata metadata = producer.send(record).get();
 
                 long elapsedTime = System.currentTimeMillis() - time;

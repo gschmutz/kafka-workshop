@@ -61,8 +61,8 @@ public class KafkaConsumerManual {
                     } catch (InterruptedException e) {
                     }
                 });
-
                 consumer.commitAsync();
+
             }
         } catch (Exception e) {
             e.printStackTrace();

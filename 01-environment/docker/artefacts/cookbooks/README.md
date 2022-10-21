@@ -1,4 +1,4 @@
-# Modern Data Platform Cookbooks  - v1.15.0
+# Modern Data Platform Cookbooks  - v1.16.0
 Inhere we are documenting cookbooks on how to use the platform:
 
  * **Airflow**
@@ -8,7 +8,8 @@ Inhere we are documenting cookbooks on how to use the platform:
    * [Trino, Spark and Delta Lake (Spark 2.4.7 & Delta Lake 0.6.1)](./recipes/delta-lake-and-trino-spark2.4/README) - `1.11.0`
    * [Trino, Spark and Delta Lake (Spark 3.0.1 & Delta Lake 0.7.0)](./recipes/delta-lake-and-trino-spark3.0/README) - `1.11.0`
    * [Querying S3 data (MinIO) using MinIO](./recipes/querying-minio-with-trino/README) - `1.11.0`
-   * [Querying PostgreSQL data (MinIO) using MinIO](./recipes/querying-postgresql-with-trino/README) - `1.11.0`
+   * [Querying Azure Data Lake Storage Gen2 data (ADLS) from Trino](./recipes/querying-adls-with-trino/README) - `1.15.0`
+   * [Querying data in Postgresql from Trino](./recipes/querying-postgresql-with-trino/README) - `1.11.0`
    * [Querying data in Kafka from Trino (formerly PrestoSQL)](./recipes/querying-kafka-with-trino/README) - `1.14.0`
    * [Querying HDFS data using Trino](./recipes/querying-hdfs-with-presto/README) - `1.11.0`
    * Joining data between RDBMS and MinIO
@@ -27,7 +28,7 @@ Inhere we are documenting cookbooks on how to use the platform:
    * [Spark and Hive Metastore](./recipes/spark-and-hive-metastore/README) - `1.15.0`
    * [Spark with internal S3 (using on minIO)](./recipes/spark-with-internal-s3/README)
    * [Spark with external S3](./recipes/spark-with-external-s3/README)
-   * [Spark with PostgreSQL](./recipes/spark-with-postgresql/README) - `1.11.0`
+   * [Spark with PostgreSQL](./recipes/spark-with-postgresql/README) - `1.15.0`
 
  * **Hadoop HDFS**
    * [Querying HDFS data using Presto](./recipes/querying-hdfs-with-presto/README)
@@ -55,6 +56,7 @@ Inhere we are documenting cookbooks on how to use the platform:
  * **ksqlDB**
    * [Connecting through ksqlDB CLI](./recipes/connecting-through-ksqldb-cli/README)    
    * [Custom UDF and ksqlDB](./recipes/custom-udf-and-ksqldb/README)    
+   * [Handle Serialization Errors in ksqlDB](./recipes/ksqldb-handle-deserializaion-error/README)    
 
  * **Kafka Connect**
    * [Using additional Kafka Connect Connector](./recipes/using-additional-kafka-connect-connector/README)
@@ -71,10 +73,13 @@ Inhere we are documenting cookbooks on how to use the platform:
    * [Using public Oracle XE image](./recipes/using-public-oracle-xe-image/README) - `1.13.0`    
 
  * **Neo4J**
-     * [Working with Neo4J](./recipes/working-with-neo4j/README) - `1.13.0`    
+     * [Working with Neo4J](./recipes/working-with-neo4j/README) - `1.15.0`    
 
  * **Tipboard**
    * [ Working with Tipboard and Kafka](./recipes/tipboard-and-kafka/README) - `1.14.0`    
 
  * **Architecture Decision Records (ADR)**
    * [Creating and visualizing ADRs with log4brains](./recipes/creating-adr-with-log4brains/README) - `1.12.0`    
+
+ * **Jupyter**
+   * [Using Jupyter notebook with Spark and Avro](./recipes/jupyter-spark/README) - `1.16.0` 

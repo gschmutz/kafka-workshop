@@ -1,0 +1,11 @@
+topic:
+  name: test-spring-topic
+  replication-factor: 3
+  partitions: 8
+
+spring:
+  kafka:
+    bootstrap-servers: ${DATAPLATFORM_IP}:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.LongSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
