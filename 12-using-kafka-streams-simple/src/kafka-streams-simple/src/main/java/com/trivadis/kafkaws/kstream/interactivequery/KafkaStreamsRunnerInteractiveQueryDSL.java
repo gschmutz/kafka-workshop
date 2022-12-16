@@ -55,8 +55,7 @@ public class KafkaStreamsRunnerInteractiveQueryDSL {
         System.out.println ("******* Interactive Query *******");
 
         // Get the value by key
-        ReadOnlyKeyValueStore<String, Long> keyValueStore =
-                streams.store("count", QueryableStoreTypes.keyValueStore());
+        ReadOnlyKeyValueStore<String, Long> keyValueStore = streams.store(StoreQueryParameters.fromNameAndType("count", QueryableStoreTypes.keyValueStore()));
         System.out.println("Querying State Store for key A:" + keyValueStore.get("AAA"));
 
         // Get the values for all of the keys available in this application instance

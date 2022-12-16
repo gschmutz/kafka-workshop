@@ -1,4 +1,4 @@
-package com.trivadis.kafkaws.kstream.simple;
+package com.trivadis.kafkaws.kstream.testing;
 
 import com.trivadis.kafkaws.kstream.testing.KafkaStreamsRunnerTestingDSL;
 import org.apache.kafka.common.serialization.Serdes;
@@ -20,13 +20,9 @@ public class KafkaStreamsRunnerTestingDSLTest {
 
     @BeforeEach
     void setup() {
-        Topology topology = KafkaStreamsRunnerTestingDSL.build();
+        Topology topology = KafkaStreamsRunnerTestingDSL.getTopology();
 
-        Properties props = new Properties();
-        props.put(StreamsConfig.APPLICATION_ID_CONFIG, "test");
-        props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "dummy:1234");
-        props.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.Void().getClass());
-        props.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.String().getClass());
+        Properties props = KafkaStreamsRunnerTestingDSL.getKafkaProperties();
 
         testDriver = new TopologyTestDriver(topology, props);
 

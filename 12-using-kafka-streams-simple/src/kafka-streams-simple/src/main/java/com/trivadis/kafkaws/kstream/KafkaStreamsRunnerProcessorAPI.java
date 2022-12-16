@@ -1,4 +1,4 @@
-package com.trivadis.kafkaws.kstream.simple;
+package com.trivadis.kafkaws.kstream;
 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.Serdes;

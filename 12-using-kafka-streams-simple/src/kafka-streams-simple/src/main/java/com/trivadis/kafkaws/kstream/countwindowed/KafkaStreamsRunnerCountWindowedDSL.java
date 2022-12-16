@@ -24,7 +24,7 @@ public class KafkaStreamsRunnerCountWindowedDSL {
 
         // create a tumbling window of 60 seconds
         TimeWindows tumblingWindow =
-                TimeWindows.of(Duration.ofSeconds(60));
+                TimeWindows.ofSizeWithNoGrace(Duration.ofSeconds(60));
 
         KTable<Windowed<String>, Long> counts = stream.groupByKey()
                 .windowedBy(tumblingWindow)
