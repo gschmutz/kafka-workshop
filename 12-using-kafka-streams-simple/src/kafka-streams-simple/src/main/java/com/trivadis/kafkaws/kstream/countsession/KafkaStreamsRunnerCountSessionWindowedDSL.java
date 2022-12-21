@@ -45,7 +45,6 @@ public class KafkaStreamsRunnerCountSessionWindowedDSL {
     public static Topology getTopology() {
         // the builder is used to construct the topology
         StreamsBuilder builder = new StreamsBuilder();
-
         // read from the source topic, "test-kstream-input-topic"
         KStream<String, String> stream = builder.stream("test-kstream-input-topic");
 

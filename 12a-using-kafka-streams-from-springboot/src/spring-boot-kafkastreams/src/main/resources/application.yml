@@ -8,11 +8,15 @@ spring:
     streams:
       application-id: ${spring.application.name}
       client-id: ${spring.application.name}-stream
+
+
       properties:
         default.key.serde: org.apache.kafka.common.serialization.Serdes$VoidSerde
         default.value.serde: org.apache.kafka.common.serialization.Serdes$StringSerde
         # This is the default: log, fail and stop processing records (stop stream)
         default.deserialization.exception.handler: org.apache.kafka.streams.errors.LogAndFailExceptionHandler
+        cache.max.bytes.buffering: 0
+        commit.interval.ms: 0
     properties:
       bootstrap.servers: ${spring.kafka.bootstrap-servers}
     # At application startup a missing topic on the broker will not fail the
