@@ -19,7 +19,7 @@ import static org.apache.kafka.streams.StreamsConfig.APPLICATION_ID_CONFIG;
 import static org.apache.kafka.streams.StreamsConfig.BOOTSTRAP_SERVERS_CONFIG;
 
 public class SessionKafkaStreamsRunnerDSLTest {
-    @Autowired
+
     private static Properties getProperties() {
         Properties properties = new Properties();
         properties.put(APPLICATION_ID_CONFIG, "KafkaStreamsRunnerDSLTestAggregate");

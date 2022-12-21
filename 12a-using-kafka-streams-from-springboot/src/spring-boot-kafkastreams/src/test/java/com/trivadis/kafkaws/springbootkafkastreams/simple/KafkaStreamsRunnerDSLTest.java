@@ -20,7 +20,7 @@ import java.util.Properties;
 import static org.apache.kafka.streams.StreamsConfig.*;
 
 public class KafkaStreamsRunnerDSLTest {
-    @Autowired
+
     private static Properties getProperties() {
         Properties properties = new Properties();
         properties.put(APPLICATION_ID_CONFIG, "KafkaStreamsRunnerDSLTest");
