@@ -109,7 +109,7 @@ log4j.additivity.io.confluent.examples.streams.microservices=false
 
 We will use the topics `test-kstream-input-topic` and `test-kstream-output-topic` in all of the various KafkaStream implementations below. Addionally in one of the implementations, we need the compacted log topic `test-kstream-compacted-topic`. 
 
-Due to the fact that `auto.topic.create.enable` is set kcat `false`, we have to manually create the topic. 
+Due to the fact that `auto.topic.create.enable` is set to `false`, we have to manually create the topic. 
 
 Connect to the `kafka-1` container and execute the following `kafka-topics` command
 
@@ -1384,7 +1384,7 @@ Additionally add the following plugins into the `<plugins>` elementtrivadis
 							<excludes>
 								<exclude>**/mapred/tether/**</exclude>
 							</excludes>
-							<sourceDirectory>${project.basedir}/src/main/java/com/trivadis/kafkaws/kstream/avro/</sourceDirectory>
+							<sourceDirectory>${project.basedir}/src/main/avro/</sourceDirectory>
 						</configuration>
 					</execution>
 				</executions>
@@ -1409,9 +1409,10 @@ Additionally add the following plugins into the `<plugins>` elementtrivadis
 			
 ```
 
-Create a new package `com.trivadis.kafkaws.kstream.avro`.
+In the `src/main/` source folder, create a new folder `avro`
 
-Now let's start with the Avro schema. Add the following schema definition to the `MyData.avsc` file into the package.
+
+Now let's start with the Avro schema. Add the following schema definition to the `MyData.avsc` file into the `avro` folder
 
 ```json
 {
@@ -1445,13 +1446,13 @@ mvn schema-registry:register
 
 Now let's crate the Kafka Streams topology by creating a new class named `KafkaStreamsRunnerAvroDSL`. 
 
-Add the following code for the implemenation
+Create a new package `com.trivadis.kafkaws.kstream.avro` and add the following code for the implemenation
 
 ```java
 package com.trivadis.kafkaws.kstream.avro;
 
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
-import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig;
+import io.confluent.kafka.serializers.AbstractKafkaSchemaSerDeConfig;
 import io.confluent.kafka.serializers.KafkaAvroSerializerConfig;
 import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde;
 import org.apache.avro.specific.SpecificRecord;
@@ -1472,7 +1473,7 @@ public class KafkaStreamsRunnerAvroDSL {
     private static <VT extends SpecificRecord> SpecificAvroSerde<VT> createSerde(String schemaRegistryUrl) {
         SpecificAvroSerde<VT> serde = new SpecificAvroSerde<>();
         Map<String, String> serdeConfig = Collections
-                .singletonMap(AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, schemaRegistryUrl);
+                .singletonMap(AbstractKafkaSchemaSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, schemaRegistryUrl);
         serde.configure(serdeConfig, false);
         return serde;
     }
