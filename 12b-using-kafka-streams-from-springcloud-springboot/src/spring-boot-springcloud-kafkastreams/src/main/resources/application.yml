@@ -1,0 +1,48 @@
+
+server:
+  port: 8080
+
+spring:
+  application:
+    name: "spring-boot-kafkastreams"
+  cloud:
+    stream:
+      function:
+        definitin: process
+        bindings:
+          process-in-0: test-kstream-spring-input-topic
+          process-out-0: test-kstream-spring-output-topic
+
+      kafka:
+        streams.binder:
+          applicationId: spring-boot-springcloud-kafkastreams
+          configuration:
+            commit.interval.ms: 100
+            cache.max.bytes.buffering: 0
+            default.key.serde: org.apache.kafka.common.serialization.Serdes$VoidSerde
+            default.value.serde: org.apache.kafka.common.serialization.Serdes$StringSerde
+#            default.deserialization.exception.handler: org.apache.kafka.streams.errors.LogAndFailExceptionHandler
+
+  kafka:
+    bootstrap-servers: dataplatform:9092
+
+#Enable metrics
+management:
+  metrics:
+    export:
+      wavefront:
+        enabled: false
+      prometheus:
+        enabled: false
+  endpoint:
+    metrics:
+      enabled: true
+    health:
+      show-details: ALWAYS
+    prometheus:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: health,info,bindings,kafkastreamstopology,metrics
+

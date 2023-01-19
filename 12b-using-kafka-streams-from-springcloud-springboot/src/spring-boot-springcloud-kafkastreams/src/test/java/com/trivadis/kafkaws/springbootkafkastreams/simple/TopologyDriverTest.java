@@ -1,6 +1,5 @@
 package com.trivadis.kafkaws.springbootkafkastreams.simple;
 
-import com.bakdata.fluent_kafka_streams_tests.junit5.TestTopologyExtension;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
@@ -10,22 +9,19 @@ import org.apache.kafka.streams.kstream.Printed;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.RegisterExtension;
 
 import java.util.Properties;
 
-import static org.apache.kafka.streams.StreamsConfig.APPLICATION_ID_CONFIG;
-import static org.apache.kafka.streams.StreamsConfig.BOOTSTRAP_SERVERS_CONFIG;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class KafkaStreamsRunnerDSLTest {
+public class TopologyDriverTest {
 
     private TopologyTestDriver testDriver = null;
 
     private static Properties getProperties() {
         Properties properties = new Properties();
-        properties.put(APPLICATION_ID_CONFIG, "KafkaStreamsRunnerDSLTest");
-        properties.put(BOOTSTRAP_SERVERS_CONFIG, "dummy");
+//        properties.put(APPLICATION_ID_CONFIG, "KafkaStreamsRunnerDSLTest");
+//        properties.put(BOOTSTRAP_SERVERS_CONFIG, "dummy");
         properties.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass());
         properties.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.String().getClass());
         return properties;
@@ -61,7 +57,7 @@ public class KafkaStreamsRunnerDSLTest {
 
     @AfterEach
     void stop() {
-        //this.testTopology.stop();
+        testDriver.close();
     }
 
     @Test

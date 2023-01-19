@@ -9,12 +9,13 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.trivadis.kafkaws</groupId>
-	<artifactId>spring-boot-kafkastreams</artifactId>
+	<artifactId>spring-boot-kafka-producer-avro-idl-heterogenous</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>demo</name>
-	<description>Kafka Streams project for Spring Boot</description>
+	<name>spring-boot-kafka-producer</name>
+	<description>Kafka Producer with Avro project for Spring Boot</description>
 	<properties>
-		<java.version>17</java.version>
+		<java.version>11</java.version>
+		<confluent.version>7.3.0</confluent.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -22,12 +23,20 @@
 			<artifactId>spring-boot-starter</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.kafka</groupId>
-			<artifactId>kafka-streams</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>org.springframework.kafka</groupId>
 			<artifactId>spring-kafka</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.trivadis.kafkaws.meta</groupId>
+			<artifactId>meta-idl-heterogenous</artifactId>
+			<version>1.0-SNAPSHOT</version>
+		</dependency>
+
+		<dependency>
+			<groupId>io.confluent</groupId>
+			<artifactId>kafka-avro-serializer</artifactId>
+			<version>${confluent.version}</version>
 		</dependency>
 
 		<dependency>
@@ -40,20 +49,6 @@
 			<artifactId>spring-kafka-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-
-		<dependency>
-			<groupId>org.apache.kafka</groupId>
-			<artifactId>kafka-streams-test-utils</artifactId>
-			<version>${kafka.version}</version>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>com.bakdata.fluent-kafka-streams-tests</groupId>
-			<artifactId>fluent-kafka-streams-tests-junit5</artifactId>
-			<version>2.8.0</version>
-		</dependency>
-
 	</dependencies>
 
 	<build>
@@ -61,19 +56,14 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
-				<configuration>
-					<profiles>
-						<profile>session-suppressed</profile>
-					</profiles>
-				</configuration>
 			</plugin>
 		</plugins>
 	</build>
+
 	<repositories>
 		<repository>
 			<id>confluent</id>
 			<url>https://packages.confluent.io/maven/</url>
 		</repository>
 	</repositories>
-
 </project>

@@ -3,7 +3,7 @@ protocol NotificationProtocol {
 	record Notification {
 		union {null, long} id;
 
-		/** @deprecated should no longer be used */
+
 		union {null, string}  message;
 		timestamp_ms createdAt;
 
