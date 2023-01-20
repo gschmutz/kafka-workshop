@@ -573,3 +573,81 @@ Now you can use the following command to register the schemas with the Schema Re
 ```
 mvn schema-registry:register
 ```
+
+## Adding documentation to the Avro IDL
+
+```
+@namespace("com.trivadis.kafkaws.avro.v1")
+protocol NotificationProtocol {
+	/**
+    Notifcation structure defining a message to be sent as a notification.
+    Will be used to notify users of a problem.
+    */
+	record Notification {
+			/**
+			This is the ID of a notification, optional
+ 			*/
+			union {null, long} id;
+
+			/** This is the message of the notification */
+			union {null, string}  message;
+		}
+}
+```
+
+```
+@namespace("com.trivadis.kafkaws.avro.v1")
+protocol NotificationSentEventProtocol {
+	import idl "Notification.avdl";
+
+	/**
+	This is the Notification Event structure which uses an embedded Notification object.
+ 	*/
+	record NotificationSentEvent {
+		/** the Notification */
+		Notification  notification;
+	}
+}
+```
+
+```bash
+mvn compile
+```
+
+```java
+/** Notifcation structure defining a message to be sent as a notification.
+Will be used to notify users of a problem. */
+@org.apache.avro.specific.AvroGenerated
+public class Notification extends org.apache.avro.specific.SpecificRecordBase implements org.apache.avro.specific.SpecificRecord {
+  private static final long serialVersionUID = 3582798745986381455L;
+
+
+  ...
+  
+  /** This is the ID of a notification, optional */
+  private java.lang.Long id;
+  /** This is the message of the notification */
+  private java.lang.String message;
+  
+  ...
+  
+  /**
+   * Gets the value of the 'id' field.
+   * @return This is the ID of a notification, optional
+   */
+  public java.lang.Long getId() {
+    return id;
+  }
+
+
+  /**
+   * Sets the value of the 'id' field.
+   * This is the ID of a notification, optional
+   * @param value the value to set.
+   */
+  public void setId(java.lang.Long value) {
+    this.id = value;
+  }
+```
+
+## Adding deprecation to Avro IDL
