@@ -8,7 +8,7 @@ protocol NotificationProtocol {
 			/**
 			This is the ID of a notification, optional
  			*/
-			union {null, long} id;
+			union {null, long} id;		// optional, should be changed in the future to mandatory!
 
 			/** This is the message of the notification */
 			union {null, string}  message;

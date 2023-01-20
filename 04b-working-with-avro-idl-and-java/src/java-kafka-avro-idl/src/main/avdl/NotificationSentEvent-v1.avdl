@@ -6,7 +6,7 @@ protocol NotificationSentEventProtocol {
 	This is the Notification Event structure which uses an embedded Notification object.
  	*/
 	record NotificationSentEvent {
-		/** the Notification */
+		/** the Notification embedded object */
 		Notification  notification;
 	}
 }

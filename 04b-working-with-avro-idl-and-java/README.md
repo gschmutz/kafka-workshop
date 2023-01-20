@@ -576,24 +576,33 @@ mvn schema-registry:register
 
 ## Adding documentation to the Avro IDL
 
+The Avro IDL language also [supports comments](https://avro.apache.org/docs/1.11.1/idl-language/#comments). 
+
+All Java-style comments are supported within a Avro IDL file. Any text following `//` on a line is ignored, as is any text between `/*` and `*/`, possibly spanning multiple lines.
+Comments that begin with `/**` are used as the documentation string for the type or field definition that follows the comment
+
+Let's extend `Notification.avdl`  with some comments on record as well as on field level:
+
 ```
 @namespace("com.trivadis.kafkaws.avro.v1")
 protocol NotificationProtocol {
 	/**
-    Notifcation structure defining a message to be sent as a notification.
+    Notification structure defining a message to be sent as a notification.
     Will be used to notify users of a problem.
     */
 	record Notification {
 			/**
 			This is the ID of a notification, optional
  			*/
-			union {null, long} id;
+			union {null, long} id;		// optional, should be changed in the future to mandatory!
 
 			/** This is the message of the notification */
 			union {null, string}  message;
 		}
 }
 ```
+
+The same can be done on the `NotificationSentEvent.avdl`:
 
 ```
 @namespace("com.trivadis.kafkaws.avro.v1")
@@ -604,15 +613,19 @@ protocol NotificationSentEventProtocol {
 	This is the Notification Event structure which uses an embedded Notification object.
  	*/
 	record NotificationSentEvent {
-		/** the Notification */
+		/** the Notification embedded object */
 		Notification  notification;
 	}
 }
 ```
 
+Not let's regenerate the code
+
 ```bash
 mvn compile
 ```
+
+and we will find the comments also in the generated Java classes, here showing parts of the `Notification` class as an example:
 
 ```java
 /** Notifcation structure defining a message to be sent as a notification.
@@ -651,3 +664,4 @@ public class Notification extends org.apache.avro.specific.SpecificRecordBase im
 ```
 
 ## Adding deprecation to Avro IDL
+t.b.d.
