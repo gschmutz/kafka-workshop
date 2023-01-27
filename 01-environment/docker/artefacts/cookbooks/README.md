@@ -2,7 +2,7 @@
 Inhere we are documenting cookbooks on how to use the platform:
 
  * **Airflow**
-   * [Schedule and Run Simple Python Application](./recipes/airflow-schedule-python-app/README) - `1.12.0`
+   * [Schedule and Run Simple Python Application with Airflow](./recipes/airflow-schedule-python-app/README) - `1.16.0`
 
  * **Trino (Formerly Presto SQL)**
    * [Trino, Spark and Delta Lake (Spark 2.4.7 & Delta Lake 0.6.1)](./recipes/delta-lake-and-trino-spark2.4/README) - `1.11.0`
@@ -29,6 +29,9 @@ Inhere we are documenting cookbooks on how to use the platform:
    * [Spark with internal S3 (using on minIO)](./recipes/spark-with-internal-s3/README)
    * [Spark with external S3](./recipes/spark-with-external-s3/README)
    * [Spark with PostgreSQL](./recipes/spark-with-postgresql/README) - `1.15.0`
+
+ * **Delta Lake Storage Format**
+   * [Spark with Delta Lake](./recipes/delta-lake-with-spark/README) - `1.16.0`
 
  * **Hadoop HDFS**
    * [Querying HDFS data using Presto](./recipes/querying-hdfs-with-presto/README)
@@ -73,7 +76,8 @@ Inhere we are documenting cookbooks on how to use the platform:
    * [Using public Oracle XE image](./recipes/using-public-oracle-xe-image/README) - `1.13.0`    
 
  * **Neo4J**
-     * [Working with Neo4J](./recipes/working-with-neo4j/README) - `1.15.0`    
+     * [Working with Neo4J](./recipes/working-with-neo4j/README) - `1.15.0`  
+     * [Neo4J and yFiles graphs for Jupyter](./recipes/neo4j-jupyter-yfiles/README) - `1.16.0`   
 
  * **Tipboard**
    * [ Working with Tipboard and Kafka](./recipes/tipboard-and-kafka/README) - `1.14.0`    
@@ -83,3 +87,7 @@ Inhere we are documenting cookbooks on how to use the platform:
 
  * **Jupyter**
    * [Using Jupyter notebook with Spark and Avro](./recipes/jupyter-spark/README) - `1.16.0` 
+   * [Using JupyterHub](./recipes/using-jupyter-hub/README) - `1.16.0` 
+
+ * **MLflow**
+   * [Using MLflow from Jupyter](./recipes/using-mflow-from-jupyter/README) - `1.16.0` 

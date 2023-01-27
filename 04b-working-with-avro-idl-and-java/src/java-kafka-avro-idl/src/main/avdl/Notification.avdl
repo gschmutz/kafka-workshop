@@ -3,14 +3,18 @@ protocol NotificationProtocol {
 	/**
     Notifcation structure defining a message to be sent as a notification.
     Will be used to notify users of a problem.
+    deprecated
     */
 	record Notification {
 			/**
 			This is the ID of a notification, optional
  			*/
-			union {null, long} id;		// optional, should be changed in the future to mandatory!
+			union {null, long} @javaAnnotation("Deprecated") id;		// optional, should be changed in the future to mandatory!
 
-			/** This is the message of the notification */
+			/** This is the message of the notification
+			*/
 			union {null, string}  message;
-		}
+
+			int @javaAnnotation("java.lang.SuppressWarnings(\"unused\")") unused;
+	}
 }

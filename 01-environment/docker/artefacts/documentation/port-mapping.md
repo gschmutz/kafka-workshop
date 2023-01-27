@@ -34,6 +34,11 @@ Container Port(s) | Internal Port(s)           | Service (alternatives) |
 2184 | 2184 | zookeeper-4 |
 2185 | 2185 | zookeeper-5 |
 2186 | 2186 | zookeeper-6 |
+2424 | 2424 | arcadedb |
+2480 | 5432 | arcadedb (postgresql port) |
+2481 | 6379 | arcadedb (redis port) |
+2482 | 2480 | arcadedb (mongodb port) |
+2483 | 27017 | arcadedb |
 3000 | 3000 | grafana |
 3001 | 3000 | wetty (dc1) |
 3002 | 3000 | wetty (dc2 |
@@ -59,6 +64,7 @@ Container Port(s) | Internal Port(s)           | Service (alternatives) |
 4053 | 4053 | zeppelin (spark ui) |
 4054 | 4054 | zeppelin (spark ui) |
 4317 | 4317 | otel-collector |
+4466 | 4466 | curity |
 5000 | 5000 | amundsenfrontend |
 5001 | 5000 | amundsensearch |
 5002 | 5000 | amundsenmetadata |
@@ -72,6 +78,7 @@ Container Port(s) | Internal Port(s)           | Service (alternatives) |
 5432 | 5432 | postgresql |
 5433 | 5432 | timescaledb |
 5434 | 5432 | marquez-db |
+5555 | 5555 | airflow-flower |
 5601 | 5601 | kibana |
 5602 | 5601 | datahub-kibana |
 5603 | 5601 | opensearch-dashboards |
@@ -106,6 +113,7 @@ Container Port(s) | Internal Port(s)           | Service (alternatives) |
 7201 | 7199 | cassandra-3 |
 7202 | 7199 | cassandra-4 |
 7203 | 7199 | cassandra-5 |
+7444 | 7444 | memgraph-platform |
 7474 | 7474 | neo4j-1 |
 7475 | 7474 | neo4j-2 |
 7476 | 7474 | neo4j-3 |
@@ -113,6 +121,7 @@ Container Port(s) | Internal Port(s)           | Service (alternatives) |
 7687 | 7687 | neo4j-1 |
 7688 | 7687 | neo4j-2 |
 7689 | 7687 | neo4j-3 |
+7690 | 7687 | memgraph-platform |
 8000 | 8000 | kong (proxy) |
 8001 | 8001 | kong (admin api) |
 8002 | 8002 | kong (admin gui) |
@@ -136,6 +145,7 @@ Container Port(s) | Internal Port(s)           | Service (alternatives) |
 8100 | 8100 | kong-map |
 8124 | 8124 | axon-server |
 8161 | 8161 | activemq |
+8182 | 8182 | janusgraph |
 8200 | 8200 | vault |
 8443 | 8443 | kong (proxy ssl) |
 8444 | 8444 | kong (admin api ssl) |
@@ -277,6 +287,7 @@ Container Port(s) | Internal Port(s)           | Service (alternatives) |
 28082 | 8080 | trino-1 |
 28085 | 8080 | azkarra-worker-1 |
 28888 | 8888 | jupyter |
+28889 | 8888 | anaconda |
 29042 | 9042 | cassandra-1 |
 29043 | 9042 | cassandra-2 |
 29044 | 9042 | cassandra-3 |
@@ -409,9 +420,9 @@ Container Port(s) | Internal Port(s)           | Service (alternatives) |
 28226 | 9000 | questdb |
 28227 | 8080 | debezium-ui |
 28228 | 9998 | tikka-server |
-28229 | 5000 | mlflow-server |
-28230 | 8080 | optuna-dashboard |
-28231 | 80 | excalidraw |
+28229 | 5000 | mlflow-tracking-server |
+28230 | 8080 | mlflow-artifacts-server |
+28231 | 8080 | optuna-dashboard |
 28232 | 8080 | reaper (app UI) |
 28233 | 8081 | reaper (admin UI) |
 28234 | 8080 | kie-server (drools) |
@@ -464,6 +475,16 @@ Container Port(s) | Internal Port(s)           | Service (alternatives) |
 28284 | 8000 | jupyterhub |
 28285 | 80 | conduktor-platform |
 28286 | 80 | kong-admin-ui |
+28287 | 8181 | iceberg-rest |
+28288 | 3000 | memgraph-platform |
+28289 | 8080 | redpanda-console |
+28290 | 80 | excalidraw |
+28291 | 8200 | invana-engine |
+28292 | 8300 | invana-studio |
+28293 | 8080 | spring-boot-admin |
+28294 | 5000 | ckan |
+28295 | 8800 | ckan-datapusher |
+
 
 ## Ports > 28500
 

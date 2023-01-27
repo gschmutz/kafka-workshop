@@ -21,11 +21,27 @@ The Modern Data Platform version 1.16.0 contains the following bug fixes and enh
  * kpow
  * JupyterHub
  * Conduktor Platform
+ * Memgraph
+ * Curity
+ * Anaconda
+ * Redpanda Console (previously kowl, old version of kowl still supported)
+ * Iceberg REST Catalog API
+ * JanusGraph
+ * Gremlin Console
+ * Invana Engine and Invana Studio
+ * ArcadeDB
+ * Spring Boot Admin Server
+ * CKAN
 
-### New Cookbook Recipes
+### New/Updated Cookbook Recipes
 
  * [Handle Serialization Errors in ksqlDB](../cookbooks/recipes/ksqldb-handle-deserializaion-error/README) 
  * [Using Jupyter notebook with Spark and Avro](../cookbooks/recipes/jupyter-spark/README)
+ * [Using Dev Simulator Origin to simulate streaming data](../cookbooks/recipes/using-dev-simulator-origin/README) - updated with diagrams and additional samples
+ * [Spark with Delta Lake](../cookbooks/recipes/delta-lake-with-spark/README) 
+ * [Neo4J and yFiles graphs for Jupyter](../cookbooks/recipes/neo4j-jupyter-yfiles/README)
+ * [Schedule and Run Simple Python Application with Airflow](../cookbooks/recipes/airflow-schedule-python-app/README) - updated to show the new support of Airflow
+ * [Using MLflow from Jupyter](../cookbooks/recipes/using-mflow-from-jupyter/README)
 
 ### New Tutorial
 
@@ -33,14 +49,67 @@ The Modern Data Platform version 1.16.0 contains the following bug fixes and enh
 
 ### Version upgrades
 
- * Update `DataHub` to `v0.8.45`
- * Update `Trino` to `398`
- * Update `Starburst Enterprise` to `397-e`
- * Update `Jikkou` to `0.12.2`
- * Update `Hasura` to `v2.11.1`
- * Update `Confluent Platform` to `7.2.2`
+ * Update `DataHub` to `v0.9.6`
+ * Update `Trino` to `405`
+ * Update `Starburst Enterprise` to `405-e`
+ * Update `Jikkou` to `0.14.0`
+ * Update `Hasura` to `v2.16.1`
+ * Update `Confluent Platform` to `7.3.1`
  * Update `ksqldb` to `0.28.2`
-
+ * Update `datastax` to `6.8.28`
+ * Update `datastax-opscenter` to `6.8.19`
+ * Update `minio` to `RELEASE.2022-12-12T19-27-27Z`
+ * Update `confluent platform` to `7.3.0`
+ * Update `influxdb2` to `2.6.1`
+ * Update `kapacitor` to `1.6`
+ * Update `chronograf` to `1.10`
+ * Update `telegraf` to `1.24.3`
+ * Update `burrow` to `v1.5.0`
+ * Update `graphdb` to `10.1.2`
+ * Update `nifi` to `1.19.1`
+ * Update `jikkou` to `0.13.0`
+ * Update `spark` to `3.1.3`, `3.2.3` and `3.3.1`
+ * Update `materialize` to `v0.38.0`
+ * Update `neo4j` to `5.3.0`
+ * Update `eventstoredb` to `22.10.0-buster-slim`
+ * Update `flink` to `1.16.0-scala_2.12`
+ * Update `tika-server` to `2.6.0.0-full`
+ * Update `marquez` and `marquez-web` to `0.29.0`
+ * Update `airbyte` to `0.40.28`
+ * Update `mlflow-server` to `2.1.0`
+ * Update `minio` to `RELEASE.2023-01-20T02-05-44Z`
+ * Update `grafana` to `9.3.2`
+ * Update `kibana` to `8.5.3`
+ * Update `elasticsearch` to `7.17.8` and `8.5.3`
+ * Update `memchached` to `1.6.17`
+ * Update `mongodb` to `6.0`
+ * Update `solr` to `9.1`
+ * Update `quine` to `1.4.2`
+ * Update `dgraph` to `v22.0.2`
+ * Update `stardog` to `8.2.0-java11-preview`
+ * Update `kudu` to `1.16`
+ * Update `druid` to `24.0.2`
+ * Update `prometheus` to `v2.41.0` and `gateway` to `v1.5.1` and `node-exporter` to `v1.5.0`
+ * Update `tile38` to `1.30.1`
+ * Update `yugabyte` to `2.8.11.0-b6`
+ * Update `hazelcast` to `5.2.1`
+ * Update `ignite` to `2.14.0`
+ * Update `axon-server` to `4.6.7
+ * Update `drill` to `1.20.2`
+ * Update `hasura` to `v2.16.1`
+ * Update `cedalo-management-center` to `2.5.8`
+ * Update `lakefs` to `0.88.0`
+ * Update `vault` to `1.12.2`
+ * Update `portainer` to `2.16.2-alpine`
+ * Update `watchtower` to `1.5.1`
+ * Update `ahana` to `0.278`
+ * Update `apicurio-schema-registry` to `2.4.1.Final`
+ * Update `debezium-server` to `2.0.1.Final`
+ * Update `Amundsen Frontend` to `4.2.0` and `Amundsen Search` to `4.0.2` and `Amundsen Metadata` to `3.11.0`
+ * Update `nodered` to `2.2.3`
+ * Update `dataiku-dss` to `11.2.0`
+ * Update `postgres` to `15`
+  
 ### Bug Fixes
 
  * ksqlDB processing log now also works with the open source edition (`      KAFKA_KSQLDB_edition: 'oss'`).
@@ -48,6 +117,14 @@ The Modern Data Platform version 1.16.0 contains the following bug fixes and enh
 ### Breaking Changes
 
  * if markdown viewer cannot run on port 80 (`MARKDOWN_VIEWER_use_port_80` is set to `false`), port 8008 is used and no longer port 8000
+ * Burrow changed to use image from LinkedIn and no longer the one from Trivadis
+ * Change `KAFKA_CMAK_xxxxx` to `CMAK_xxxxx`
+ * Change `KAFKA_AKHQ_xxxxx` to `AKHQ_xxxxx`
+ * Change `KAFKA_KAFDROP_xxxxx` to `KAFDROP_xxxxx`
+ * Change `KAFKA_KADMIN_xxxxx` to `KADMIN_xxxxx`
+ * Change `KAFKA_EFAK_xxxxx` to `EFAK_xxxxx` 
+ * Change the docker image for Airflow from the Bitnami to the official Apache one
+ * Support the two major versions 7 and 8 of Elasticsearch
  
 ### Enhancements
 

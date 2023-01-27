@@ -59,11 +59,8 @@ c.JupyterHub.hub_connect_ip = 'jupyterhub'
 # c.JupyterHub.ssl_key = os.environ['SSL_KEY']
 # c.JupyterHub.ssl_cert = os.environ['SSL_CERT']
 
-# Dummy Authenticator 
-from jupyterhub.auth import DummyAuthenticator
-
-c.JupyterHub.authenticator_class = DummyAuthenticator
-c.DummyAuthenticator.password = "abc123!"
+c.JupyterHub.authenticator_class = os.environ['JUPYTERHUB_AUTHENTICATOR_CLASS']
+c.DummyAuthenticator.password = os.environ['JUPYTERHUB_PASSWORD']
 
 # Authenticate users with GitHub OAuth
 #c.JupyterHub.authenticator_class = 'oauthenticator.GitHubOAuthenticator'
@@ -75,14 +72,16 @@ data_dir = os.environ.get('DATA_VOLUME_CONTAINER', '/data')
 #c.JupyterHub.cookie_secret_file = os.path.join(data_dir,
 #    'jupyterhub_cookie_secret')
 
-#c.JupyterHub.db_url = 'postgresql://postgres:{password}@{host}/{db}'.format(
-#    host=os.environ['POSTGRES_HOST'],
-#    password=os.environ['POSTGRES_PASSWORD'],
-#    db=os.environ['POSTGRES_DB'],
-#)
-
+if os.environ['JUPYTERHUB_USE_POSTGRES'].lower() == "yes":
+	c.JupyterHub.db_url = 'postgresql://{username}:{password}@{host}/{db}'.format(
+    	host=os.environ['POSTGRES_HOST'],
+    	password=os.environ['POSTGRES_PASSWORD'],
+    	db=os.environ['POSTGRES_DB'],
+    	username=os.environ['POSTGRES_USERNAME'],
+		)
+		
 # Whitlelist users and admins
-c.Authenticator.whitelist = whitelist = set()
+c.Authenticator.allowed_users = whitelist = set()
 c.Authenticator.admin_users = admin = set()
 c.JupyterHub.admin_access = True
 pwd = os.path.dirname(__file__)

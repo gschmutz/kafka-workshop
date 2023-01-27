@@ -664,4 +664,5 @@ public class Notification extends org.apache.avro.specific.SpecificRecordBase im
 ```
 
 ## Adding deprecation to Avro IDL
+
 t.b.d.
