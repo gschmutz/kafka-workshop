@@ -31,7 +31,8 @@ ID  | Title   | Description
 7 | [Kafka with Confluent's .NET client](./07-producing-consuming-kafka-with-dotnet)  | learn how to use **.NET** to consume and produce from/to Kafka
 7b | [Using Kafka from #C (.Net) with Avro & Schema Registry](./07b-working-with-avro-and-dotnet)  | learn how to use **.NET** to consume and produce messages from/to Kafka using Avro for serialization with the Confluent Schema Registry
 8 |[Kafka with Confluent's Python client](./08-producing-consuming-kafka-with-python)  | learn how to use **Python** to consume and produce from/to Kafka
-9 |[Kafka from Node.js](./09-working-with-nodejs)  | learn how to use **Node.js** to consume and produce from/to Kafka
+9a |[Using Kafka from Go](./09a-working-with-go)  | learn how to use **Go** to consume and produce from/to Kafka
+9b |[Kafka from Node.js](./09b-working-with-nodejs)  | learn how to use **Node.js** to consume and produce from/to Kafka
 10 | [Working with Kafka Connect and Change Data Capture (CDC)](./10-working-with-kafka-connect-and-cdc)  | uses **Kafka Connect** to demonstrate various way for doing CDC on a set of PostgreSQL tables.
 12 | [Using Kafka Streams for Stream Analytics](./12-using-kafka-streams-simple)  | uses **Kafka Streams** to demonstrate analytics on data-in-motion.
 12a | [Using Kafka Streams from Spring Boot for Stream Analytics](./12a-using-kafka-streams-from-springboot)  | uses **Kafka Streams** from **Spring Boot** to demonstrate analytics on data-in-motion.
