@@ -454,6 +454,7 @@ Add the following code to the empty class.
 ```java
 package com.trivadis.kafkaws.consumer;
 
+import java.time.Duration;
 import java.util.Collections;
 import java.util.Properties;
 
@@ -505,7 +506,7 @@ public class KafkaConsumerAvro {
         int noRecordsCount = 0;
 
         while (true) {
-            final ConsumerRecords<Long, NotificationSentEvent> consumerRecords = consumer.poll(1000);
+            final ConsumerRecords<Long, NotificationSentEvent> consumerRecords = consumer.poll(Duration.ofMillis(1000));
 
             if (consumerRecords.count()==0) {
                 noRecordsCount++;
@@ -628,7 +629,7 @@ mvn compile
 and we will find the comments also in the generated Java classes, here showing parts of the `Notification` class as an example:
 
 ```java
-/** Notifcation structure defining a message to be sent as a notification.
+/** Notification structure defining a message to be sent as a notification.
 Will be used to notify users of a problem. */
 @org.apache.avro.specific.AvroGenerated
 public class Notification extends org.apache.avro.specific.SpecificRecordBase implements org.apache.avro.specific.SpecificRecord {
@@ -665,4 +666,92 @@ public class Notification extends org.apache.avro.specific.SpecificRecordBase im
 
 ## Adding deprecation to Avro IDL
 
-t.b.d.
+Let's say we in the process of replacing an existing field in Avro with a new field. In order to be compatible, we need to support the old field for some time in parallel to the new field.
+But of course we would like to notify all the users of the deprecation of the field. That's where the `@deprecated` comment can be used, as shown below. Let's say we replace the single string-typed `message` field with an array-typed `messages` field. We can deprecate the `message` field by adding `@deprecated` to the documentation together with a deprecation note:
+
+```
+@namespace("com.trivadis.kafkaws.avro.v1")
+protocol NotificationProtocol {
+	/**
+    Notification structure defining a message to be sent as a notification.
+    Will be used to notify users of a problem.
+    deprecated
+    */
+	record Notification {
+			/**
+			This is the ID of a notification, optional
+ 			*/
+			union {null, long} @javaAnnotation("Deprecated") id;		// optional, should be changed in the future to mandatory!
+
+			/** This is the message of the notification
+			 	@deprecated use the new array-based "messages" field instead
+ 			*/
+			union {null, string}  message;
+
+			/** This are the messages of the notification
+			*/
+			union {null, array<string>} messages;
+	}
+}
+``` 
+
+The `@deprecated` comment will end up in the generated Java class both in the property definition as well as in the getter and setter methods:
+
+```java
+@org.apache.avro.specific.AvroGenerated
+public class Notification extends org.apache.avro.specific.SpecificRecordBase implements org.apache.avro.specific.SpecificRecord {
+  private static final long serialVersionUID = 2885908480528460301L;
+  
+  ...
+  
+  /** This is the message of the notification
+      @deprecated use messages instead */
+  private java.lang.String message;
+  
+  ...
+  
+    /**
+   * Gets the value of the 'message' field.
+   * @return This is the message of the notification
+@deprecated use the new array-based "messages" field instead
+   */
+  public java.lang.String getMessage() {
+    return message;
+  }
+
+
+  /**
+   * Sets the value of the 'message' field.
+   * This is the message of the notification
+@deprecated use the new array-based "messages" field instead
+   * @param value the value to set.
+   */
+  public void setMessage(java.lang.String value) {
+    this.message = value;
+  }
+
+  ...
+```
+
+if you now run 
+
+```bash
+mvn clean compile -Dmaven.compiler.showWarnings=true -Dmaven.compiler.showWarnings=true
+```
+
+to compile the source code, you will see the deprecation warning for usage of the old field. 
+
+```bash
+[INFO] --- maven-compiler-plugin:2.5:compile (default-compile) @ java-kafka-avro-idl ---
+[INFO] Compiling 6 source files to /Users/guido.schmutz/Documents/GitHub/gschmutz/kafka-workshop/04b-working-with-avro-idl-and-java/src/java-kafka-avro-idl/target/classes
+[WARNING] bootstrap class path not set in conjunction with -source 8
+/Users/guido.schmutz/Documents/GitHub/gschmutz/kafka-workshop/04b-working-with-avro-idl-and-java/src/java-kafka-avro-idl/src/main/java/com/trivadis/kafkaws/producer/KafkaProducerAvro.java:[43,24] [deprecation] setMessage(String) in Builder has been deprecated
+```
+
+In our case it's in the `KafkaProducerAvro` class.
+
+Depending on the IDE used, the usage will also nicely flagged visually. Bellow how it is shown in IntelliJ
+
+![](./images/deprecation-intellij.png)
+
+ 

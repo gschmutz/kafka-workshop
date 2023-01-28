@@ -1,5 +1,6 @@
 package com.trivadis.kafkaws.consumer;
 
+import java.time.Duration;
 import java.util.Collections;
 import java.util.Properties;
 
@@ -51,7 +52,7 @@ public class KafkaConsumerAvro {
         int noRecordsCount = 0;
 
         while (true) {
-            final ConsumerRecords<Long, NotificationSentEvent> consumerRecords = consumer.poll(1000);
+            final ConsumerRecords<Long, NotificationSentEvent> consumerRecords = consumer.poll(Duration.ofMillis(1000));
 
             if (consumerRecords.count()==0) {
                 noRecordsCount++;
