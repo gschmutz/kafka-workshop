@@ -1,6 +1,6 @@
 # Using Kafka from Go
 
-In this workshop we will learn how to use the [confluent-kafka-go](https://github.com/confluentinc/confluent-kafka-go) and [kafka-avro](https://github.com/waldophotos/kafka-avro) libraries for working with Kafka and optionally with Avro, Protobuf or JSON Schema (with support for the schema registry).
+In this workshop we will learn how to use the [confluent-kafka-go](https://github.com/confluentinc/confluent-kafka-go) to produce and consume to/from Kafka from the Go language.
 
 You can find many examples of using Kafka with Go [here](https://github.com/confluentinc/confluent-kafka-go/tree/master/examples) in the GitHub project.
 

@@ -96,7 +96,7 @@ and execute the necessary kafka-topics command.
 ```
 kafka-topics --create \
 --replication-factor 3 \
---partitions 8 \
+--partitions 12 \
 --topic test-java-ce-topic \
 --zookeeper zookeeper-1:2181
 ```

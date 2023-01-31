@@ -151,7 +151,7 @@ and execute the necessary kafka-topics command.
 ```bash
 kafka-topics --create \
     --replication-factor 3 \
-    --partitions 8 \
+    --partitions 12 \
     --topic test-kotlin-topic \
     --bootstrap-server kafka-1:19092
 ```

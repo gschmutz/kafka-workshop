@@ -2,13 +2,13 @@
 
 In this workshop we will learn how to use the **Spring Kafka** abstraction with **Avro message serialization** from within a Spring Boot application using the **Kotlin** language. 
 
-We will create two Spring Boot projects, one for the **Producer** and one for the **Consumer**, simulating two independent microservices interacting with eachother via events.
+We will create two Spring Boot projects, one for the **Producer** and one for the **Consumer**, simulating two independent Microservices interacting with each other via events.
 
 Additionally we will create another Maven project called `meta` which holds the Avro Schema(s). A dependency to that project will be added to both Spring Boot projects.  
 
 ## Create the Avro Metadata Project
 
-First we will define the Avro schema and generate the classes. As both Mircorservices will need the generated class to work, we do that in a separate project, and then use it as a dependency in the two Micorservices.
+First we will define the Avro schema and generate the classes. As both Microservices will need the generated class to work, we do that in a separate project, and then use it as a dependency in the two Microservices.
 
 ### Create a new Maven project
 
@@ -361,7 +361,7 @@ Add the following settings to configure the Kafka cluster and the name of the to
 topic:
   name: test-kotlin-spring-avro-topic
   replication-factor: 3
-  partitions: 8
+  partitions: 12
 
 spring:
   kafka:

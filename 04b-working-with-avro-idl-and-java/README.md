@@ -243,7 +243,7 @@ and execute the necessary kafka-topics command.
 ```
 kafka-topics --create \
 --replication-factor 3 \
---partitions 8 \
+--partitions 12 \
 --topic test-java-avro-idl-topic \
 --bootstrap-server kafka-1:19092,kafka-2:19093
 ```

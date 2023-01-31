@@ -1,7 +1,7 @@
 topic:
   name: test-spring-topic
   replication-factor: 3
-  partitions: 8
+  partitions: 12
 
 spring:
   kafka:

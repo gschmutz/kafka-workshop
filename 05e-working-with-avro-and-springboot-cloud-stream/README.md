@@ -252,7 +252,7 @@ Add the following settings to configure the Kafka cluster and the name of the to
 topic:
   name: test-spring-cloud-stream-topic-avro
   replication-factor: 3
-  partitions: 8
+  partitions: 12
 
 spring:
   cloud:
