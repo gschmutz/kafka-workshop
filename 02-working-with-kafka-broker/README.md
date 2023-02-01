@@ -2,7 +2,7 @@
 
 ## Introduction
 
-In this workshop we will learn the basics of working with Apache Kafka. Make sure that you have created the environment as described in [Preparing the Environment](../01-environment/01-environment.md).
+In this workshop we will learn the basics of working with Apache Kafka. Make sure that you have created the environment as described in [Preparing the Environment](../01-environment/README.md).
 
 The main units of interest in Kafka are topics and messages. A topic is simply what you publish a message to, topics are a stream of messages.
 
