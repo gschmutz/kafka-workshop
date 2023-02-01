@@ -49,7 +49,7 @@ sudo apt-get install \
     lsb-release
 ```    
 
-Add Docker's offical GPG key
+Add Docker's official GPG key
 
 ```bash    
 sudo mkdir -p /etc/apt/keyrings
