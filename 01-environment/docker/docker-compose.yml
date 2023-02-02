@@ -13,7 +13,7 @@ networks:
 services:
   #  ================================== Zookeeper ========================================== #
   zookeeper-1:
-    image: confluentinc/cp-zookeeper:7.3.1
+    image: confluentinc/cp-zookeeper:7.2.2
     container_name: zookeeper-1
     hostname: zookeeper-1
     labels:
@@ -31,7 +31,7 @@ services:
     restart: unless-stopped
 #  ================================== Kafka ========================================== #
   kafka-1:
-    image: confluentinc/cp-kafka:7.3.1
+    image: confluentinc/cp-kafka:7.2.2
     container_name: kafka-1
     hostname: kafka-1
     labels:
@@ -69,7 +69,7 @@ services:
       - ./data-transfer:/data-transfer
     restart: unless-stopped
   kafka-2:
-    image: confluentinc/cp-kafka:7.3.1
+    image: confluentinc/cp-kafka:7.2.2
     container_name: kafka-2
     hostname: kafka-2
     labels:
@@ -107,7 +107,7 @@ services:
       - ./data-transfer:/data-transfer
     restart: unless-stopped
   kafka-3:
-    image: confluentinc/cp-kafka:7.3.1
+    image: confluentinc/cp-kafka:7.2.2
     container_name: kafka-3
     hostname: kafka-3
     labels:
@@ -146,7 +146,7 @@ services:
     restart: unless-stopped
   #  ================================== Kafka Connect ========================================== #
   kafka-connect-1:
-    image: confluentinc/cp-kafka-connect:7.3.1
+    image: confluentinc/cp-kafka-connect:7.2.2
     container_name: kafka-connect-1
     hostname: kafka-connect-1
     labels:
@@ -212,7 +212,7 @@ services:
         sleep infinity
     restart: unless-stopped
   kafka-connect-2:
-    image: confluentinc/cp-kafka-connect:7.3.1
+    image: confluentinc/cp-kafka-connect:7.2.2
     container_name: kafka-connect-2
     hostname: kafka-connect-2
     labels:
@@ -401,7 +401,7 @@ services:
     restart: unless-stopped
   #  ================================== Confluent REST Proxy ========================================== #
   kafka-rest-1:
-    image: confluentinc/cp-kafka-rest:7.3.1
+    image: confluentinc/cp-kafka-rest:7.2.2
     container_name: kafka-rest-1
     hostname: kafka-rest-1
     labels:
@@ -423,7 +423,7 @@ services:
     restart: unless-stopped
   #  ================================== Confluent Schema Registry ========================================== #
   schema-registry-1:
-    image: confluentinc/cp-schema-registry:7.3.1
+    image: confluentinc/cp-schema-registry:7.2.2
     hostname: schema-registry-1
     container_name: schema-registry-1
     labels:
