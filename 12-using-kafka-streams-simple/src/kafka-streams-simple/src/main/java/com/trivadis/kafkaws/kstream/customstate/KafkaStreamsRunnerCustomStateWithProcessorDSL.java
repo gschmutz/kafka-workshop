@@ -19,7 +19,7 @@ import java.util.*;
 
 public class KafkaStreamsRunnerCustomStateWithProcessorDSL {
 
-    public static final String MY_STATE_STORE = "MyStateStore";
+    private static final String MY_STATE_STORE = "MyStateStore";
 
     public static void main(String[] args) {
         // the builder is used to construct the topology
@@ -45,7 +45,7 @@ public class KafkaStreamsRunnerCustomStateWithProcessorDSL {
 
         // set the required properties for running Kafka Streams
         Properties config = new Properties();
-        config.put(StreamsConfig.APPLICATION_ID_CONFIG, "customstate2");
+        config.put(StreamsConfig.APPLICATION_ID_CONFIG, "custstate-processor");
         config.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "dataplatform:9092");
         config.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
         config.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass());

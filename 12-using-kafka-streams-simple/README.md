@@ -1029,15 +1029,15 @@ B : 2021-08-22T16:53+02:00[Europe/Zurich] to 2021-08-22T16:54+02:00[Europe/Zuric
 
 We can see that the values have been summed up by key.
 
-## Using Custom State 
+## Using Custom State - with Transformer (deprecated since 3.3)
 
-We can also run our own state store from Kafka Streams. For that we basically combine Kafka Streams DLS with the Processor API, implementing the `Transformer` interface. 
+We can also run our own state store from Kafka Streams. For that we basically combine Kafka Streams DLS with the Processor API, implementing the [`Transformer`](https://kafka.apache.org/33/javadoc/org/apache/kafka/streams/kstream/Transformer.html) interface.
 
-In this simple implementation we are again using the message key as the grouping criteria and concat all the values we got since the beginning and return the new value as part of the new message. Both the key and the value are serialized as `String`.
+In this simple implementation we are again using the message key as the grouping criteria and concat all the values we got since the beginning and return the new value as part of the new message. Both the key and the value are serialised as `String`.
 
 Create a new Java package `com.trivadis.kafkaws.kstream.customstate` and in it a Java class `KafkaStreamsRunnerCustomStateDSL`. 
 
-Add the following code for the implemenation
+Add the following code for the implementation
 
 ```java
 package com.trivadis.kafkaws.kstream.customstate;
@@ -1055,16 +1055,21 @@ import org.apache.kafka.streams.state.KeyValueStore;
 import org.apache.kafka.streams.state.StoreBuilder;
 import org.apache.kafka.streams.state.Stores;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Properties;
 
-public class KafkaStreamsRunnerCustomStateDSL {
+public class KafkaStreamsRunnerCustomStateWithTransformerDSL {
+
+    private static final String MY_STATE_STORE = "MyStateStore";
 
     public static void main(String[] args) {
         // the builder is used to construct the topology
         StreamsBuilder builder = new StreamsBuilder();
 
-        final StoreBuilder<KeyValueStore<String, String>> myStateStore = Stores
-                .keyValueStoreBuilder(Stores.persistentKeyValueStore("MyStateStore"), Serdes.String(), Serdes.String())
+        final StoreBuilder<KeyValueStore<String, List<String>>> myStateStore = Stores
+                .keyValueStoreBuilder(Stores.persistentKeyValueStore(MY_STATE_STORE), Serdes.String(), Serdes.ListSerde(ArrayList.class, Serdes.String()))
                 .withCachingEnabled();
         builder.addStateStore(myStateStore);
 
@@ -1074,17 +1079,17 @@ public class KafkaStreamsRunnerCustomStateDSL {
         KStream<String, String> stream = builder.stream("test-kstream-input-topic");
 
         // invoke the transformer
-        KStream<String, String> transformedStream = stream.transform(() -> myStateHandler, myStateStore.name() );
+        KStream<String, List<String>> transformedStream = stream.transform(() -> myStateHandler, myStateStore.name() );
 
         // peek into the stream and execute a println
         transformedStream.peek((k,v) -> System.out.println("key: " + k + " - value:" + v));
 
         // publish result
-        transformedStream.to("test-kstream-output-topic");
+        transformedStream.mapValues(v -> v.toString()).to("test-kstream-output-topic");
 
         // set the required properties for running Kafka Streams
         Properties config = new Properties();
-        config.put(StreamsConfig.APPLICATION_ID_CONFIG, "customstate");
+        config.put(StreamsConfig.APPLICATION_ID_CONFIG, "custstate-transformer");
         config.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "dataplatform:9092");
         config.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
         config.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass());
@@ -1098,9 +1103,9 @@ public class KafkaStreamsRunnerCustomStateDSL {
         Runtime.getRuntime().addShutdownHook(new Thread(streams::close));
     }
 
-    private static final class MyStateHandler implements Transformer<String, String, KeyValue<String, String>> {
+    private static final class MyStateHandler implements Transformer<String, String, KeyValue<String, List<String>>> {
         final private String storeName;
-        private KeyValueStore<String, String> stateStore;
+        private KeyValueStore<String, List<String>> stateStore;
         private ProcessorContext context;
 
         public MyStateHandler(final String storeName) {
@@ -1111,15 +1116,18 @@ public class KafkaStreamsRunnerCustomStateDSL {
         @Override
         public void init(ProcessorContext processorContext) {
             this.context = processorContext;
-            stateStore = (KeyValueStore<String, String>) this.context.getStateStore(storeName);
+            stateStore = (KeyValueStore<String, List<String>>) this.context.getStateStore(storeName);
         }
 
         @Override
-        public KeyValue<String,String> transform(String key, String value) {
+        public KeyValue<String,List<String>> transform(String key, String value) {
             if (stateStore.get(key) == null) {
-                stateStore.put(key, value);
+                stateStore.put(key, Collections.singletonList(value));
             } else {
-                stateStore.put(key, stateStore.get(key) + "," + value);
+                List entries = stateStore.get(key);
+                entries.add(value);
+
+                stateStore.put(key, entries);
             }
 
             return new KeyValue<>(key, stateStore.get(key));
@@ -1136,25 +1144,25 @@ public class KafkaStreamsRunnerCustomStateDSL {
 We can see the implementation of the custom state store in these lines
 
 ```java
-        final StoreBuilder<KeyValueStore<String, String>> myStateStore = Stores
-                .keyValueStoreBuilder(Stores.persistentKeyValueStore("MyStateStore"), Serdes.String(), Serdes.String())
+        final StoreBuilder<KeyValueStore<String, List<String>>> myStateStore = Stores
+                .keyValueStoreBuilder(Stores.persistentKeyValueStore(MY_STATE_STORE), Serdes.String(), Serdes.ListSerde(ArrayList.class, Serdes.String()))
                 .withCachingEnabled();
         builder.addStateStore(myStateStore);
 ```
 
-The state management happens inside the `MyStateHandler` class. It implements the `Transformer<String, String, KeyValue<String, String>` interface, where the generics should be read like that:
+The state management happens inside the `MyStateHandler` class. It implements the `Transformer<String, String, KeyValue<String, List<String>>` interface, where the generics should be read like that:
 
-* as input we get a `String` key, a `String` value and return a `KeyValue<String,String>`, again the first `String` being the type of the key and the second `String` the type of the value. 
+* as input we get a `String` key, a `String` value and return a `KeyValue<String,List<String>>`, again the first `String` being the type of the key and the second `List<String>` the type of the value. 
  
 ```java
-private static final class MyStateHandler implements Transformer<String, String, KeyValue<String, String>>
+private static final class MyStateHandler implements Transformer<String, String, KeyValue<String, List<String>>>
 ```
 
 In our case we want to access both the key and the value of the message. If the value is enough, you better implement the `ValueTransformer` instead. 
 
 As we are reusing the topics from the previous solution, you might want to clear (empty) both the input and the out topic before starting the program. You can easily do that using AKHQ (navigate to the topic, i.e. <http://dataplatform:28107/ui/docker-kafka-server/topic/test-kstream-input-topic> and click on **Empty Topic** on the bottom). 
 
-Start the programm and then first run a `kcat` consumer on the output topic
+Start the program and then first run a `kcat` consumer on the output topic
 
 ```bash
 kcat -b dataplatform:9092 -t test-kstream-output-topic -o end -f "%k,%s\n" -q
@@ -1180,18 +1188,193 @@ B,333
 within a single minute. After a minute the output from the consumer should be similar to the one shown below
 
 ```bash
-A,AAA
-A,AAA,BBB
-A,AAA,BBB,CCC
-B,111
-B,111,222
-B,111,222,333
+A,[AAA]
+A,[AAA,BBB]
+A,[AAA,BBB,CCC]
+B,[111]
+B,[111,222]
+B,[111,222,333]
 ```
 
 ### Add-Ons
 
 * Implement an additional stream which you can use to signal clearing the state (either globally or just for the given key)
 
+The usage of `Transformer` (i.e. method `transform` and `transformValues` on the `KStream` instance is deprecated since Kafka 3.3). You should use the `Processor` instead with the `process` and `processValues` methods.
+
+## Using Custom State - with Processor
+
+We can also run our own state store from Kafka Streams. For that we basically combine Kafka Streams DLS with the Processor API, implementing the [`Processor`](https://kafka.apache.org/34/javadoc/org/apache/kafka/streams/processor/api/Processor.html) interface. `Processor` is the preferred version and should be used since Kafka 3.3. instead of the `Transformer` which has been deprecated!
+
+In this simple implementation we are again using the message key as the grouping criteria and concat all the values we got since the beginning and return the new value as part of the new message. Both the key and the value are serialised as `String`.
+
+Create a new Java package `com.trivadis.kafkaws.kstream.customstate` and in it a Java class `KafkaStreamsRunnerCustomStateDSL`. 
+
+Add the following code for the implementation
+
+```java
+package com.trivadis.kafkaws.kstream.customstate;
+
+import com.trivadis.kafkaws.kstream.countsession.StateValue;
+import org.apache.kafka.clients.CommonClientConfigs;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.common.serialization.Serdes;
+import org.apache.kafka.streams.KafkaStreams;
+import org.apache.kafka.streams.KeyValue;
+import org.apache.kafka.streams.StreamsBuilder;
+import org.apache.kafka.streams.StreamsConfig;
+import org.apache.kafka.streams.kstream.KStream;
+import org.apache.kafka.streams.processor.api.*;
+import org.apache.kafka.streams.processor.api.Record;
+import org.apache.kafka.streams.state.KeyValueStore;
+import org.apache.kafka.streams.state.StoreBuilder;
+import org.apache.kafka.streams.state.Stores;
+
+import java.util.*;
+
+public class KafkaStreamsRunnerCustomStateWithProcessorDSL {
+
+    private static final String MY_STATE_STORE = "MyStateStore";
+
+    public static void main(String[] args) {
+        // the builder is used to construct the topology
+        StreamsBuilder builder = new StreamsBuilder();
+
+        // create custom state store
+        final StoreBuilder<KeyValueStore<String, List<String>>> myStateStore = Stores
+                .keyValueStoreBuilder(Stores.persistentKeyValueStore(MY_STATE_STORE), Serdes.String(), Serdes.ListSerde(ArrayList.class, Serdes.String()))
+                .withCachingEnabled();
+        builder.addStateStore(myStateStore);
+
+        // read from the source topic, "test-kstream-input-topic"
+        KStream<String, String> stream = builder.stream("test-kstream-input-topic");
+
+        // invoke the transformer
+        KStream<String, List<String>> transformedStream = stream.process(new MyProcessorSupplier(myStateStore), myStateStore.name());
+
+        // peek into the stream and execute a println
+        transformedStream.peek((k,v) -> System.out.println("key: " + k + " - value:" + v));
+
+        // publish result
+        transformedStream.mapValues(v -> v.toString()).to("test-kstream-output-topic");
+
+        // set the required properties for running Kafka Streams
+        Properties config = new Properties();
+        config.put(StreamsConfig.APPLICATION_ID_CONFIG, "custstate-processor");
+        config.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "dataplatform:9092");
+        config.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
+        config.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass());
+        config.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.String().getClass());
+
+        // build the topology and start streaming
+        KafkaStreams streams = new KafkaStreams(builder.build(), config);
+        streams.start();
+
+        // close Kafka Streams when the JVM shuts down (e.g. SIGTERM)
+        Runtime.getRuntime().addShutdownHook(new Thread(streams::close));
+    }
+
+    private static final class MyProcessorSupplier implements ProcessorSupplier<String, String, String, List<String>> {
+        private StoreBuilder<?> storeBuilder;
+
+        public MyProcessorSupplier(StoreBuilder<?> storeBuilder) {
+            this.storeBuilder = storeBuilder;
+        }
+
+        @Override
+        public Processor<String, String, String, List<String>> get() {
+            return new MyProcessorSupplier.MyProcessor();
+        }
+
+        @Override
+        public Set<StoreBuilder<?>> stores() {
+            return ProcessorSupplier.super.stores();
+        }
+
+        class MyProcessor extends ContextualProcessor<String, String, String, List<String>> {
+
+            private KeyValueStore<String, List<String>> stateStore;
+
+            @Override
+            public void init(ProcessorContext<String, List<String>> context) {
+                super.init(context);
+                stateStore = (KeyValueStore) context.getStateStore(MY_STATE_STORE);
+
+                // context().schedule(Duration.ofMillis(2000), PunctuationType.WALL_CLOCK_TIME, timestamp -> flushOldWindow(timestamp));
+            }
+
+            @Override
+            public void process(Record<String, String> record) {
+                if (stateStore.get(record.key()) == null) {
+                    stateStore.put(record.key(), Collections.singletonList(record.value()));
+                } else {
+                    List entries = stateStore.get(record.key());
+                    entries.add(record.value());
+                    stateStore.put(record.key(), entries);
+                }
+
+                context().forward(new Record<String, List<String>>(record.key(), stateStore.get(record.key()), record.timestamp()));
+            }
+
+        }
+    }
+}
+```
+
+We can see the implementation of the custom state store in these lines
+
+```java
+        final StoreBuilder<KeyValueStore<String, List<String>>> myStateStore = Stores
+                .keyValueStoreBuilder(Stores.persistentKeyValueStore(MY_STATE_STORE), Serdes.String(), Serdes.ListSerde(ArrayList.class, Serdes.String()))
+                .withCachingEnabled();
+        builder.addStateStore(myStateStore);
+```
+
+The state management happens inside the `MyProcessor` class. It implements the `TransfContextualProcessor<String, String, String, List<String>>` interface, where the generics should be read like that:
+
+* as input we get a `String` key, a `String` value and return a `String` key and a `List<String>>` value. 
+ 
+```java
+private static final class MyStateHandler implements Transformer<String, String, KeyValue<String, List<String>>>
+```
+
+In our case we want to access both the key and the value of the message. If the value is enough, you better implement the `FixedKeyProcessor` instead. 
+
+As we are reusing the topics from the previous solution, you might want to clear (empty) both the input and the out topic before starting the program. You can easily do that using AKHQ (navigate to the topic, i.e. <http://dataplatform:28107/ui/docker-kafka-server/topic/test-kstream-input-topic> and click on **Empty Topic** on the bottom). 
+
+Start the program and then first run a `kcat` consumer on the output topic
+
+```bash
+kcat -b dataplatform:9092 -t test-kstream-output-topic -o end -f "%k,%s\n" -q
+```
+
+with that in place, in 2nd terminal produce some messages using `kcat` in producer mode on the input topic
+
+```bash
+kcat -b dataplatform:9092 -t test-kstream-input-topic -P -K , 
+```
+
+produce some values with `<key>,<value>` syntax, such as
+
+```bash
+A,AAA
+A,BBB
+A,CCC
+B,111
+B,222
+B,333
+```
+
+within a single minute. After a minute the output from the consumer should be similar to the one shown below
+
+```bash
+A,[AAA]
+A,[AAA,BBB]
+A,[AAA,BBB,CCC]
+B,[111]
+B,[111,222]
+B,[111,222,333]
+```
 
 ## Interactive Query
 
