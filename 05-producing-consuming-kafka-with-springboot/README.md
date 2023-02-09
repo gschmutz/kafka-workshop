@@ -82,7 +82,7 @@ public class KafkaEventProducer {
 }
 ```
 
-It uses the `Component` annotation to have it registered as bean in the Spring context. The topic to produce to is specified as a property, which we will specify later in the `applicaiton.yml` file.
+It uses the `Component` annotation to have it registered as bean in the Spring context. The topic to produce to is specified as a property, which we will specify later in the `application.yml` file.
 
 We produce the messages synchronously.
 

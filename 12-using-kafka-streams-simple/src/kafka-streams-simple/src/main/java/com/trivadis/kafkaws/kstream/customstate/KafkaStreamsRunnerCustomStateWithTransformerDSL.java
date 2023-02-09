@@ -15,7 +15,7 @@ import org.apache.kafka.streams.state.Stores;
 
 import java.util.Properties;
 
-public class KafkaStreamsRunnerCustomStateDSL {
+public class KafkaStreamsRunnerCustomStateWithTransformerDSL {
 
     public static void main(String[] args) {
         // the builder is used to construct the topology
