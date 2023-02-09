@@ -1,0 +1,16 @@
+@namespace("com.trivadis.kafkaws.avro.v1")
+protocol ListOfEventsProtocol {
+
+	import idl "AlertSentEvent-v1.avdl";
+	import idl "NotificationSentEvent-v1.avdl";
+
+	record Event {
+		union {null, AlertSentEvent, NotificationSentEvent} event;
+	}
+
+	record ListOfEvents {
+		long  id;		// optional, should be changed in the future to mandatory
+
+		array<Event> events;
+	}
+}

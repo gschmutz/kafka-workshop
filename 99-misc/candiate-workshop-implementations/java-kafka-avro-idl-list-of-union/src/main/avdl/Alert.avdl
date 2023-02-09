@@ -1,0 +1,10 @@
+@namespace("com.trivadis.kafkaws.avro.v1")
+
+protocol AlertProtocol {
+	record Alert {
+		uuid id;
+		string message;
+		string severity;
+		timestamp_ms when;
+	}
+}

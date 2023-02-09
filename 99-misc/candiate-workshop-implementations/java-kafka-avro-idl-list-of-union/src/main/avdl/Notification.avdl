@@ -1,0 +1,18 @@
+@namespace("com.trivadis.kafkaws.avro.v1")
+protocol NotificationProtocol {
+	/**
+    Notification structure defining a message to be sent as a notification.
+    Will be used to notify users of a problem.
+    deprecated
+    */
+	record Notification {
+			/**
+			This is the ID of a notification, optional
+ 			*/
+			union {null, long}  id;		// optional, should be changed in the future to mandatory
+
+			/** This is the message of the notification
+ 			*/
+			union {null, string}  message;
+	}
+}

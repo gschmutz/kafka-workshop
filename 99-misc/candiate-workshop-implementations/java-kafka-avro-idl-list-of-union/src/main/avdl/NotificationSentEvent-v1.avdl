@@ -1,0 +1,12 @@
+@namespace("com.trivadis.kafkaws.avro.v1")
+protocol NotificationSentEventProtocol {
+	import idl "Notification.avdl";
+
+	/**
+	This is the Notification Event structure which uses an embedded Notification object.
+ 	*/
+	record NotificationSentEvent {
+		/** the Notification embedded object */
+		Notification  notification;
+	}
+}
