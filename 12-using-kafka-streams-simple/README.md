@@ -322,7 +322,7 @@ E,EEE
 A,AAA
 ```
 
-immediately the count should start to add up for each key and the output from the consumer should be similar to the one shown below
+Immediately the joined data should start to add up for each key and the output from the consumer should be similar to the one shown below
 
 ```bash
 A,AAA;Entity A
@@ -333,7 +333,7 @@ D,DDD;Entity D
 A,AAA;Entity A
 ```
 
-you can see that there has been no output for the input of `E,EEE`, because there is no entry for key `E` in the compacted topic.
+You can see that there has been no output for the input of `E,EEE`, because there is no entry for key `E` in the compacted topic.
 
 Let's add the "entity" to the compacted topic, by entering the following value on the terminal where `kcat -b dataplatform:9092 -t test-kstream-compacted-topic -P -K ,` is still running
 
@@ -470,7 +470,16 @@ public class KafkaStreamsRunnerRepartitionDSL {
 }
 ```
 
-First let's add the "static" data to the compacted log topic. This is the data we are doing the lookup against. In a terminal window run the following `kcat` command
+The following line does the trick of the re-partitioning of the input stream
+
+```java
+        KStream<String, String> repartitioned = stream.selectKey((k,v) -> v, Named.as("select-key")).repartition();
+```
+
+The method `repartition()` materialize the stream to an auto-generated repartition topic and create a new KStream from the auto-generated topic. The number of partitions is determined based on the upstream topics partition numbers.
+The created topic is considered an internal topic which will be named as `${applicationId}-<name>-repartition`, where "applicationId" is user-specified in StreamsConfig via parameter APPLICATION_ID_CONFIG, "<name>" is an internally generated name, and "-repartition" is a fixed suffix. The created topic is considered as an internal topic and is meant to be used only by the current Kafka Streams instance. Similar to auto-repartitioning, the topic will be created with infinite retention time and data will be automatically purged by Kafka Streams. 
+
+First let's add again the "static" data to the compacted log topic. This is the data we are doing the lookup against. In a terminal window run the following `kcat` command
 
 ```bash
 kcat -b dataplatform:9092 -t test-kstream-compacted-topic -P -K , 
@@ -483,6 +492,7 @@ A,Entity A
 B,Entity B
 C,Entity C
 D,Entity D
+E,Entity E
 ```
 
 As we are reusing the topics from the previous solution, you might want to clear (empty) both the input and the out topic before starting the program. You can easily do that using AKHQ (navigate to the topic, i.e. <http://dataplatform:28107/ui/docker-kafka-server/topic/test-kstream-input-topic> and click on **Empty Topic** on the bottom). 
@@ -511,7 +521,9 @@ EEE,E
 AAA,A
 ```
 
-immediately the count should start to add up for each key and the output from the consumer should be similar to the one shown below
+As we can see, the keys of the input stream are not the same as the one used in the "table", e.g. topic `test-kstream-compacted-topic`.
+
+Immediately the joined data should start to show up for each key and the output from the consumer should be similar to the one shown below
 
 ```bash
 A,A;Entity A
@@ -556,6 +568,8 @@ Topologies:
 You can use the [Kafka Streams Topology Visualizer](https://zz85.github.io/kafka-streams-viz/) utility to visualize the topology in a graphical manner. Copy the string representation into the **Input Kafka Topology** field and click **Update**. You should a visualization like the one below
 
 ![Alt Image Text](./images/kafka-streams-topology-visualizer-repartition.png "Kafka Streams Topology Visulizer")
+
+Take note that the `repartition()` causes the topology to be split-up into two sub-topologies.
 
 You can see that the compacted topic `test-kstream-compacted-topic` is read into a state store and the `test-kstream-input-topic` is joined against that state store to enrich the stream.   
 
