@@ -401,6 +401,164 @@ You can use the [Kafka Streams Topology Visualizer](https://zz85.github.io/kafka
 
 You can see that the compacted topic `test-kstream-compacted-topic` is read into a state store and the `test-kstream-input-topic` is joined against that state store to enrich the stream.   
 
+## Joining a stream to a table with upfront re-partitioning
+
+In the previous example we have used Kafka Streams to perform a join between a stream and a table. We have assumed that both the stream and table are co-partitioned (both using the same keys). Otherwise the join would not have worked!
+
+In this example we will use a stream which is not partitioned in the same way as the KTable and for the join to work we will have to repartition the stream before doing the join. 
+
+Create a new package `com.trivadis.kafkaws.kstream.repartition` and in it a Java class `KafkaStreamsRunnerRepartitionDSL`. 
+
+Add the following code for the implementation
+
+```java
+package com.trivadis.kafkaws.kstream.repartition;
+
+import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.common.serialization.Serdes;
+import org.apache.kafka.streams.KafkaStreams;
+import org.apache.kafka.streams.StreamsBuilder;
+import org.apache.kafka.streams.StreamsConfig;
+import org.apache.kafka.streams.Topology;
+import org.apache.kafka.streams.kstream.KStream;
+import org.apache.kafka.streams.kstream.KTable;
+import org.apache.kafka.streams.kstream.Named;
+import org.apache.kafka.streams.kstream.Printed;
+
+import java.util.Properties;
+
+public class KafkaStreamsRunnerRepartitionDSL {
+
+    public static void main(String[] args) {
+        // the builder is used to construct the topology
+        StreamsBuilder builder = new StreamsBuilder();
+
+        // read from the source topic, "test-kstream-input-topic"
+        KStream<String, String> stream = builder.stream("test-kstream-input-topic");
+
+        // read from the source topic, "test-kstream-input-topic"
+        KTable<String, String> table = builder.table("test-kstream-compacted-topic");
+
+        // repartition the input stream (will write to a technical topic which will be named as "${applicationId}-<name>-repartition",
+        // where "applicationId" is user-specified in StreamsConfig via parameter APPLICATION_ID_CONFIG, "<name>" is an internally
+        // generated name, and "-repartition" is a fixed suffix.
+        KStream<String, String> repartitioned = stream.selectKey((k,v) -> v, Named.as("select-key")).repartition();
+
+        // join the repartitioned stream with the table
+        KStream<String, String> joined = repartitioned.join(table, (s,t) -> String.join (":",s, t));
+
+        joined.to("test-kstream-output-topic");
+
+        // set the required properties for running Kafka Streams
+        Properties config = new Properties();
+        config.put(StreamsConfig.APPLICATION_ID_CONFIG, "dev1");
+        config.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "dataplatform:9092");
+        config.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+        config.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass());
+        config.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.String().getClass());
+
+        // build the topology and start streaming
+        Topology topology = builder.build();
+        System.out.println(topology.describe());
+
+        KafkaStreams streams = new KafkaStreams(topology, config);
+        streams.start();
+
+        // close Kafka Streams when the JVM shuts down (e.g. SIGTERM)
+        Runtime.getRuntime().addShutdownHook(new Thread(streams::close));
+    }
+}
+```
+
+First let's add the "static" data to the compacted log topic. This is the data we are doing the lookup against. In a terminal window run the following `kcat` command
+
+```bash
+kcat -b dataplatform:9092 -t test-kstream-compacted-topic -P -K , 
+```
+
+produce some values with `<key>,<value>` syntax, such as
+
+```bash
+A,Entity A
+B,Entity B
+C,Entity C
+D,Entity D
+```
+
+As we are reusing the topics from the previous solution, you might want to clear (empty) both the input and the out topic before starting the program. You can easily do that using AKHQ (navigate to the topic, i.e. <http://dataplatform:28107/ui/docker-kafka-server/topic/test-kstream-input-topic> and click on **Empty Topic** on the bottom). 
+
+Start the program and in another terminal window run a `kcat` consumer on the output topic
+
+```bash
+kcat -b dataplatform:9092 -t test-kstream-output-topic -o end -f "%k,%s\n" -q
+```
+
+with that in place, in a 3rd terminal window, produce some messages using `kcat` in producer mode on the input topic
+
+```bash
+kcat -b dataplatform:9092 -t test-kstream-input-topic -P -K , 
+```
+
+produce some values with `<key>,<value>` syntax, such as
+
+```bash
+AAA,A
+BBB,B
+CCC,C
+AAA,A
+DDD,D
+EEE,E
+AAA,A
+```
+
+immediately the count should start to add up for each key and the output from the consumer should be similar to the one shown below
+
+```bash
+A,A;Entity A
+B,B;Entity B
+C,C;Entity C
+A,A;Entity A
+D,D;Entity D
+A,A;Entity A
+```
+
+In this example we also use the `Topology.describe()` command, which will show a string representation of the Kafka Streams topology. 
+
+```
+Topologies:
+   Sub-topology: 0
+    Source: KSTREAM-SOURCE-0000000000 (topics: [test-kstream-input-topic])
+      --> select-key
+    Processor: select-key (stores: [])
+      --> KSTREAM-FILTER-0000000007
+      <-- KSTREAM-SOURCE-0000000000
+    Processor: KSTREAM-FILTER-0000000007 (stores: [])
+      --> KSTREAM-SINK-0000000006
+      <-- select-key
+    Sink: KSTREAM-SINK-0000000006 (topic: KSTREAM-REPARTITION-0000000005-repartition)
+      <-- KSTREAM-FILTER-0000000007
+
+  Sub-topology: 1
+    Source: KSTREAM-SOURCE-0000000008 (topics: [KSTREAM-REPARTITION-0000000005-repartition])
+      --> KSTREAM-JOIN-0000000009
+    Processor: KSTREAM-JOIN-0000000009 (stores: [test-kstream-compacted-topic-STATE-STORE-0000000001])
+      --> KSTREAM-SINK-0000000010
+      <-- KSTREAM-SOURCE-0000000008
+    Source: KSTREAM-SOURCE-0000000002 (topics: [test-kstream-compacted-topic])
+      --> KTABLE-SOURCE-0000000003
+    Sink: KSTREAM-SINK-0000000010 (topic: test-kstream-output-topic)
+      <-- KSTREAM-JOIN-0000000009
+    Processor: KTABLE-SOURCE-0000000003 (stores: [test-kstream-compacted-topic-STATE-STORE-0000000001])
+      --> none
+      <-- KSTREAM-SOURCE-0000000002
+```
+
+You can use the [Kafka Streams Topology Visualizer](https://zz85.github.io/kafka-streams-viz/) utility to visualize the topology in a graphical manner. Copy the string representation into the **Input Kafka Topology** field and click **Update**. You should a visualization like the one below
+
+![Alt Image Text](./images/kafka-streams-topology-visualizer-repartition.png "Kafka Streams Topology Visulizer")
+
+You can see that the compacted topic `test-kstream-compacted-topic` is read into a state store and the `test-kstream-input-topic` is joined against that state store to enrich the stream.   
+
 ## Joining a stream to another stream
 
 Now let's use Kafka Streams to perform joins. In this example we will join a data stream with another data stream, also known as Stream-Stream Join. It is in fact an enrichment of a Stream by some static data (a lookup of a static dataset). The streaming data will still come in through the `test-kstream-input-topic` topic and we will join it with data from the `test-kstream-input2-topic `.  

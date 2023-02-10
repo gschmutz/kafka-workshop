@@ -1,4 +1,4 @@
-package com.trivadis.kafkaws.kstream.tablejoin;
+package com.trivadis.kafkaws.kstream.repartition;
 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.Serdes;
@@ -8,12 +8,12 @@ import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.Topology;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.KTable;
+import org.apache.kafka.streams.kstream.Named;
 import org.apache.kafka.streams.kstream.Printed;
-import org.apache.kafka.streams.kstream.Produced;
 
 import java.util.Properties;
 
-public class KafkaStreamsRunnerTableJoinDSL {
+public class KafkaStreamsRunnerRepartitionDSL {
 
     public static void main(String[] args) {
         // the builder is used to construct the topology
@@ -24,20 +24,20 @@ public class KafkaStreamsRunnerTableJoinDSL {
 
         // read from the source topic, "test-kstream-input-topic"
         KTable<String, String> table = builder.table("test-kstream-compacted-topic");
-        table.toStream().foreach(
-                (key, value) -> {
-                    System.out.println("(KTable) " + value);
-                });
 
-        // join the stream with the table
-        KStream<String, String> joined = stream.join(table, (s,t) -> String.join (":",s, t));
+        // repartition the input stream (will write to a technical topic which will be named as "${applicationId}-<name>-repartition",
+        // where "applicationId" is user-specified in StreamsConfig via parameter APPLICATION_ID_CONFIG, "<name>" is an internally
+        // generated name, and "-repartition" is a fixed suffix.
+        KStream<String, String> repartitioned = stream.selectKey((k,v) -> v, Named.as("select-key")).repartition();
 
-        // output the joined values
-        joined.to("test-kstream-output-topic", Produced.with(Serdes.String(), Serdes.String()));
+        // join the repartitioned stream with the table
+        KStream<String, String> joined = repartitioned.join(table, (s,t) -> String.join (":",s, t));
+
+        joined.to("test-kstream-output-topic");
 
         // set the required properties for running Kafka Streams
         Properties config = new Properties();
-        config.put(StreamsConfig.APPLICATION_ID_CONFIG, "tablejoin1");
+        config.put(StreamsConfig.APPLICATION_ID_CONFIG, "dev1");
         config.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "dataplatform:9092");
         config.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         config.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass());
@@ -46,6 +46,7 @@ public class KafkaStreamsRunnerTableJoinDSL {
         // build the topology and start streaming
         Topology topology = builder.build();
         System.out.println(topology.describe());
+
         KafkaStreams streams = new KafkaStreams(topology, config);
         streams.start();
 
