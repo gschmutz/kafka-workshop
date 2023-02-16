@@ -1,3 +1,4 @@
+
 package com.trivadis.kafkaws.kstream.countsession;
 
 import org.apache.kafka.clients.consumer.ConsumerConfig;

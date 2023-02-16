@@ -1,0 +1,23 @@
+{
+  "type": "record",
+  "name": "AggregatedList",
+  "namespace": "com.trivadis.kafkaws.kstream.avro",
+  "fields": [{
+    "name": "list",
+    "type": ["null", {
+      "type": "array",
+      "items": ["null", {
+        "type": "record",
+        "name": "ListItem",
+        "fields": [
+          {
+            "name": "value",
+            "type": ["null", "long"],
+            "default": null
+          }
+        ]
+      }]
+    }],
+    "default": null
+  }]
+}
