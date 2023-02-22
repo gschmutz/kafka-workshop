@@ -21,7 +21,7 @@ public class KafkaStreamsRunnerCountSessionWindowedCustomSuppressWithTransformer
             .withZone(ZoneId.systemDefault());
 
     public static String formatKey (String key, Instant startTime, Instant endTime) {
-        return key + "@" + formatter.format(startTime) + "->" + formatter.format(startTime);
+        return key + "@" + formatter.format(startTime) + "->" + formatter.format(endTime);
     }
 
     public static void main(String[] args) {

@@ -1081,9 +1081,9 @@ and you can see that the previous session has been closed and a new one has been
 A : 2021-09-26T15:14:46.622+02:00[Europe/Zurich] to 2021-09-26T15:14:46.622+02:00[Europe/Zurich] : 1
 ```
 
-## Aggregating Values 
+## Aggregating Values using `aggregate`
 
-Now let's use Kafka Streams to perform another stateful operations. We will group the messages by key and aggregate (create a sum of the values) the values of the messages per key over 60 seconds.
+Now let's use Kafka Streams to perform another stateful operations. We will group the messages by key and aggregate (create a sum of the values) the values of the messages per key over 60 seconds using a tumbling window (fixed window).
 
 Create a new Java package `com.trivadis.kafkaws.kstream.aggregate` and in it a Java class `KafkaStreamsRunnerAggregateDSL`. 
 
@@ -1200,6 +1200,199 @@ B : 2021-08-22T16:53+02:00[Europe/Zurich] to 2021-08-22T16:54+02:00[Europe/Zuric
 ```
 
 We can see that the values have been summed up by key.
+
+The sum 
+
+## Aggregating Values as a List
+
+Instead of using `aggregate` to sum up the data as presented in the previous section, let's aggregate all the values into a list over the duration of a session. 
+
+In order to collect the values, we create an Avro structured represented by the following schema, which you should add as file `AggregatedList.avsc` into the folder `src/main/avro`:
+
+```json
+{
+  "type": "record",
+  "name": "AggregatedList",
+  "namespace": "com.trivadis.kafkaws.kstream.avro",
+  "fields": [{
+    "name": "list",
+    "type": ["null", {
+      "type": "array",
+      "items": ["null", {
+        "type": "record",
+        "name": "ListItem",
+        "fields": [
+          {
+            "name": "value",
+            "type": ["null", "long"],
+            "default": null
+          }
+        ]
+      }]
+    }],
+    "default": null
+  }]
+}
+```
+
+Generate the necessary java classes by executing `mvn compile`. 
+
+Now let's create the a new Java class `KafkaStreamsRunnerAggregateWithAvroListDSL` in the package `com.trivadis.kafkaws.kstream.aggregate` and add the following code for the implementation
+
+```java
+package com.trivadis.kafkaws.kstream.aggregate;
+
+import com.trivadis.kafkaws.kstream.avro.AggregatedList;
+import com.trivadis.kafkaws.kstream.avro.ListItem;
+import io.confluent.kafka.serializers.AbstractKafkaSchemaSerDeConfig;
+import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde;
+import org.apache.avro.specific.SpecificRecord;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.common.serialization.Serde;
+import org.apache.kafka.common.serialization.Serdes;
+import org.apache.kafka.common.utils.Bytes;
+import org.apache.kafka.streams.KafkaStreams;
+import org.apache.kafka.streams.KeyValue;
+import org.apache.kafka.streams.StreamsBuilder;
+import org.apache.kafka.streams.StreamsConfig;
+import org.apache.kafka.streams.kstream.*;
+import org.apache.kafka.streams.state.SessionStore;
+
+import java.time.Duration;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Properties;
+
+public class KafkaStreamsRunnerAggregateWithAvroListDSL {
+
+    private static <VT extends SpecificRecord> SpecificAvroSerde<VT> createSerde(String schemaRegistryUrl) {
+        SpecificAvroSerde<VT> serde = new SpecificAvroSerde<>();
+        Map<String, String> serdeConfig = Collections
+                .singletonMap(AbstractKafkaSchemaSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, schemaRegistryUrl);
+        serde.configure(serdeConfig, false);
+        return serde;
+    }
+
+    public static void main(String[] args) {
+        // the builder is used to construct the topology
+        StreamsBuilder builder = new StreamsBuilder();
+
+        final String schemaRegistryUrl = "http://dataplatform:8081";
+        final SpecificAvroSerde<AggregatedList> valueSerde = createSerde(schemaRegistryUrl);
+
+        // read from the source topic, "test-kstream-input-topic"
+        KStream<String, String> stream = builder.stream("test-kstream-input-topic");
+
+        // transform the value from String to Long (this is necessary as from the console you can only produce String)
+        KStream<String, Long> transformed = stream.mapValues(v -> Long.valueOf(v));
+
+        // group by key
+        KGroupedStream<String, Long> grouped = transformed.groupByKey();
+
+        // create a tumbling window of 60 seconds
+        TimeWindows tumblingWindow =
+                TimeWindows.of(Duration.ofSeconds(60));
+        SessionWindows sessionWindow =
+                SessionWindows.with(Duration.ofSeconds(30)).grace(Duration.ofSeconds(10));
+
+        Initializer<AggregatedList> initializer = () -> {
+                            AggregatedList list = AggregatedList.newBuilder().setList(new ArrayList<>()).build();
+                            return list;
+        };
+
+        Aggregator<String, Long, AggregatedList> aggregator = (k, v, aggV) -> {
+            aggV.getList().add(ListItem.newBuilder().setValue(v).build());
+            return aggV;
+        };
+
+        Merger<String, AggregatedList> merger = (k, v1,v2) -> {
+            v1.getList().addAll(v2.getList());
+            return v1;
+        };
+
+        // sum the values over the tumbling window of 60 seconds
+        KTable<Windowed<String>, AggregatedList> sumOfValues = grouped
+                //.windowedBy(tumblingWindow)
+                .windowedBy(sessionWindow)
+                .aggregate(
+                        initializer,    /* initializer */
+                        aggregator,
+                        merger,   /* merger */
+                        Materialized.<String, AggregatedList, SessionStore<Bytes, byte[]>>as("time-windowed-aggregated-list-stream-store") /* state store name */
+                                .withKeySerde(Serdes.String())
+                                .withValueSerde(valueSerde)
+                )
+                .suppress(Suppressed.untilWindowCloses(Suppressed.BufferConfig.unbounded()));
+
+        // print the sumOfValues stream
+        sumOfValues.toStream().print(Printed.<Windowed<String>,AggregatedList>toSysOut().withLabel("sumOfValues"));
+
+        // publish the sumOfValues stream
+        final Serde<String> stringSerde = Serdes.String();
+        KStream<Windowed<String>, AggregatedList> sumOfValuesStream = sumOfValues.toStream();
+        KStream<String,String> sumStream = sumOfValuesStream.filter((k,v) -> k.key() == null).map((wk,v) -> new KeyValue<String,String>(wk.key() + " : " + wk.window().startTime().atZone(ZoneId.of("Europe/Zurich")) + " to " + wk.window().endTime().atZone(ZoneId.of("Europe/Zurich")), v.toString()));
+        sumStream.to("test-kstream-output-topic", Produced.with(stringSerde, stringSerde));
+        
+        // set the required properties for running Kafka Streams
+        Properties config = new Properties();
+        config.put(StreamsConfig.APPLICATION_ID_CONFIG, "AvroListDSL");
+        config.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "dataplatform:9092");
+        config.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
+        config.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass());
+        config.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.String().getClass());
+        config.put(StreamsConfig.CACHE_MAX_BYTES_BUFFERING_CONFIG, 0);
+        config.put(StreamsConfig.COMMIT_INTERVAL_MS_CONFIG, 0);
+
+        // build the topology and start streaming
+        KafkaStreams streams = new KafkaStreams(builder.build(), config);
+        streams.start();
+
+        // close Kafka Streams when the JVM shuts down (e.g. SIGTERM)
+        Runtime.getRuntime().addShutdownHook(new Thread(streams::close));
+    }
+}
+```
+
+As we are reusing the topics from the previous solution, you might want to clear (empty) both the input and the out topic before starting the program. You can easily do that using AKHQ (navigate to the topic, i.e. <http://dataplatform:28107/ui/docker-kafka-server/topic/test-kstream-input-topic> and click on **Empty Topic** on the bottom). 
+
+Start the program and then first run a `kcat` consumer on the output topic
+
+```bash
+kcat -b dataplatform:9092 -t test-kstream-output-topic -s value=q -o end -f "%k,%s\n"
+```
+
+with that in place, in 2nd terminal produce some messages using `kcat` in producer mode on the input topic
+
+```bash
+kcat -b dataplatform:9092 -t test-kstream-input-topic -P -K , 
+```
+
+produce some values with `<key>,<value>` syntax, where the value has to be a numeric value, such as
+
+```bash
+A,1
+A,2
+B,10
+B,2
+C,3
+D,5
+E,6
+D,9
+```
+
+within a single minute. After a minute the output from the consumer should be similar to the one shown below
+
+```bash
+E : 2021-08-22T16:53+02:00[Europe/Zurich] to 2021-08-22T16:54+02:00[Europe/Zurich],6
+A : 2021-08-22T16:53+02:00[Europe/Zurich] to 2021-08-22T16:54+02:00[Europe/Zurich],3
+D : 2021-08-22T16:53+02:00[Europe/Zurich] to 2021-08-22T16:54+02:00[Europe/Zurich],14
+C : 2021-08-22T16:53+02:00[Europe/Zurich] to 2021-08-22T16:54+02:00[Europe/Zurich],3
+B : 2021-08-22T16:53+02:00[Europe/Zurich] to 2021-08-22T16:54+02:00[Europe/Zurich],12
+```
+
+
 
 ## Using Custom State - with Transformer (deprecated since 3.3)
 

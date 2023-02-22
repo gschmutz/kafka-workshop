@@ -57,18 +57,18 @@ public class KafkaStreamsRunnerAggregateWithAvroListDSL {
 
         Initializer<AggregatedList> initializer = () -> {
                             AggregatedList list = AggregatedList.newBuilder().setList(new ArrayList<>()).build();
-                            System.out.println("Initializer Called");
+//                            System.out.println("Initializer Called");
                             return list;
         };
 
         Aggregator<String, Long, AggregatedList> aggregator = (k, v, aggV) -> {
-            System.out.println("aggregator - k: " + k + "::v: " + v + "::aggV: " + aggV);
+//            System.out.println("aggregator - k: " + k + "::v: " + v + "::aggV: " + aggV);
             aggV.getList().add(ListItem.newBuilder().setValue(v).build());
             return aggV;
         };
 
         Merger<String, AggregatedList> merger = (k, v1,v2) -> {
-            System.out.println("merge - k: " + k + "::v1: " + v1 + "::v2: " + v2);
+//            System.out.println("merge - k: " + k + "::v1: " + v1 + "::v2: " + v2);
             v1.getList().addAll(v2.getList());
             return v1;
         };
@@ -88,7 +88,7 @@ public class KafkaStreamsRunnerAggregateWithAvroListDSL {
                 .suppress(Suppressed.untilWindowCloses(Suppressed.BufferConfig.unbounded()));
 
         // print the sumOfValues stream
-        sumOfValues.toStream().print(Printed.<Windowed<String>,AggregatedList>toSysOut().withLabel("sumOfValues"));
+        sumOfValues.toStream().print(Printed.<Windowed<String>,AggregatedList>toSysOut().withLabel("aggregatedValues"));
 
         // publish the sumOfValues stream
         final Serde<String> stringSerde = Serdes.String();

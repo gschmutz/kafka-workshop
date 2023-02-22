@@ -14,6 +14,7 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Properties;
+import java.util.UUID;
 
 import static org.apache.kafka.streams.kstream.Suppressed.BufferConfig.unbounded;
 
@@ -21,14 +22,41 @@ public class KafkaStreamsRunnerCountSessionWindowedSuppressedDSL {
     private static final Serde<String> STRING_SERDE = Serdes.String();
     private static final Serde<Long> LONG_SERDE = Serdes.Long();
 
-    private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy hh:mm.ss")
-            .withZone(ZoneId.systemDefault());
+    private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm.ss")
+            .withZone(ZoneId.of("UTC"));
 
     public static String formatKey (String key, Instant startTime, Instant endTime) {
-        return key + "@" + formatter.format(startTime) + "->" + formatter.format(startTime);
+        return key + "@" + formatter.format(startTime) + "->" + formatter.format(endTime);
     }
 
     public static void main(String[] args) {
+        final KafkaStreams streams = new KafkaStreams(getTopology(30,15), getKafkaProperties());
+        streams.cleanUp();
+        streams.start();
+        Runtime.getRuntime().addShutdownHook(new Thread(streams::close));
+    }
+
+    public static Properties getKafkaProperties() {
+        // set the required properties for running Kafka Streams
+        Properties config = new Properties();
+        config.put(StreamsConfig.APPLICATION_ID_CONFIG, UUID.randomUUID().toString());
+        config.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "dataplatform:9092");
+        config.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
+        config.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass());
+        config.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.String().getClass());
+        // disable caching to see session merging
+        config.put(StreamsConfig.BUFFERED_RECORDS_PER_PARTITION_CONFIG, 1);
+        config.put(StreamsConfig.CACHE_MAX_BYTES_BUFFERING_CONFIG, 0);
+        config.put(StreamsConfig.POLL_MS_CONFIG, 1);
+        config.put(StreamsConfig.WINDOW_STORE_CHANGE_LOG_ADDITIONAL_RETENTION_MS_CONFIG, 1);
+
+        return config;
+    }
+
+
+
+    public static Topology getTopology(int gap, int grace) {
+
         // the builder is used to construct the topology
         StreamsBuilder builder = new StreamsBuilder();
 
@@ -38,9 +66,9 @@ public class KafkaStreamsRunnerCountSessionWindowedSuppressedDSL {
         // read from the source topic, "test-kstream-input-topic"
         KStream<String, String> stream = builder.stream("test-kstream-input-topic");
 
-        // create a session window with an inactivity gap to 15 seconds and 30 seconds grace period
+        // create a session window with an inactivity gap to 30 seconds and 15 seconds grace period
         SessionWindows sessionWindow =
-                SessionWindows.ofInactivityGapAndGrace(Duration.ofSeconds(15), Duration.ofSeconds(30));
+                SessionWindows.ofInactivityGapAndGrace(Duration.ofSeconds(gap), Duration.ofSeconds(grace));
 
         KTable<Windowed<String>, Long> counts = stream.groupByKey()
                 .windowedBy(sessionWindow)
@@ -52,28 +80,13 @@ public class KafkaStreamsRunnerCountSessionWindowedSuppressedDSL {
 
         KStream<String, String> printableStream = sessionedStream.map((key, value) -> new KeyValue<>(formatKey(key.key(), key.window().startTime(), key.window().endTime())
                                                                                                         , String.valueOf(value)));
+
+        //printableStream.print(Printed.<String,String>toSysOut().withLabel("count"));
         printableStream.to("test-kstream-output-topic", Produced.with(Serdes.String(), Serdes.String()));
 
-        // set the required properties for running Kafka Streams
-        Properties config = new Properties();
-        config.put(StreamsConfig.APPLICATION_ID_CONFIG, "countSessionWindowedWithGrace");
-        config.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "dataplatform:9092");
-        config.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
-        config.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass());
-        config.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.String().getClass());
-
-        config.put(StreamsConfig.BUFFERED_RECORDS_PER_PARTITION_CONFIG, 1);
-        config.put(StreamsConfig.CACHE_MAX_BYTES_BUFFERING_CONFIG, 0);
-        config.put(StreamsConfig.COMMIT_INTERVAL_MS_CONFIG, 1);
-        config.put(StreamsConfig.POLL_MS_CONFIG, 1);
-        config.put(StreamsConfig.WINDOW_STORE_CHANGE_LOG_ADDITIONAL_RETENTION_MS_CONFIG, 1);
 
         // build the topology and start streaming
         Topology topology = builder.build();
-        KafkaStreams streams = new KafkaStreams(topology, config);
-        streams.start();
-
-        // close Kafka Streams when the JVM shuts down (e.g. SIGTERM)
-        Runtime.getRuntime().addShutdownHook(new Thread(streams::close));
+        return topology;
     }
 }
