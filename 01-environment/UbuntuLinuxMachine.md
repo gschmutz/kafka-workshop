@@ -28,7 +28,7 @@ $ ip addr
 ### Install some helpful utilities
 
 ```bash
-sudo apt-get install -y curl jq kafkacat
+sudo apt-get install -y curl jq kafkacat openssh-server
 ```
 
 ### Installing Docker
@@ -36,6 +36,12 @@ sudo apt-get install -y curl jq kafkacat
 The instructions below are taken from here: <https://docs.docker.com/engine/install/ubuntu/>
 
 **Setup the repository**
+
+Uninstall old versions
+
+```bash
+sudo apt-get remove docker docker-engine docker.io containerd runc
+```
 
 Update `apt` package index and install packages
 
@@ -71,6 +77,18 @@ Update the apt package index, and install the latest version of Docker Engine, c
 
 ```bash    
 sudo apt-get update
+```
+
+**Note:** if you receive a GPG error when running apt-get update
+
+```bash
+sudo chmod a+r /etc/apt/keyrings/docker.gpg
+sudo apt-get update
+```
+
+Now install the latest version of Docker
+
+```bash
 sudo apt-get install docker-ce docker-ce-cli containerd.io docker-compose-plugin
 ```
 
@@ -90,12 +108,26 @@ docker -v
 docker ps
 ```
 
-### Installing Docker Compose
+### Installing Docker Compose Switch
+
+[Compose Switch](https://github.com/docker/compose-switch) is a replacement to the Compose V1 docker-compose (python) executable.
+
+Download compose-switch binary for your architecture:
 
 ```bash
-sudo curl -SL https://github.com/docker/compose/releases/download/v2.7.0/docker-compose-linux-x86_64 -o /usr/local/bin/docker-compose
-sudo chmod +x /usr/local/bin/docker-compose
-sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
+sudo curl -fL https://github.com/docker/compose-switch/releases/latest/download/docker-compose-linux-amd64 -o /usr/local/bin/compose-switch
+```
+
+Make compose-switch executable:
+
+```bash
+sudo chmod +x /usr/local/bin/compose-switch
+```
+
+Define an "alternatives" group for docker-compose command
+
+```
+sudo update-alternatives --install /usr/local/bin/docker-compose docker-compose /usr/local/bin/compose-switch 99
 ```
 
 ### Installing Platys
@@ -103,7 +135,7 @@ sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
 Installing `platys` is optional. It is an [open source tool](http://github.com/trivadispf/platys) we have used to generate the docker-compose stack we will use below.
 
 ```bash
-sudo curl -L "https://github.com/TrivadisPF/platys/releases/download/${PLATYS_VERSION}/platys_${PLATYS_VERSION}_linux_x86_64.tar.gz" -o /tmp/platys.tar.gz
+sudo curl -L "https://github.com/TrivadisPF/platys/releases/download/2.4.3/platys_2.4.3_linux_x86_64.tar.gz" -o /tmp/platys.tar.gz
 tar zvxf /tmp/platys.tar.gz 
 sudo mv platys /usr/local/bin/
 sudo chown root:root /usr/local/bin/platys
