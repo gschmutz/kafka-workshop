@@ -14,8 +14,8 @@ import org.apache.kafka.common.serialization.LongDeserializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 
 
-public class KafkaConsumerAvro {
-    private final static String TOPIC = "test-java-avro-topic";
+public class KafkaConsumerJson {
+    private final static String TOPIC = "test-java-json-topic";
     private final static String BOOTSTRAP_SERVERS =
             "dataplatform:9092, dataplatform:9093, dataplatform:9094";
     private final static String SCHEMA_REGISTRY_URL = "http://dataplatform:8081";

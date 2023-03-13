@@ -104,10 +104,10 @@
 						<param>http://${DATAPLATFORM_IP}:8081</param>
 					</schemaRegistryUrls>
 					<schemaTypes>
-						<test-java-json-topic>JSON</test-java-json-topic>
+						<test-java-json-topic-value>JSON</test-java-json-topic-value>
 					</schemaTypes>
 					<subjects>
-						<test-java-json-topic>src/main/jsonschema/Notification-v1.json</test-java-json-topic>
+						<test-java-json-topic-value>src/main/jsonschema/Notification-v1.json</test-java-json-topic-value>
 					</subjects>
 				</configuration>
 				<goals>
