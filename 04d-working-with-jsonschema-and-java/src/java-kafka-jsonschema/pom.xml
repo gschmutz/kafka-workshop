@@ -92,6 +92,15 @@
 							<mainClass>com.trivadis.kafkaws.producer.KafkaProducerJson</mainClass>
 						</configuration>
 					</execution>
+					<execution>
+						<id>consumer</id>
+						<goals>
+							<goal>java</goal>
+						</goals>
+						<configuration>
+							<mainClass>com.trivadis.kafkaws.producer.KafkaConsumerJson</mainClass>
+						</configuration>
+					</execution>
 				</executions>
 			</plugin>
 
