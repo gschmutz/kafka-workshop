@@ -1,14 +1,11 @@
 package com.trivadis.kafkaws.producer;
 
-import java.util.Properties;
-
 import com.trivadis.kafkaws.avro.v1.Notification;
-import org.apache.kafka.clients.producer.*;
-import org.apache.kafka.common.serialization.LongSerializer;
-import org.apache.kafka.common.serialization.StringSerializer;
-
 import io.confluent.kafka.serializers.KafkaAvroSerializer;
 import io.confluent.kafka.serializers.KafkaAvroSerializerConfig;
+import org.apache.kafka.clients.producer.*;
+
+import java.util.Properties;
 
 public class KafkaProducerAvro {
 

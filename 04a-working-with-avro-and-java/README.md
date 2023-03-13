@@ -289,17 +289,12 @@ Add the following code to the empty class to create a Kafka Producer. It is simi
 ```java
 package com.trivadis.kafkaws.producer;
 
-import java.util.Properties;
-
-import org.apache.kafka.clients.producer.KafkaProducer;
-import org.apache.kafka.clients.producer.Producer;
-import org.apache.kafka.clients.producer.ProducerConfig;
-import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.common.serialization.LongSerializer;
-import org.apache.kafka.common.serialization.StringSerializer;
-
+import com.trivadis.kafkaws.avro.v1.Notification;
 import io.confluent.kafka.serializers.KafkaAvroSerializer;
 import io.confluent.kafka.serializers.KafkaAvroSerializerConfig;
+import org.apache.kafka.clients.producer.*;
+
+import java.util.Properties;
 
 public class KafkaProducerAvro {
 
