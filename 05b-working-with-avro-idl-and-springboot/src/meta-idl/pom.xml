@@ -74,7 +74,7 @@
                         <param>http://${env.DATAPLATFORM_IP}:8081</param>
                     </schemaRegistryUrls>
                     <subjects>
-                        <test-spring-avro-idl-topic-NotificationSentEvent-value>target/generated-sources/avro/schema/NotificationSentEvent.avsc</test-spring-avro-idl-topic-NotificationSentEvent-value>
+                        <test-spring-avro-idl-topic-value>target/generated-sources/avro/schema/NotificationSentEvent.avsc</test-spring-avro-idl-topic-value>
                     </subjects>
                 </configuration>
                 <goals>
