@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.UUID;
 
 public class KafkaProducerSyncWithHeader {
 
@@ -29,33 +30,33 @@ public class KafkaProducerSyncWithHeader {
         return new KafkaProducer<>(props);
     }
 
-    private static void runProducer(int sendMessageCount, int waitMsInBetween, long id) throws Exception {
-        Long key = (id > 0) ? id : null;
+        private static void runProducer(int sendMessageCount, int waitMsInBetween, long id) throws Exception {
+            Long key = (id > 0) ? id : null;
 
-        try (Producer<Long, String> producer = createProducer()) {
-            for (int index = 0; index < sendMessageCount; index++) {
-                long time = System.currentTimeMillis();
-                Integer partition = null;
-                Long timestamp = null;
-                List<Header> headers = new ArrayList<>();
-                headers.add(new RecordHeader("String", "string".getBytes(StandardCharsets.UTF_8)));
-                headers.add(new RecordHeader("Long", String.valueOf(Long.valueOf("0")).getBytes(StandardCharsets.UTF_8)));
+            try (Producer<Long, String> producer = createProducer()) {
+                for (int index = 0; index < sendMessageCount; index++) {
+                    long time = System.currentTimeMillis();
+                    Integer partition = null;
+                    Long timestamp = null;
+                    List<Header> headers = new ArrayList<>();
+                    headers.add(new RecordHeader("messageId", UUID.randomUUID().toString().getBytes(StandardCharsets.UTF_8)));
+                    headers.add(new RecordHeader("source", "java-kafka".getBytes(StandardCharsets.UTF_8)));
 
-                ProducerRecord<Long, String> record = new ProducerRecord<>(TOPIC, partition,  timestamp, key, "[" + id + "] Hello Kafka " + index + " => " + LocalDateTime.now(), headers);
-                
-                RecordMetadata metadata = producer.send(record).get();
+                    ProducerRecord<Long, String> record = new ProducerRecord<>(TOPIC, partition,  timestamp, key, "[" + id + "] Hello Kafka " + index + " => " + LocalDateTime.now(), headers);
 
-                long elapsedTime = System.currentTimeMillis() - time;
-                System.out.printf("[" + id + "] sent record(key=%s value=%s) "
-                        + "meta(partition=%d, offset=%d) time=%d\n",
-                        record.key(), record.value(), metadata.partition(),
-                        metadata.offset(), elapsedTime);
+                    RecordMetadata metadata = producer.send(record).get();
 
-                // Simulate slow processing
-                Thread.sleep(waitMsInBetween);
+                    long elapsedTime = System.currentTimeMillis() - time;
+                    System.out.printf("[" + id + "] sent record(key=%s value=%s) "
+                            + "meta(partition=%d, offset=%d) time=%d\n",
+                            record.key(), record.value(), metadata.partition(),
+                            metadata.offset(), elapsedTime);
+
+                    // Simulate slow processing
+                    Thread.sleep(waitMsInBetween);
+                }
             }
         }
-    }
 
     public static void main(String... args) throws Exception {
         if (args.length == 0) {

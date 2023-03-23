@@ -143,7 +143,7 @@ Connect to the `kafka-1` container
 docker exec -ti kafka-1 bash
 ```
 
-and execute the necessary kafka-topics command.
+and execute the necessary `kafka-topics` command.
 
 ```bash
 kafka-topics --create \
@@ -308,7 +308,7 @@ Part-5 => :[0] Hello Kafka 40
 
 ### Using the Id field as the key
 
-If we specify an id <> 0 when runnning the producer, the id is used as the key
+If we specify an id <> 0 when running the producer, the id is used as the key
 
 ```java
     private static void runProducer(int sendMessageCount, int waitMsInBetween, long id) throws Exception {
@@ -769,6 +769,44 @@ nothing consumed
 **Questions**
 
 - Why is consumer 2 the only one getting data?
+
+## Producing Kafka Headers
+
+To produce a Kafka message with Kafka Headers, you have to first create a `List<Header>` instance and then headers of type `RecordHeader` as shown below (showing only the enhanced `runProducer` method):
+
+```java
+    private static void runProducer(int sendMessageCount, int waitMsInBetween, long id) throws Exception {
+        Long key = (id > 0) ? id : null;
+
+        try (Producer<Long, String> producer = createProducer()) {
+            for (int index = 0; index < sendMessageCount; index++) {
+                long time = System.currentTimeMillis();
+                Integer partition = null;
+                Long timestamp = null;
+                
+                // creating the Kafka Headers
+                List<Header> headers = new ArrayList<>();
+                headers.add(new RecordHeader("messageId", UUID.randomUUID().toString().getBytes(StandardCharsets.UTF_8)));
+                headers.add(new RecordHeader("source", "java-kafka".getBytes(StandardCharsets.UTF_8)));
+
+                ProducerRecord<Long, String> record = new ProducerRecord<>(TOPIC, partition,  timestamp, key, "[" + id + "] Hello Kafka " + index + " => " + LocalDateTime.now(), headers);
+                
+                RecordMetadata metadata = producer.send(record).get();
+
+                long elapsedTime = System.currentTimeMillis() - time;
+                System.out.printf("[" + id + "] sent record(key=%s value=%s) "
+                        + "meta(partition=%d, offset=%d) time=%d\n",
+                        record.key(), record.value(), metadata.partition(),
+                        metadata.offset(), elapsedTime);
+
+                // Simulate slow processing
+                Thread.sleep(waitMsInBetween);
+            }
+        }
+    }
+```
+
+The `RecordHeader` constructor accepts a key of type `String` and a value of type `byte[]`. 
 
 ## Changing the Value Serialization/Deserialization to use JSON
 
