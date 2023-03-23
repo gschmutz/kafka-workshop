@@ -133,6 +133,8 @@ We again refer to properties, which will be defined later in the `application.ym
 
 We change the generated Spring Boot application to be a console appliation by implementing the `CommandLineRunner` interface. The `run` method holds the same code as the `main()` method in [Workshop 4: Working with Kafka from Java](../04-producing-consuming-kafka-with-java). The `runProducer` method is also similar, we just use the `kafkaEventProducer` instance injected by Spring to produce the messages to Kafka.
 
+Additionally we specify the `@Transactional` annotation on the `run()` method to mark the whole procedure as one transaction. With the `forceErrorAfter` property injected from the `appplication.yml` we can control if and when an exception should be thrown inside the `runProducer()` method:
+
 ```java
 package com.trivadis.kafkaws.springbootkafkaproducer;
 
@@ -154,6 +156,9 @@ public class SpringBootKafkaProducerApplication implements CommandLineRunner {
 	@Autowired
 	private KafkaEventProducer kafkaEventProducer;
 
+	@Value("${force.error.after}")
+	private Integer forceErrorAfter;
+
 	public static void main(String[] args) {
 		SpringApplication.run(SpringBootKafkaProducerApplication.class, args);
 	}
@@ -164,24 +169,24 @@ public class SpringBootKafkaProducerApplication implements CommandLineRunner {
 		LOG.info("EXECUTING : command line runner");
 
 		if (args.length == 0) {
-			runProducer(100, 10, 0, false);
+			runProducer(100, 10, 0);
 		} else {
-			runProducer(Integer.parseInt(args[0]), Integer.parseInt(args[1]), Long.parseLong(args[2]), Boolean.parseBoolean(args[3]));
+			runProducer(Integer.parseInt(args[0]), Integer.parseInt(args[1]), Long.parseLong(args[2]));
 		}
 
 	}
 
-	private void runProducer(int sendMessageCount, int waitMsInBetween, long id, boolean withError) throws Exception {
+	private void runProducer(int sendMessageCount, int waitMsInBetween, long id) throws Exception {
 		Long key = (id > 0) ? id : null;
 
 		for (int index = 0; index < sendMessageCount; index++) {
 			String value =  "[" + id + "] Hello Kafka " + index + " => " + LocalDateTime.now();
 
-			kafkaEventProducer.produce(index, key, value);
-
-			if (withError && index > 5) {
+			if (forceErrorAfter != -1 && index > forceErrorAfter) {
 				throw new RuntimeException();
 			}
+
+			kafkaEventProducer.produce(index, key, value);
 
 			// Simulate slow processing
 			Thread.sleep(waitMsInBetween);
@@ -199,6 +204,8 @@ First let's rename the existing `application.properties` file to `application.ym
 Add the following settings to configure the Kafka cluster and the name of the topic:
 
 ```yml
+force.error.after: -1
+
 topic:
   name: test-spring-tx-topic
   replication-factor: 3
@@ -219,6 +226,8 @@ logging:
     org.springframework.kafka.transaction: debug
 #    org.springframework.data: debug
 ```
+
+A value of `-1` for the `force.error. after` property does not throw any error. Any value > `0` will throw and error after that many number of messages have been sent.
 
 For the IP address of the Kafka cluster we refer to an environment variable, which we have to declare before running the application.
 
@@ -278,9 +287,11 @@ Once you have unzipped the project, you’ll have a very simple structure.
 
 Import the project as a Maven Project into your favourite IDE for further development. 
 
-### Implement a Kafka Consumer in Spring
+### Implement a Kafka Consumer with another Producer in Spring
 
 Start by creating a simple Java class `KafkaEventConsumer` within the `com.trivadis.kafkaws.springbootkafkaconsumer` package, which we will use to consume messages from Kafka. 
+
+We use a `@Transactional` method to mark the start of the Kafka transaction before entering the `receive()` method and consuming the messages from Kafka. The whole processing logic inside the `receive()`method will be executed inside a Kafka transaction, including the produce to the output topic. 
 
 ```java
 package com.trivadis.kafkaws.springbootkafkaconsumer;
@@ -288,29 +299,49 @@ package com.trivadis.kafkaws.springbootkafkaconsumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 @Component
 public class KafkaEventConsumer {
     private static final Logger LOGGER = LoggerFactory.getLogger(KafkaEventConsumer.class);
 
-    @KafkaListener(topics = "${topic.name}", groupId = "simple-consumer-group")
-    public void receive(ConsumerRecord<Long, String> consumerRecord) {
+    @Autowired
+    private KafkaTemplate<Long, String> kafkaTemplate;
+
+    @Value("${topic.out.name}")
+    private String outputTopic;
+
+    @Value("${force.error.after}")
+    private Integer forceErrorAfter;
+
+    private Integer count = 0;
+
+    @KafkaListener(id = "spring-boot-tx", topics = "${topic.in.name}", groupId = "simple-consumer-group", concurrency = "3")
+    @Transactional
+    public void receive(ConsumerRecord<Long, String> consumerRecord) throws NoSuchMethodException {
         String value = consumerRecord.value();
         Long key = consumerRecord.key();
         LOGGER.info("received key = '{}' with payload='{}'", key, value);
+
+        kafkaTemplate.send(outputTopic, key, value);
+
+        // force failure?
+        if (forceErrorAfter != -1 && count > forceErrorAfter) {
+            // throwing an NoSuchMethodException to force stopping the KafkaListener (so that no retries are done)
+            throw new NoSuchMethodException();
+        }
+
+        count++;
     }
 }
 ```
 
-This class uses the `Component` annotation to have it registered as bean in the Spring context and the `KafkaListener` annotation to specify a listener method to be called for each record consumed from the Kafka input topic. The name of the topic is specified as a property to be read again from the `application.yml` configuration file.
-
-In the code we only log the key and value received to the console. In real life, we would probably inject another bean into the `KafkaEventConsumer` to perform the message processing.
-
-Starting with version 2.3, Spring Kafka sets `enable.auto.commit` to `false` unless explicitly set in the configuration. Previously, the Kafka default (true) was used if the property was not set.
-
-If `enable.auto.commit` is false, the containers support several `AckMode` settings ([see documentation](https://docs.spring.io/spring-kafka/reference/html/#committing-offsets)). The default AckMode is `BATCH`, which commit the offset when all the records returned by the `poll()` have been processed. Other options allow to commit manually, after a given time has passed or after a given number of records have been consumed.
+We can again provide the `force.error.after` property through the `application.yml` to control if and when an exception should be raised from within the processing logic. 
  
 ### Configure Kafka through application.yml configuration file
 
@@ -319,16 +350,35 @@ First let's rename the existing `application.properties` file to `application.ym
 Add the following settings to configure the Kafka cluster and the name of the two topics:
 
 ```yml
+force.error.after: -1
+
 topic:
-  name: test-spring-topic
+  in.name: test-spring-tx-topic
+  out.name: out-test-spring-tx-topic
+  out.replication-factor: 3
+  out.partitions: 12
 
 spring:
   kafka:
+
     bootstrap-servers: ${DATAPLATFORM_IP}:9092
     consumer:
       key-deserializer: org.apache.kafka.common.serialization.LongDeserializer
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-```
+      properties:
+        isolation.level: read_committed
+#        isolation.level: read_uncommitted
+
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.LongSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      transaction-id-prefix: tx-
+
+logging:
+  pattern.console: "%clr(%d{HH:mm:ss.SSS}){blue} %clr(---){faint} %clr([%15.15t]){yellow} %clr(:){red} %clr(%m){faint}%n"
+  level:
+    org.springframework.transaction: trace
+    org.springframework.kafka.transaction: debug```
 
 For the IP address of the Kafka cluster we refer to an environment variable, which we have to declare before running the application.
 
@@ -352,138 +402,3 @@ Now let's run the application
 mvn spring-boot:run
 ```
 
-## Various Options for Producer & Consumer
-
-### Produce asynchronously
-
-You can also produce asynchronously using Spring Kafka. Let's implement the `KafkaEventProducer` class in an asynchronous way:
-
-```java
-package com.trivadis.kafkaws.springbootkafkaproducer;
-
-import org.apache.kafka.clients.producer.ProducerRecord;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.kafka.core.KafkaProducerException;
-import org.springframework.kafka.core.KafkaSendCallback;
-import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.kafka.support.SendResult;
-import org.springframework.stereotype.Component;
-import org.springframework.util.concurrent.ListenableFuture;
-
-@Component
-public class KafkaEventProducerAsync {
-    private static final Logger LOGGER = LoggerFactory.getLogger(KafkaEventProducerAsync.class);
-
-    @Autowired
-    private KafkaTemplate<Long, String> kafkaTemplate;
-
-    @Value("${topic.name}")
-    String kafkaTopic;
-
-    public void produce(Integer id, Long key, String value) {
-        long time = System.currentTimeMillis();
-
-        ListenableFuture<SendResult<Long, String>> future = kafkaTemplate.send(kafkaTopic, key, value);
-
-        future.addCallback(new KafkaSendCallback<Long, String>() {
-            @Override
-            public void onSuccess(SendResult<Long, String> result) {
-                long elapsedTime = System.currentTimeMillis() - time;
-                System.out.printf("[" + id + "] sent record(key=%s value=%s) "
-                                + "meta(partition=%d, offset=%d) time=%d\n",
-                        key, value, result.getRecordMetadata().partition(),
-                        result.getRecordMetadata().offset(), elapsedTime);
-            }
-
-            @Override
-            public void onFailure(KafkaProducerException ex) {
-                ProducerRecord<Long, String> failed = ex.getFailedProducerRecord();
-            }
-        } );
-
-    }
-}
-```
-
-To test it, switch the injection in the `SpringBootKafkaProducerApplication` class to use the `KafkaEventProducerAsync` class:
-
-```java
-	@Autowired
-	private KafkaEventProducerAsync kafkaEventProducer;
-```
-
-### Adding Message Filters for Listeners
-
-Configuring message filtering is actually very simple. You only need to configure a `RecordFilterStrategy` (message filtering strategy) for the listening container factory. When it returns `true`, the message will be discarded. When it returns `false`, the message can normally reach the listening container.
-
-Add the following additional configuration to the `SpringBootKafkaConsumerApplication` class. Here we just discard all messages which do not contain `Kafka 5' in its value:
-
-```java
-    @Autowired
-    private ConsumerFactory consumerFactory;
-
-    @Bean
-    public ConcurrentKafkaListenerContainerFactory<Long, String> filterContainerFactory() {
-        ConcurrentKafkaListenerContainerFactory<Long, String> factory = new ConcurrentKafkaListenerContainerFactory<>();
-        factory.setConsumerFactory(consumerFactory);
-        factory.setRecordFilterStrategy(
-                record -> !record.value().contains("Kafka 5"));
-        return factory;
-    }
-```
-
-To use this factory instead of the default one created by the Spring Boot framework, you have to specify the `containerFactory` parameter in the `@KafakListener` annotation.
-
-```java
-    @KafkaListener(topics = "${topic.name}", groupId = "simple-consumer-group", containerFactory = "filterContainerFactory")
-    public void receive(ConsumerRecord<Long, String> consumerRecord) {
-```
-
-Message filtering can be used for example to filter duplicate messages.
-
-### Commit after given number of records
-
-To commit offsets after a given number of records have been processed, swich the `AckMode` from `batch` to `count` and add the `ackCount` configuration to the `application.yml` file:
-
-```yml
-spring:
-  kafka:
-    bootstrap-servers: ${DATAPLATFORM_IP}:9092
-    consumer:
-      ..
-    listener:
-      ack-mode: count
-      ack-count: 40
-```
-
-To check that commits are done after 40 records, you can consume from the `__consumer_offsets`topic using the following enhanced version of the `kafka-console-consumer`:
-
-```bash
-docker exec -ti kafka-1 kafka-console-consumer --formatter "kafka.coordinator.group.GroupMetadataManager\$OffsetsMessageFormatter" --bootstrap-server kafka-1:19092 --topic __consumer_offsets
-```
-
-
-### Manual Commit when consuming records
-
-In the `@KafkaListener` method, add an additional parameter to get the `acknowledgment` bean on which you can invoke the `acknowledge()` method.
-
-```java
-public class KafkaEventConsumer {
-    private static final Logger LOGGER = LoggerFactory.getLogger(KafkaEventConsumer.class);
-
-    @KafkaListener(topics = "${topic.name}", groupId = "simple-consumer-group")
-    public void receive(ConsumerRecord<Long, String> consumerRecord, Acknowledgment acknowledgment) {
-        String value = consumerRecord.value();
-        Long key = consumerRecord.key();
-        LOGGER.info("received key = '{}' with payload='{}'", key, value);
-
-        acknowledgment.acknowledge();
-    }
-
-}
-```
-
-Set the `ack-mode` to `manual` in the `application.yml`. 
