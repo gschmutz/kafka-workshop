@@ -450,12 +450,12 @@ spring:
       value-serializer: io.confluent.kafka.serializers.KafkaAvroSerializer
       properties:
         auto.register.schemas: false
-        use.latest.version: true
     properties:
       schema.registry.url: http://${DATAPLATFORM_IP}:8081
+      avro.remove.java.properties: true
 ```
 
-Here again we swith the value-serializer from `StringSerializer` to the `KafkaAvroSerializer` and add the property `schema.registry.url` to configure the location of the Confluent Schema Registry REST API.
+Here again we switch the `value-serializer` from `StringSerializer` to the `KafkaAvroSerializer` and add the property `schema.registry.url` to configure the location of the Confluent Schema Registry REST API.
 
 For the IP address of the Kafka cluster we refer to an environment variable, which we have to declare before running the application.
 
