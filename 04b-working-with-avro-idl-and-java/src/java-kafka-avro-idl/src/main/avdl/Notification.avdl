@@ -9,7 +9,7 @@ protocol NotificationProtocol {
 			/**
 			This is the ID of a notification, optional
  			*/
-			union {null, long} @javaAnnotation("Deprecated") id;		// optional, should be changed in the future to mandatory!
+			union {null, long}  id;		// optional, should be changed in the future to mandatory
 
 			/** This is the message of the notification
  			*/
