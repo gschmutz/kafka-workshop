@@ -1,0 +1,21 @@
+force.error.after: -1
+
+topic:
+  name: test-spring-tx-topic
+  replication-factor: 3
+  partitions: 12
+
+spring:
+  kafka:
+    bootstrap-servers: ${DATAPLATFORM_IP}:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.LongSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      transaction-id-prefix: tx-
+
+logging:
+  pattern.console: "%clr(%d{HH:mm:ss.SSS}){blue} %clr(---){faint} %clr([%15.15t]){yellow} %clr(:){red} %clr(%m){faint}%n"
+  level:
+    org.springframework.transaction: trace
+    org.springframework.kafka.transaction: debug
+#    org.springframework.data: debug
