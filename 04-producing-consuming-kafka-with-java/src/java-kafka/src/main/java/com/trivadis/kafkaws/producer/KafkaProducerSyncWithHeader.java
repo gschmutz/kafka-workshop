@@ -39,7 +39,7 @@ public class KafkaProducerSyncWithHeader {
                 Long timestamp = null;
                 List<Header> headers = new ArrayList<>();
                 headers.add(new RecordHeader("String", "string".getBytes(StandardCharsets.UTF_8)));
-                headers.add(new RecordHeader("Long", Long.valueOf("0").getBytes(StandardCharsets.UTF_8)));
+                headers.add(new RecordHeader("Long", String.valueOf(Long.valueOf("0")).getBytes(StandardCharsets.UTF_8)));
 
                 ProducerRecord<Long, String> record = new ProducerRecord<>(TOPIC, partition,  timestamp, key, "[" + id + "] Hello Kafka " + index + " => " + LocalDateTime.now(), headers);
                 
