@@ -5,7 +5,33 @@ The Platform contains a fully working and running Kafka installation with the ne
 
 ## For Java-based workshops
 
-## Installing IntelliJ IDEA
+### Installing Java 11
+
+Per default Java 8 is installed. However some of the workshops assume Java 11. 
+To install Java 11 perform
+
+```bash
+sudo yum update 
+
+sudo yum install java-11-openjdk
+sudo yum install java-11-openjdk-devel
+```
+
+and then activate the Java 11 environment by executing
+
+```bash
+sudo update-alternatives --config 'java'
+sudo update-alternatives --config 'javac'
+```
+
+select both time the Java 11 environment and then test if Java 11 is used
+
+```bash
+java -version
+javac -version
+```
+
+### Installing IntelliJ IDEA
 
 * Open Firefox by clicking on **Applications** in the top menu and select **Firefox** 
 * navigate to the IntelliJ Community download: <https://www.jetbrains.com/idea/download/#section=linux> and download the Community Edition as a `tar.gz` file
@@ -16,7 +42,7 @@ The Platform contains a fully working and running Kafka installation with the ne
 
 ![](./images/extract-intellij.png)
 
-## Starting IntelliJ IDEA
+### Starting IntelliJ IDEA
 
 To start IntelliJ
 
