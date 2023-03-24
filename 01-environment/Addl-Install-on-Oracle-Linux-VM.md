@@ -31,6 +31,32 @@ java -version
 javac -version
 ```
 
+### Installing Maven 3.6.3
+
+Download and install Maven 3.6.3
+
+```bash 
+wget https://mirrors.estointernet.in/apache/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz
+tar -xvf apache-maven-3.6.3-bin.tar.gz
+sudo mv apache-maven-3.6.3 /opt/
+```
+
+Add the following 3 lines to the end of `.bash_profile`
+
+```bash
+M2_HOME=/opt/apache-maven-3.6.3 
+PATH="$M2_HOME/bin:$PATH"
+export PATH 
+```
+
+No source `.bash_profile` and then test that the new version of Maven is used
+
+```bash
+source .bash_profile
+
+mvn -version
+```
+
 ### Installing IntelliJ IDEA
 
 * Open Firefox by clicking on **Applications** in the top menu and select **Firefox** 
