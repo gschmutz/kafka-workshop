@@ -19,6 +19,15 @@ public class KafkaEventConsumer {
         SpecificRecord value = consumerRecord.value();
         Long key = consumerRecord.key();
 
+        if (value instanceof AlertSentEvent) {
+            LOGGER.info("AlertSentEvent: received key = '{}' with payload='{}'", key, (AlertSentEvent)value);
+        } else if (value instanceof NotificationSentEvent) {
+            LOGGER.info("NotificationSentEvent: received key = '{}' with payload='{}'", key, (NotificationSentEvent)value);
+        } else {
+            LOGGER.info("Event not supported by consumer: received key = '{}' with payload='{}'", key, value);
+        };
+
+        /*
         if (value instanceof AlertSentEvent alertSentEvent) {
             LOGGER.info("AlertSentEvent: received key = '{}' with payload='{}'", key, alertSentEvent);
         } else if (value instanceof NotificationSentEvent notificationSentEvent) {
@@ -26,5 +35,6 @@ public class KafkaEventConsumer {
         } else {
             LOGGER.info("Event not supported by consumer: received key = '{}' with payload='{}'", key, value);
         };
+        */
     }
 }
