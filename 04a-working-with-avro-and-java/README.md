@@ -415,7 +415,7 @@ if you want to consume with `kcat` you need to specify the serialization format 
 kcat -b kafka-1:19092 -t test-java-avro-topic -s value=avro -r http://schema-registry-1:8081
 ```
 
-**Note**: For Avro support your kafkacat version needs to be `1.6' or later.
+**Note**: For Avro support your `kcat` version needs to be `1.6' or later.
 
 ## View the Schema in the Registry
 
