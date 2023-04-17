@@ -428,7 +428,7 @@ The `main()` method accepts 3 parameters, the number of messages to produce, the
 Use `kcat` or `kafka-console-consumer` to consume the messages from the topic `test-java-avro-idl-topic `.
 
 ```bash
-kcat -b kafka-1 -t test-java-avro-idl-topic -s value=avro -r http://schema-registry-1:8081
+kcat -b kafka-1:19092 -t test-java-avro-idl-topic -s value=avro -r http://schema-registry-1:8081
 ```
 
 Now run it using the `mvn exec:java` command. It will generate 1000 messages, waiting 10ms in-between sending each message and use 0 for the ID.
