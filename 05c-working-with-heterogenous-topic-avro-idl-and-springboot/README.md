@@ -2,7 +2,7 @@
 
 In this workshop we will learn how to use the Spring Kafka abstraction with a heterogenous topic, accepting different Avro objects for the message serialization. We will use Spring Kafka from within a Spring Boot application and implement both a consumer and a producer. 
 
-We will again use the [Avro IDL language](https://avro.apache.org/docs/current/idl-language/) for defining the Avro Schema but it would work with the Avro JSON language as wwell. 
+We will again use the [Avro IDL language](https://avro.apache.org/docs/current/idl-language/) for defining the Avro Schema but it would work with the Avro JSON language as well. 
 
 We will create two Spring Boot projects, one for the **Producer** and one for the **Consumer**, simulating two independent micro-services interacting with each other via events. 
 
@@ -27,7 +27,7 @@ Edit the `pom.xml` and . First add an additional property to the `<properties>`
 ```xml
     <properties>
         ...
-        <avro.version>1.11.0</avro.version>
+        <avro.version>1.11.1</avro.version>
     </properties>
 ```    
 
@@ -662,10 +662,10 @@ public class KafkaEventConsumer {
         SpecificRecord value = consumerRecord.value();
         Long key = consumerRecord.key();
 
-        if (value instanceof AlertSentEvent alertSentEvent) {
-            LOGGER.info("AlertSentEvent: received key = '{}' with payload='{}'", key, alertSentEvent);
-        } else if (value instanceof NotificationSentEvent notificationSentEvent) {
-            LOGGER.info("NotificationSentEvent: received key = '{}' with payload='{}'", key, notificationSentEvent);
+        if (value instanceof AlertSentEvent) {
+            LOGGER.info("AlertSentEvent: received key = '{}' with payload='{}'", key, (AlertSentEvent)value);
+        } else if (value instanceof NotificationSentEvent) {
+            LOGGER.info("NotificationSentEvent: received key = '{}' with payload='{}'", key, (NotificationSentEvent)value);
         } else {
             LOGGER.info("Event not supported by consumer: received key = '{}' with payload='{}'", key, value);
         };
