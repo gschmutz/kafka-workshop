@@ -1,7 +1,7 @@
 # =======================================================================
 # Platform Name            kafka-workshop
 # Platform Stack:          trivadis/platys-modern-data-platform
-# Platform Stack Version:  1.16.0-preview
+# Platform Stack Version:  1.17.0-preview
 # =======================================================================
 version: '3.5'
 networks:
@@ -279,7 +279,7 @@ services:
     restart: unless-stopped
   #  ================================== ksqlDB ========================================== #
   ksqldb-server-1:
-    image: confluentinc/ksqldb-server:0.28.2
+    image: confluentinc/ksqldb-server:0.29.0
     hostname: ksqldb-server-1
     container_name: ksqldb-server-1
     labels:
@@ -332,7 +332,7 @@ services:
       - ./plugins/opentelemetry/agents:/otel
     restart: unless-stopped
   ksqldb-server-2:
-    image: confluentinc/ksqldb-server:0.28.2
+    image: confluentinc/ksqldb-server:0.29.0
     hostname: ksqldb-server-2
     container_name: ksqldb-server-2
     labels:
@@ -387,7 +387,7 @@ services:
   # Access the cli by running:
   # > docker exec -it ksqldb-cli ksql http://ksqldb-server-1:8088
   ksqldb-cli:
-    image: confluentinc/ksqldb-cli:0.28.2
+    image: confluentinc/ksqldb-cli:0.29.0
     container_name: ksqldb-cli
     hostname: ksqldb-cli
     labels:
@@ -534,6 +534,19 @@ services:
     environment:
       AKHQ_CONFIGURATION: |
         akhq:
+          pagination.page-size: 25
+          topic-data:
+            size: 50
+            poll-timeout: 1000
+            kafka-max-message-length: 1000000
+          ui-options:
+            topic:
+              default-view: HIDE_INTERNAL
+              skip-consumer-groups: false
+              skip-last-record: true
+              show-all-consumer-groups: true
+            topic-data:
+              sort: OLDEST
           connections:
             docker-kafka-server:
               properties:
@@ -546,6 +559,9 @@ services:
                   url: "http://kafka-connect-1:8083"
                 - name: "connect-2"
                   url: "http://kafka-connect-2:8084"
+              ksqldb:
+                - name: "ksqldb"
+                  url: "http://ksqldb-server-1:8088"
     volumes:
       - ./data-transfer:/data-transfer
     restart: unless-stopped
@@ -623,7 +639,7 @@ services:
     restart: unless-stopped
   #  ================================== NiFi ========================================== #
   nifi-1:
-    image: apache/nifi:1.19.1
+    image: apache/nifi:1.22.0
     container_name: nifi-1
     hostname: nifi-1
     labels:
@@ -638,29 +654,45 @@ services:
     environment:
       NIFI_WEB_HTTPS_PORT: '18080'
       NIFI_WEB_HTTPS_HOST: nifi-1
-      NIFI_WEB_PROXY_HOST: ${PUBLIC_IP}:18080,${DOCKER_HOST_IP}18080
+      NIFI_WEB_PROXY_HOST: ${PUBLIC_IP}:18080,${DOCKER_HOST_IP}:18080
       AUTH: tls
       KEYSTORE_PATH: /opt/certs/keystore.jks
       KEYSTORE_TYPE: JKS
-      KEYSTORE_PASSWORD: PTz7kFl1rzX4wUtcDlurwV6gjm7vID9Ibgbe71N355w
+      KEYSTORE_PASSWORD: BWt7eLC4R53N4bIxdZEVPhAdkYlQ0Le8Tw0erGXpvI0
       TRUSTSTORE_PATH: /opt/certs/truststore.jks
       TRUSTSTORE_TYPE: JKS
-      TRUSTSTORE_PASSWORD: h8I20cJyr50rFwzJRZkBcodLM8ifnDqQK2kORds8TLk
+      TRUSTSTORE_PASSWORD: PkhvPAirou5R/K9HQxVk99uT+hehM7SRURyFSbxTlTQ
       NIFI_SECURITY_USER_AUTHORIZER: single-user-authorizer
       NIFI_SECURITY_USER_LOGIN_IDENTITY_PROVIDER: single-user-provider
+      S3_ENDPOINT: http://minio-1:9000
+      S3_PATH_STYLE_ACCESS: 'true'
+      S3_REGION: us-east-1
+      PLATYS_AWS_ACCESS_KEY: V42FCGRVMK24JJ8DHUYG
+      PLATYS_AWS_SECRET_ACCESS_KEY: bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza
       NIFI_REMOTE_INPUT_SOCKET_PORT: '10005'
       NIFI_REMOTE_INPUT_HOST: nifi-1
       NIFI_SENSITIVE_PROPS_KEY: 12345678901234567890A
       SINGLE_USER_CREDENTIALS_USERNAME: nifi
       SINGLE_USER_CREDENTIALS_PASSWORD: 1234567890ACD
+      INITIAL_ADMIN_IDENTITY: nifi
     volumes:
       - ./data-transfer:/data-transfer
-      - ./conf/nifi/keystore.jks:/opt/certs/keystore.jks
-      - ./conf/nifi/truststore.jks:/opt/certs/truststore.jks
+      - ./plugins/nifi/jars/:/extra-jars/
+      - ./plugins/nifi/nars/:/opt/nifi/nifi-current/extensions
+      - ./security/nifi/keystore.jks:/opt/certs/keystore.jks
+      - ./security/nifi/truststore.jks:/opt/certs/truststore.jks
+      - ./security/nifi/s3-credentials.properties:/tmp/s3-credentials.properties.templ
+    entrypoint:
+      # We override the entrypoint from the docker image and therefore have to run ../scripts/start.sh from the NiFi docker image
+      - bash
+      - -c
+      - |
+        eval "echo \"$(cat /tmp/s3-credentials.properties.templ)\"" >> s3-credentials.properties
+        ../scripts/start.sh
     restart: unless-stopped
   #  ================================== Zeppelin ========================================== #
   zeppelin:
-    image: trivadis/apache-zeppelin:0.10.0-spark3.1.3-hadoop3.2
+    image: trivadis/apache-zeppelin:0.10.1-spark3.1.3-hadoop3.2
     container_name: zeppelin
     hostname: zeppelin
     labels:
@@ -692,17 +724,10 @@ services:
       AWS_SECRET_ACCESS_KEY: ${PLATYS_AWS_SECRET_ACCESS_KEY:-bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza}
       AWS_ENDPOINT: http://minio-1:9000
       AWS_DEFAULT_REGION: us-east-1
-      SPARK_DEFAULTS_CONF_spark_jars_repositories:
-      SPARK_DEFAULTS_CONF_spark_jars_packages:
-      SPARK_DEFAULTS_CONF_spark_jars_excludes:
-      SPARK_DEFAULTS_CONF_spark_jars:
-      SPARK_DEFAULTS_CONF_spark_jars_ivySettings:
-      SPARK_DEFAULTS_CONF_spark_sql_catalogImplementation: in-memory
+      ZEPPELIN_SPARK_MASTER: spark://spark-master:7077
+      SPARK_HOME: /opt/spark
       CORE_CONF_fs_defaultFS: s3a://admin-bucket
-      SPARK_DEFAULTS_CONF_spark_sql_warehouse_dir: s3a://admin-bucket/hive/warehouse
-      SPARK_DEFAULTS_CONF_spark_yarn_dist_files: /spark/conf/hive-site.xml
-      SPARK_DEFAULTS_CONF_spark_driver_extraJavaOptions:
-      SPARK_DEFAULTS_CONF_spark_executor_extraJavaOptions:
+      SPARK_DEFAULTS_CONF_spark_sql_warehouse_dir:
       ZEPPELIN_ADDR: 0.0.0.0
       ZEPPELIN_PORT: '8080'
       ZEPPELIN_MEM: -Xms1024m -Xmx1024m -XX:MaxMetaspaceSize=512m
@@ -713,7 +738,6 @@ services:
       ZEPPELIN_USER_USERNAME: zeppelin
       ZEPPELIN_USER_PASSWORD: changeme
       # set spark-master for Zeppelin interpreter
-      ZEPPELIN_SPARK_MASTER: spark://spark-master:7077
       ZEPPELIN_NOTEBOOK_DIR: notebook
       ZEPPELIN_NOTEBOOK_CRON_ENABLE: 'True'
       PYSPARK_PYTHON: python3
@@ -809,9 +833,28 @@ services:
       - ./data-transfer:/data-transfer
     command: php -S 0.0.0.0:8080 -t /var/www/html
     restart: unless-stopped
+  #  ================================== Nuclio Dashboard ========================================== #
+  nuclio:
+    image: quay.io/nuclio/dashboard:stable-amd64
+    container_name: nuclio
+    hostname: nuclio
+    labels:
+      com.platys.name: nuclio
+      com.platys.webui.title: Nuclio Dashboard UI
+      com.platys.webui.url: http://${PUBLIC_IP}:8070
+    ports:
+      - 8070:8070
+    environment:
+      - NUCLIO_CHECK_FUNCTION_CONTAINERS_HEALTHINESS=true
+      - NUCLIO_DASHBOARD_DEFAULT_FUNCTION_MOUNT_MODE=volume
+    volumes:
+      - ./data-transfer:/data-transfer
+      - /tmp:/tmp
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped
   #  ================================== Minio ========================================== #
   minio-1:
-    image: minio/minio:RELEASE.2023-01-20T02-05-44Z
+    image: minio/minio:RELEASE.2023-06-29T05-12-28Z
     container_name: minio-1
     hostname: minio-1
     labels:
@@ -825,9 +868,8 @@ services:
       MINIO_ROOT_USER: V42FCGRVMK24JJ8DHUYG
       MINIO_ROOT_PASSWORD: bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza
       MINIO_REGION_NAME: us-east-1
-      #MINIO_PUBLIC_IPS: minio-1
-      #MINIO_DOMAIN: minio.io
-      #MINIO_DEFAULT_BUCKETS: 'admin-bucket,'
+      MINIO_DOMAIN: minio
+      MINIO_SERVER_URL: http://${PUBLIC_IP}:9000
     volumes:
       - ./data-transfer:/data-transfer
     command: server /data --console-address ":9010"
@@ -934,7 +976,7 @@ services:
       DATAPLATFORM_HOME: ${DATAPLATFORM_HOME}
       PLATYS_PLATFORM_NAME: kafka-workshop
       PLATYS_PLATFORM_STACK: trivadis/platys-modern-data-platform
-      PLATYS_PLATFORM_STACK_VERSION: 1.16.0-preview
+      PLATYS_PLATFORM_STACK_VERSION: 1.17.0-preview
       PLATYS_COPY_COOKBOOK_DATA: 'True'
     volumes:
       - ./artefacts/templates:/templates

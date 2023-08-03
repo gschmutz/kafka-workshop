@@ -178,6 +178,7 @@ We killed one consumer, sent more messages, and saw Kafka spread the load to rem
 ## Kafka Broker Failover
 
 ### Describe Topic
+
 We are going to lists which broker owns (leader of) which partition, and list replicas and ISRs of each partition. ISRs are replicas that are up to date. Remember there are 8 partitions.
 
 Connect to the `kafka-1` container:

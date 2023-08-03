@@ -12,7 +12,7 @@ Inhere we are documenting cookbooks on how to use the platform:
    * [Querying data in Postgresql from Trino](./recipes/querying-postgresql-with-trino/README) - `1.11.0`
    * [Querying data in Kafka from Trino (formerly PrestoSQL)](./recipes/querying-kafka-with-trino/README) - `1.14.0`
    * [Querying HDFS data using Trino](./recipes/querying-hdfs-with-presto/README) - `1.11.0`
-   * Joining data between RDBMS and MinIO
+   * [Trino Security](./recipes/trino-security/README) - `1.16.0`
 
  * **MQTT**
    * [Using Confluent MQTT Proxy](./recipes/using-mqtt-proxy/README)
@@ -30,8 +30,11 @@ Inhere we are documenting cookbooks on how to use the platform:
    * [Spark with external S3](./recipes/spark-with-external-s3/README)
    * [Spark with PostgreSQL](./recipes/spark-with-postgresql/README) - `1.15.0`
 
- * **Delta Lake Storage Format**
+ * **Delta Lake Table Format**
    * [Spark with Delta Lake](./recipes/delta-lake-with-spark/README) - `1.16.0`
+
+ * **Iceberg Table Format**
+   * [Spark with Iceberg](./recipes/iceberg-with-spark/README) - `1.16.0`
 
  * **Hadoop HDFS**
    * [Querying HDFS data using Presto](./recipes/querying-hdfs-with-presto/README)
@@ -40,18 +43,25 @@ Inhere we are documenting cookbooks on how to use the platform:
  * **Livy**
    * [Submit Spark Application over Livy](./recipes/run-spark-simple-app-scala-livy/README)
 
+ * **Apache NiFi**
+   * [NiFi ExecuteScript Processor with Python](./recipes/nifi-execute-processor-with-python/README) - `1.16.0`
+   * [NiFi Registry with Git Flow Persistence Provider](./recipes/nifi-registry-with-git/README) - `1.16.0`
+
  * **StreamSets Data Collector**
-   * [Support StreamSets Data Collector Activation](./recipes/streamsets-oss-activation/README) - `1.13.0`
    * [Consume a binary file and send it as Kafka message](./recipes/streamsets-binary-file-to-kafka/README)
    * [Using Dev Simulator Origin to simulate streaming data](./recipes/using-dev-simulator-origin/README) - `1.12.0`
-   * [Loading Streamsets Pipeline(s) upon start of container](./recipes/streamsets-loading-pipelines/README) - `1.14.0`
+   * [Loading StreamSets Pipeline(s) upon start of container](./recipes/streamsets-loading-pipelines/README) - `1.14.0`
 
  * **StreamSets DataOps Platform**
    * [Creating a self-managed StreamSets DataOps Environment using Platys](./recipes/streamsets-dataops-creating-environment/README) - `1.14.0`
 
+ * **StreamSets Transformer**
+   * [Using StreamSets Transformer to transform CSV to Parquet & Delta Lake](./recipes/streamsets-transformer-transform-csv-to-deltalake/README) - `1.16.0`    
+
  * **Kafka**
    * [Simulated Multi-DC Setup on one machine](./recipes/simulated-multi-dc-setup/README) - `1.14.0`  
-   * [Automate managment of Kafka topics on the platform](./recipes/jikkou-automate-kafka-topics-management/README) - `1.14.0`
+   * [Automate management of Kafka topics on the platform](./recipes/jikkou-automate-kafka-topics-management/README) - `1.14.0`
+   * [Azure Event Hub as external Kafka](./recipes/azure-event-hub-as-external-kafka/README) - `1.16.0`
 
  * **Confluent Enterprise Platform**
    * [Using Confluent Enterprise Tiered Storage](./recipes/confluent-tiered-storage/README) - `1.13.0`
@@ -69,11 +79,11 @@ Inhere we are documenting cookbooks on how to use the platform:
    * [Apicurio Registry with SQL Storage (PostgreSQL)](./recipes/apicurio-with-database-storage/README) - `1.14.0`
 
  * **Jikkou**
-   * [Automate managment of Kafka topics on the platform](./recipes/jikkou-automate-kafka-topics-management/README)    
+   * [Automate management of Kafka topics on the platform](./recipes/jikkou-automate-kafka-topics-management/README)    
 
  * **Oracle RDBMS**
    * [Using private (Trivadis) Oracle EE image](./recipes/using-private-oracle-ee-image/README) - `1.13.0`    
-   * [Using public Oracle XE image](./recipes/using-public-oracle-xe-image/README) - `1.13.0`    
+   * [Using public Oracle XE image](./recipes/using-public-oracle-xe-image/README) - `1.16.0`    
 
  * **Neo4J**
      * [Working with Neo4J](./recipes/working-with-neo4j/README) - `1.15.0`  

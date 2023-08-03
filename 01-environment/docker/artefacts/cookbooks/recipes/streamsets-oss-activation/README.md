@@ -41,7 +41,7 @@ docker-compose up -d
 
 ## Activate StreamSets
 
-Navigate to <http://dataplatform:18630> and login with **user** set to `admin` and **password** set to `admin`.
+Navigate to <http://172.26.121.207:18630> and login with **user** set to `admin` and **password** set to `admin`.
 
 Click on **Enter a Code** and on the **Activation** page click on **Back**. The **Register** page should be shown. 
 

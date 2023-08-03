@@ -38,7 +38,7 @@ platys gen
 docker-compose up -d
 ```
 
-For creating the ADR documents, you also need to install log4brains locally (you need to have Node.js installed)
+For creating the ADR documents, you also may want to install log4brains locally (you need to have Node.js installed)
 
 ```
 npm install -g log4brains
@@ -63,7 +63,7 @@ if you want to use the docker image instead of the local log4brains installation
 
 ```
 cd adr
-docker run -ti -v ${PWD}:/workdir thomvaill/log4brains log4brains init
+docker run -ti -v ${PWD}:/workdir thomvaill/log4brains init
 ```
 
 Answer the question asked by the tool as shown below
