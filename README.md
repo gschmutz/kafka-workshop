@@ -38,7 +38,8 @@ ID  | Title   | Description
 10 | [Working with Kafka Connect and Change Data Capture (CDC)](./10-working-with-kafka-connect-and-cdc)  | uses **Kafka Connect** to demonstrate various way for doing CDC on a set of PostgreSQL tables.
 12 | [Using Kafka Streams for Stream Analytics](./12-using-kafka-streams-simple)  | uses **Kafka Streams** to demonstrate analytics on data-in-motion.
 12a | [Using Kafka Streams from Spring Boot for Stream Analytics](./12a-using-kafka-streams-from-springboot)  | uses **Kafka Streams** from **Spring Boot** to demonstrate analytics on data-in-motion.
-12b | [Using Kafka Streams with Azkarra Streams for Stream Analytics](./12b-using-kafka-streams-with-azkarra)  | uses **Kafka Streams** with **Azkarra Streams** to demonstrate analytics on data-in-motion.
+12b | [Using Kafka Streams from Spring Cloud Stream & Spring Boot for Stream Analytics](./12b-using-kafka-streams-from-springcloud-springboot)  | uses **Kafka Streams** from **Spring Boot** with ** Kafka Streams Binder of Spring Cloud Stream** to demonstrate analytics on data-in-motion.
+12c | [Using Kafka Streams with Azkarra Streams for Stream Analytics](./12c-using-kafka-streams-with-azkarra)  | uses **Kafka Streams** with **Azkarra Streams** to demonstrate analytics on data-in-motion.
 13 | [IoT Vehicle Tracking Workshop](./13-iot-vehicle-tracking-workshop)  | a multi-step end-to-end workshop around IoT Vehicle Tracking
 13a | [IoT Data Ingestion through MQTT into Kafka](./13a-iot-data-ingestion-over-mqtt)  | learn how to use Kafka Connect to ingest data from MQTT into Kafka
 13b | [Stream Analytics using ksqlDB](./13b-stream-analytics-using-ksql)  | learn how to use ksqlDB to execute processing and analytics directly on a stream of data

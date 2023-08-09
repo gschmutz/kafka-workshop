@@ -10,11 +10,13 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Properties;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.in;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class KafkaStreamsRunnerCountSessionWindowedSuppressedDSLTest {
@@ -31,9 +33,11 @@ public class KafkaStreamsRunnerCountSessionWindowedSuppressedDSLTest {
     private final Instant TS_09_00_15 = Instant.parse("2022-02-22T09:00:15.000Z");
     private final Instant TS_09_00_16 = Instant.parse("2022-02-22T09:00:16.000Z");
     private final Instant TS_09_00_17 = Instant.parse("2022-02-22T09:00:17.000Z");
+    private final Instant TS_09_00_45 = Instant.parse("2022-02-22T09:00:45.000Z");
     private final Instant TS_09_00_46 = Instant.parse("2022-02-22T09:00:46.000Z");
     private final Instant TS_09_00_47 = Instant.parse("2022-02-22T09:00:47.000Z");
     private final Instant TS_09_00_48 = Instant.parse("2022-02-22T09:00:48.000Z");
+    private final Instant TS_09_00_51 = Instant.parse("2022-02-22T09:00:51.000Z");
     private final Instant TS_09_01_00 = Instant.parse("2022-02-22T09:01:00.000Z");
     private final Instant TS_END = Instant.parse("2022-02-22T09:01:32.000Z");
 
@@ -199,6 +203,42 @@ public class KafkaStreamsRunnerCountSessionWindowedSuppressedDSLTest {
 
         System.out.println(outRecords.get(0));
     }
+
+    // 31
+    @Test
+    void test30SecGapWith0SecGracePeriod_WithLateArrival() {
+        // test a session window with an inactivity gap to 30 seconds and 0 seconds grace period
+        Topology topology = KafkaStreamsRunnerCountSessionWindowedSuppressedDSL.getTopology(30,0);
+        testDriver = new TopologyTestDriver(topology, props);
+        inputTopic = testDriver.createInputTopic("test-kstream-input-topic", Serdes.String().serializer(), Serdes.String().serializer());
+        outputTopic = testDriver.createOutputTopic("test-kstream-output-topic", Serdes.String().deserializer(), Serdes.String().deserializer());
+
+        // start at 09:00:00
+        inputTopic.pipeInput(KEY_A, "cat", TS_09_00_00.toEpochMilli());
+        // still within inactivity gap
+        inputTopic.pipeInput(KEY_A, "dog", TS_09_00_15.toEpochMilli());
+        // after activity gap so window will close with 09:00:15 and new one starts with 09:00:47
+        //inputTopic.advanceTime(Duration.ofSeconds(30));
+        inputTopic.pipeInput(KEY_A, "foo", TS_09_00_46.toEpochMilli());
+        // this is still within grace period (window was closed at 09:00:15, by that window end is extended to 09:00:47 (9:00:17 + 30s) and previous event included in the session
+        inputTopic.pipeInput(KEY_A, "foo", TS_09_00_17.toEpochMilli());
+        inputTopic.pipeInput(KEY_A, "foo", TS_09_00_47.toEpochMilli());
+
+        // end previous session window
+        inputTopic.pipeInput(KEY_A, "foo", TS_END.toEpochMilli());
+
+        List<TestRecord<String, String>> outRecords =
+                outputTopic.readRecordsToList();
+        System.out.println(outRecords.get(0));
+        System.out.println(outRecords.get(1));
+
+        // two session windows
+        assertThat(outRecords).hasSize(1);
+        assertEquals(outRecords.get(0).value(), "4");
+
+        System.out.println(outRecords.get(0));
+    }
+
 
     // 35
     @Test
