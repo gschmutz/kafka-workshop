@@ -53,8 +53,6 @@ public class KafkaStreamsRunnerCountSessionWindowedSuppressedDSL {
         return config;
     }
 
-
-
     public static Topology getTopology(int gap, int grace) {
 
         // the builder is used to construct the topology
@@ -66,8 +64,17 @@ public class KafkaStreamsRunnerCountSessionWindowedSuppressedDSL {
         // read from the source topic, "test-kstream-input-topic"
         KStream<String, String> stream = builder.stream("test-kstream-input-topic");
 
-        // create a session window with an inactivity gap to 30 seconds and 15 seconds grace period
-        SessionWindows sessionWindow =
+        // create a session window with an inactivity gap to <gap> seconds and <grace> seconds grace period
+        SessionWindows sessionWindow = null;
+        if (grace > 0) {
+            sessionWindow =
+                    SessionWindows.ofInactivityGapAndGrace(Duration.ofSeconds(gap), Duration.ofSeconds(grace));
+        } else {
+            sessionWindow =
+                    SessionWindows.ofInactivityGapWithNoGrace(Duration.ofSeconds(gap));
+
+        }
+        sessionWindow =
                 SessionWindows.ofInactivityGapAndGrace(Duration.ofSeconds(gap), Duration.ofSeconds(grace));
 
         KTable<Windowed<String>, Long> counts = stream.groupByKey()
