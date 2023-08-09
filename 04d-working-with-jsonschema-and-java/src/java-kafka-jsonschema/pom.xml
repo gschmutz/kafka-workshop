@@ -3,13 +3,12 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.trivadis.kafkaws</groupId>
-	<artifactId>java-kafka-avro</artifactId>
+	<artifactId>java-kafka-jsonschema</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<properties>
-		<kafka.version>2.7.0</kafka.version>
-		<confluent.version>6.2.0</confluent.version>
-		<avro.version>1.10.0</avro.version>
-		<java.version>1.8</java.version>
+		<kafka.version>3.3.0</kafka.version>
+		<confluent.version>7.3.1</confluent.version>
+		<java.version>11</java.version>
 		<slf4j-version>1.7.5</slf4j-version>
 
 		<!-- use utf-8 encoding -->
@@ -72,8 +71,8 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>2.5</version>
 				<configuration>
-					<source>1.8</source>
-					<target>1.8</target>
+					<source>11</source>
+					<target>11</target>
 					<maxmem>256M</maxmem>
 					<showDeprecation>true</showDeprecation>
 				</configuration>
@@ -81,7 +80,7 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>exec-maven-plugin</artifactId>
-				<version>1.6.0</version>
+				<version>3.1.0</version>
 				<executions>
 					<execution>
 						<id>producer</id>
@@ -105,9 +104,28 @@
 			</plugin>
 
 			<plugin>
+				<groupId>org.jsonschema2pojo</groupId>
+				<artifactId>jsonschema2pojo-maven-plugin</artifactId>
+				<version>1.2.1</version>
+				<configuration>
+					<sourceDirectory>${basedir}/src/main/jsonschema/</sourceDirectory>
+					<targetPackage>com.trivadis.types</targetPackage>
+					<generateBuilders>true</generateBuilders>
+					<includeRequiredPropertiesConstructor>true</includeRequiredPropertiesConstructor>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
 				<groupId>io.confluent</groupId>
 				<artifactId>kafka-schema-registry-maven-plugin</artifactId>
-				<version>7.0.0</version>
+				<version>${confluent.version}</version>
 				<configuration>
 					<schemaRegistryUrls>
 						<param>http://${DATAPLATFORM_IP}:8081</param>

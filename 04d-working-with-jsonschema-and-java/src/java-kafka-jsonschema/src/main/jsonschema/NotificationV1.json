@@ -11,15 +11,7 @@
       "type": "integer"
     },
     "message": {
-      "oneOf": [
-        {
-          "type": "null",
-          "title": "Not included"
-        },
-        {
-          "type": "string"
-        }
-      ]
+      "type": "string"
     }
   }
 }
