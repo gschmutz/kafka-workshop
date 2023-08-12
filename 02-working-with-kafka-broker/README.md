@@ -608,53 +608,52 @@ Query offset by timestamp:
 
 Now let's use it to Produce and Consume messages.
 
-### Consuming messages using Kcat
+### Consuming messages using `kcat`
 
 All the examples below are shown using `kcat`. If you are still on the older version (before `1.7` replace `kcat` with `kafkacat` or specify an alias as shown above). 
 
-**Note:** Replace `kafka-1` by the IP address of the Kafka broker if needed.
-If you are using the dockerized version, you might have to add the port `19092` to `kafka-1` in all of the samples below (i.e. `kafka-1:19092`).
+**Note:** Replace `dataplatform` by `kafka-1:19092` if you are using the dockerized version of `kcat` in all of the samples below (i.e. `kafka-1:19092`).
 
 The simplest way to consume a topic is just specifying the broker and the topic. By default all messages from the beginning of the topic will be shown. 
 
 ```bash
-kcat -b kafka-1 -t test-topic
+kcat -b dataplatform -t test-topic
 ```
 
 If you want to start at the end of the topic, i.e. only show new messages, add the `-o` option. 
 
 ```bash
-kcat -b kafka-1 -t test-topic -o end
+kcat -b dataplatform -t test-topic -o end
 ```
 
 To show only the last message (one for each partition), set the `-o` option to `-1`. `-2` would show the last 2 messages.
 
 ```bash
-kcat -b kafka-1 -t test-topic -o -1
+kcat -b dataplatform -t test-topic -o -1
 ```
 
 To show only the last message from exactly one partition, add the `-p` option
 
 ```bash
-kcat -b kafka-1 -t test-topic -p1 -o -1
+kcat -b dataplatform -t test-topic -p1 -o -1
 ```
 
 You can use the `-f` option to format the output. Here we show the partition (`%p`) as well as key (`%k`) and value (`%s`):
 
 ```bash
-kcat -b kafka-1 -t test-topic -f 'Part-%p => %k:%s\n'
+kcat -b dataplatform -t test-topic -f 'Part-%p => %k:%s\n'
 ```
 
 If there are keys which are Null, then you can use `-Z` to actually show NULL in the output:
 
 ```bash
-kcat -b kafka-1 -t test-topic -f 'Part-%p => %k:%s\n' -Z
+kcat -b dataplatform -t test-topic -f 'Part-%p => %k:%s\n' -Z
 ```
 
 There is also the option `-J` to have the output emitted as JSON.
 
 ```bash
-kcat -b kafka-1 -t test-topic -J
+kcat -b dataplatform -t test-topic -J
 ```
 
 ### Producing messages using `kcat`
@@ -662,30 +661,100 @@ kcat -b kafka-1 -t test-topic -J
 Producing messages with `kcat` is as easy as consuming. Just add the `-P` option to switch to Producer mode.
 
 ```bash
-kcat -b kafka-1 -t test-topic -P
+kcat -b dataplatform -t test-topic -P
 ```
 
 To produce with key, specify the delimiter to split key and message, using the `-K` option. 
 
 ```bash
-kcat -b kafka-1 -t test-topic -P -K , -X topic.partitioner=murmur2_random
+kcat -b dataplatform -t test-topic -P -K , -X topic.partitioner=murmur2_random
 ```
 
 Find some more example on the [kcat GitHub project](https://github.com/edenhill/kcat) or in the [Confluent Documentation](https://docs.confluent.io/current/app-development/kafkacat-usage.html).
 
-### Send "realistic" test messages to Kafka using Mockaroo and kcat
+### Send "realistic" test messages to Kafka using Mockaroo and `kcat`
 
 In his [blog article](https://rmoff.net/2018/05/10/quick-n-easy-population-of-realistic-test-data-into-kafka-with-mockaroo-and-kafkacat/) Robin Moffatt shows an interesting and easy approach to send realistic mock data to Kafka. He is using [Mockaroo](https://mockaroo.com/), a free test data generator and API mocking tool, together with [kcat](https://github.com/edenhill/kcat) to produce mock messages. 
 
 Taking his example, you can send 10 orders to test-topic (it will not work if you use the dockerized version of `kcat`)
 
 ```bash
-curl -s "https://api.mockaroo.com/api/d5a195e0?count=20&key=ff7856d0"| kcat -b kafka-1 -t test-topic -P
+curl -s "https://api.mockaroo.com/api/d5a195e0?count=20&key=ff7856d0"| kcat -b dataplatform -t test-topic -P
 ```
 
-## Using Kafka Manager
+## Publishing a data stream to Kafka
 
-[Kafka Manger](https://github.com/yahoo/kafka-manager) is an open source tool created by Yahoo for managing a Kafka cluster. It has been started as part of the **dataplatform** and can be reached on <http://dataplatform:28104/>.
+Next we will see a more realistic example using the [Streaming Synthetic Sales Data Generator](https://github.com/garystafford/streaming-sales-generator). It is available as a [Docker Image](https://hub.docker.com/repository/docker/trivadis/sales-data-generator).
+
+First let's create the necessary 3 topics:
+
+```bash
+docker exec -ti kafka-1 kafka-topics --create --bootstrap-server kafka-1:19092 --topic demo.products --replication-factor 3 --partitions 8
+
+docker exec -ti kafka-1 kafka-topics --create --bootstrap-server kafka-1:19092 --topic demo.purchases --replication-factor 3 --partitions 8
+
+docker exec -ti kafka-1 kafka-topics --create --bootstrap-server kafka-1:19092 --topic demo.inventories --replication-factor 3 --partitions 8
+```
+
+The default configuration assumes that the container runs in the same network as the Kafka cluster, therefore we have to pass the name of the network when running the container. 
+
+```bash
+docker network list
+```
+
+For the Kafka workshop environment, it should be `kafka-workshop`. If you are using the workshop with another dataplatform, then you have to adapt the `--network` option in following  statement: 
+
+```bash
+docker run -ti --network kafka-workshop trivadis/sales-data-generator:latest
+```
+
+Now use `kcat` to see the data streaming into the `demo.purchases` topic.
+
+```bash
+kcat -b dataplatform -t demo.purchases
+```
+
+You can also use the **Live Tail** option of **AKHQ** (see next section).
+
+## Using AKHQ
+
+[AKHQ](https://akhq.io/) is an open source Kafka GUI for Apache Kafka to manage topics, topics data, consumers group, schema registry, connect and more... It has been started as part of the **dataplatform** and can be reached on <http://dataplatform:28107/>.
+
+By default you will end-up on the topics overview page
+
+![Alt Image Text](./images/akhq-homepage.png "AKHQ Homepage")
+
+Currently there is only one topic shown, due to the default setting of hiding internal topics. 
+
+You can select **Show all topics** in the drop down to also view the internal topics, such as `__consumer_offsets`. 
+
+![Alt Image Text](./images/akhq-topics-all.png "AKHQ Homepage")
+
+To view the data stored in a topic, click on the **magnifying glass** icon on the right side
+
+![Alt Image Text](./images/akhq-topics-details.png "Kafka Manager Add Cluster")
+
+and you should see the first page of messages of the topic
+
+![Alt Image Text](./images/akhq-topics-details1.png "Kafka Manager Add Cluster")
+
+You can also view the live data arriving in a topic by navigating to **Live Tail** in the menu on the left. You might want to re-run the **Streaming Synthetic Sales Data Generator** seen before, if it is no longer running.
+
+Select one or more topics you wish to see the live data streaming in
+
+![Alt Image Text](./images/akhq-live-tail.png "Kafka Manager Add Cluster")
+
+Click on the **magnifying glass** icon and the data will be shown as it arrives in the topic
+
+![Alt Image Text](./images/akhq-live-tail2.png "Kafka Manager Add Cluster")
+
+Navigate to **Nodes** in the menu on the left to see the Kafka cluster with its 3 brokers.
+
+![Alt Image Text](./images/akhq-nodes.png "Kafka Manager Add Cluster")
+
+## Using CMAK (Cluster Manager for Apache Apache Kafka)
+
+[CMAK](https://github.com/yahoo/CMAK), previously known as **Kafka Manager** is an open source tool created by Yahoo for managing a Kafka cluster. It has been started as part of the **dataplatform** and can be reached on <http://dataplatform:28104/>.
 
 ![Alt Image Text](./images/kafka-manager-homepage.png "Kafka Manager Homepage")
 
