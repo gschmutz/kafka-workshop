@@ -315,20 +315,20 @@ It is similar to the `kafka-console-producer` and `kafka-console-consumer` you h
 
 `kcat` is an open-source utility, available at <hhttps://github.com/edenhill/kcat>. It is not part of the Confluent platform and also not part of the Data Platform we run in docker. 
 
-You can run **Kafkacat** as a standalone utility on any **Linux** or **Mac** computer and remotely connect to a running Kafka cluster. 
+You can run `kcat` as a standalone utility on any **Linux** or **Mac** computer and remotely connect to a running Kafka cluster. 
 
 ### Installing `kcat`
 
 Officially `kcat` is either supported on **Linux** or **Mac OS-X**. There is no official support for **Windows** yet. There is a Docker image for `kcat` from Confluent as well.
 We will show how to install it on **Ubunut** and **Mac OS-X**. 
 
-In all the workshops we will assume that **Kcat** (used to be named **Kafkact** before version `1.7`) is installed locally on the Docker Host and that `dataplatform` alias has been added to `/etc/hosts`. 
+In all the workshops we will assume that `kcat` (used to be named `kafkacat` before version `1.7`) is installed locally on the Docker Host and that `dataplatform` alias has been added to `/etc/hosts`. 
 
-#### Ubuntu
+#### Ubuntu 20.04 or 22.04
 
-You can install `kcat` directly on the Ubuntu environment. Version 1.7 is not yet available and therefore it is still called **kafkacat**. First let's install the required packages:
+You can install `kcat` directly on the Ubuntu environment. On Ubuntu 20.04 and 22.04 version 1.7 of `kcat` is not available and therefore you still have to install `kafkacat`. 
 
-Install the Confluent public key, which is used to sign the packages in the APT repository:
+First installhe Confluent public key, which is used to sign the packages in the APT repository:
 
 ```bash
 wget -qO - https://packages.confluent.io/deb/5.2/archive.key | sudo apt-key add -
@@ -348,6 +348,39 @@ sudo apt-get install librdkafka-dev libyajl-dev
 sudo apt-get install kafkacat
 ```
 
+You can define an alias, so that you can work with `kcat` even though you "only" have `kafkacat`:
+
+```bash
+alias kcat=kafkacat
+```
+
+let's see the version
+
+```
+bfh@casmio-70:~$ kcat -V
+kafkacat - Apache Kafka producer and consumer tool
+https://github.com/edenhill/kafkacat
+Copyright (c) 2014-2019, Magnus Edenhill
+Version 1.6.0 (JSON, Transactions, librdkafka 1.8.0 builtin.features=gzip,snappy,ssl,sasl,regex,lz4,sasl_gssapi,sasl_plain,sasl_scram,plugins,zstd,sasl_oauthbearer)
+```
+
+#### Ubuntu 23.04
+
+```bash
+sudo apt-get install kcat
+```
+
+let's see the version
+
+
+```bash
+$ kcat -V
+kcat - Apache Kafka producer and consumer tool
+https://github.com/edenhill/kcat
+Copyright (c) 2014-2021, Magnus Edenhill
+Version 1.7.1 (JSON, Transactions, IncrementalAssign, librdkafka 2.0.2 builtin.features=gzip,snappy,ssl,sasl,regex,lz4,sasl_gssapi,sasl_plain,sasl_scram,plugins,zstd,sasl_oauthbearer)
+```
+
 #### Mac OS-X
 
 To install `kcat` on a Macbook, just run the following command:
@@ -355,13 +388,22 @@ To install `kcat` on a Macbook, just run the following command:
 ```bash
 brew install kcat
 ```
+let's see the version
+
+```bash
+% kcat -V
+kcat - Apache Kafka producer and consumer tool
+https://github.com/edenhill/kcat
+Copyright (c) 2014-2021, Magnus Edenhill
+Version 1.7.0 (JSON, Avro, Transactions, IncrementalAssign, librdkafka 2.0.2 builtin.features=gzip,snappy,ssl,sasl,regex,lz4,sasl_gssapi,sasl_plain,sasl_scram,plugins,zstd,sasl_oauthbearer,http,oidc)
+```
 
 #### Docker Container
 
-There is also a Docker container from Confluent which can be used to run `kcat`
+There is also a Docker container which can be used to run `kcat`
 
 ```bash
-docker run --tty --network kafka-workshop edenhill/kcat:1.7.0 kcat
+docker run --tty --network kafka-workshop edenhill/kcat:1.7.1 kcat
 ```
 
 By setting an alias, we can work with the dockerized version of `kcat` as it would be a local command. All further examples assume that this is the case. 
@@ -374,13 +416,13 @@ Check the [Running in Docker](https://github.com/edenhill/kcat#running-in-docker
 
 #### Windows
 
-There is no official support to run Kafkacat on Windows. You might try the following link to run it on Windows: <https://ci.appveyor.com/project/edenhill/kafkacat/builds/23675338/artifacts>.
+There is no official support to run `kcat` on Windows. You might try the following link to run it on Windows: <https://ci.appveyor.com/project/edenhill/kafkacat/builds/23675338/artifacts>.
 
 An other option for Windows is to run it as a Docker container as shown above. 
 
-### Display kcat options
+### Display `kcat` options
 
-`kcat` has many options. If you just enter `kcat` without any options, all the options with a short description is shown on the console. Additionally kcat will show the version which is installed. This is currently **1.7.0** if installed on Mac and **1.6.0** if on Ubuntu. 
+`kcat` has many options. If you just enter `kcat` without any options, all the options with a short description are shown on the console. Additionally kcat will show the version which is installed. This is currently **1.7.0** if installed on Mac and **1.6.0** if on Ubuntu. 
 
 
 ```bash
@@ -568,7 +610,7 @@ Now let's use it to Produce and Consume messages.
 
 ### Consuming messages using Kcat
 
-All the examples below are shown using `kcat`. If you are still on the older version (before `1.7` replace `kcat` with `kafkacat`). 
+All the examples below are shown using `kcat`. If you are still on the older version (before `1.7` replace `kcat` with `kafkacat` or specify an alias as shown above). 
 
 **Note:** Replace `kafka-1` by the IP address of the Kafka broker if needed.
 If you are using the dockerized version, you might have to add the port `19092` to `kafka-1` in all of the samples below (i.e. `kafka-1:19092`).
