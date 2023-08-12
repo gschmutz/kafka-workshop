@@ -686,6 +686,8 @@ curl -s "https://api.mockaroo.com/api/d5a195e0?count=20&key=ff7856d0"| kcat -b d
 
 Next we will see a more realistic example using the [Streaming Synthetic Sales Data Generator](https://github.com/garystafford/streaming-sales-generator). It is available as a [Docker Image](https://hub.docker.com/repository/docker/trivadis/sales-data-generator).
 
+We can use it to stream simulated sales data into Kafka topics. By no longer manually producing data, we can see unbounded data "in action". 
+
 First let's create the necessary 3 topics:
 
 ```bash
