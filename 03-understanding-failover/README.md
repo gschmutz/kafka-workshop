@@ -8,16 +8,8 @@ For the exercise we will be using the `kafkacat` command line utility we have le
 
 First let's create the topic we will use throughout this workshop.
 
-Connect to the `kafka-1kafka-` container:
-
 ```bash
-docker exec -ti kafka-1 bash
-```
-
-And create a new topic. 
-
-```bash
-kafka-topics --create \
+docker exec -ti kafka-1 kafka-topics --create \
     --bootstrap-server kafka-1:19092 \
     --replication-factor 3 \
     --partitions 8 \
@@ -209,7 +201,15 @@ Topic:failsafe-test-topic	PartitionCount:8	ReplicationFactor:3	Configs:
 
 Notice how each broker gets a share of the partitions as leaders and followers. Also, see how Kafka replicates the partitions on each broker.
 
-### Test Broker Failover by killing 1st server
+Optionally view the partition distribution in [AKHQ](http://dataplatform:28107). Navigate to the topics view and on the `failsafe-test-topic` line, click on the magnifying glass icon
+
+![](./images/akhq-show-topics.png)
+
+and then navigate to the **Partitions** tab
+
+![](./images/akhq-show-topic-partitions.png)
+
+### Test Broker Failover by killing 2nd Kafka broker
 
 Let’s kill the 2nd broker, and then test the failover.
 
@@ -217,7 +217,7 @@ Let’s kill the 2nd broker, and then test the failover.
 docker stop kafka-2
 ```
 
-Now that the first Kafka broker has stopped, let’s use Kafka topics describe to see that new leaders were elected!
+Now that the second Kafka broker is stopped, let’s use Kafka topics describe command to see that new leaders were elected!
 
 ```bash
 Topic:failsafe-test-topic	PartitionCount:8	ReplicationFactor:3	Configs:
@@ -233,7 +233,7 @@ Topic:failsafe-test-topic	PartitionCount:8	ReplicationFactor:3	Configs:
 
 You can see that `kafka-2` is no longer a leader for any of the partitions. 
 
-Let’s prove that failover worked by sending two more messages from the producer console. Notice if the consumers still get the messages.
+Let’s prove that failover worked by sending two more messages from the producer console. Notice if consumers still get the messages.
 
 ## Kafka Cluster Failover Review
 
