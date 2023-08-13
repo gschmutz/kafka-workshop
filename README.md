@@ -35,6 +35,7 @@ ID  | Title   | Description
 8 |[Kafka with Confluent's Python client](./08-producing-consuming-kafka-with-python)  | learn how to use **Python** to consume and produce from/to Kafka
 9a |[Using Kafka from Go](./09a-working-with-go)  | learn how to use **Go** to consume and produce from/to Kafka
 9b |[Kafka from Node.js](./09b-working-with-nodejs)  | learn how to use **Node.js** to consume and produce from/to Kafka
+10 | [Function as a Service (FaaS) with Kafka and Nuclio](./10-faas-and-kafka-with-nuclio)  | uses **Nuclio** to demonstrate implementing serverless functions (Faas = Function-as-a-Service) triggered by Kafka.
 11 | [Using ksqlDB for Stream Analytics](./11-using-ksqldb-simple)  | uses **Confluent ksqlDB** to demonstrate analytics on data-in-motion.
 12 | [Using Kafka Streams for Stream Analytics](./12-using-kafka-streams-simple)  | uses **Kafka Streams** to demonstrate analytics on data-in-motion.
 12a | [Using Kafka Streams from Spring Boot for Stream Analytics](./12a-using-kafka-streams-from-springboot)  | uses **Kafka Streams** from **Spring Boot** to demonstrate analytics on data-in-motion.
