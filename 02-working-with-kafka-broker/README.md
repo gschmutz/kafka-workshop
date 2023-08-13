@@ -682,7 +682,7 @@ Taking his example, you can send 10 orders to test-topic (it will not work if yo
 curl -s "https://api.mockaroo.com/api/d5a195e0?count=20&key=ff7856d0"| kcat -b dataplatform -t test-topic -P
 ```
 
-## Publishing a data stream to Kafka
+## Publishing a "real" data stream to Kafka
 
 Next we will see a more realistic example using the [Streaming Synthetic Sales Data Generator](https://github.com/garystafford/streaming-sales-generator). It is available as a [Docker Image](https://hub.docker.com/repository/docker/trivadis/sales-data-generator).
 
