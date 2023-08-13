@@ -35,7 +35,7 @@ ID  | Title   | Description
 8 |[Kafka with Confluent's Python client](./08-producing-consuming-kafka-with-python)  | learn how to use **Python** to consume and produce from/to Kafka
 9a |[Using Kafka from Go](./09a-working-with-go)  | learn how to use **Go** to consume and produce from/to Kafka
 9b |[Kafka from Node.js](./09b-working-with-nodejs)  | learn how to use **Node.js** to consume and produce from/to Kafka
-10 | [Working with Kafka Connect and Change Data Capture (CDC)](./10-working-with-kafka-connect-and-cdc)  | uses **Kafka Connect** to demonstrate various way for doing CDC on a set of PostgreSQL tables.
+11 | [Using ksqlDB for Stream Analytics](./11-using-ksqldb-simple)  | uses **Confluent ksqlDB** to demonstrate analytics on data-in-motion.
 12 | [Using Kafka Streams for Stream Analytics](./12-using-kafka-streams-simple)  | uses **Kafka Streams** to demonstrate analytics on data-in-motion.
 12a | [Using Kafka Streams from Spring Boot for Stream Analytics](./12a-using-kafka-streams-from-springboot)  | uses **Kafka Streams** from **Spring Boot** to demonstrate analytics on data-in-motion.
 12b | [Using Kafka Streams from Spring Cloud Stream & Spring Boot for Stream Analytics](./12b-using-kafka-streams-from-springcloud-springboot)  | uses **Kafka Streams** from **Spring Boot** with ** Kafka Streams Binder of Spring Cloud Stream** to demonstrate analytics on data-in-motion.
@@ -47,6 +47,6 @@ ID  | Title   | Description
 13d | [Stream Analytics with .Net using Streamiz](./13d-stream-analytics-using-dotnet-streamiz)  | learn how to use Streamiz from .NET to execute processing and analytics directly on a stream of data
 13e | [Stream Analytics using Spark Structured Streaming](./13e-stream-analytics-using-spark-structured-streaming)  | learn how to use Spark Structured Streaming to execute processing and analytics directly on a stream of data
 13f | [Static Data Ingestion into Kafka](./13f-static-data-ingestion)  | use Kafka Connect to ingest data from relational database (static data) and then join it with a data stream using ksqlDB
-14 | [Using Confluent REST APIs (REST Proxy)](./14-using-rest-proxy)  | use Confluent REST Proxy to create topics and produce and consume messages (JSON and Avro) to these topics.
+14 | [Working with Kafka Connect and Change Data Capture (CDC)](./14-working-with-kafka-connect-and-cdc)  | uses **Kafka Connect** to demonstrate various way for doing CDC on a set of PostgreSQL tables.
 16 |[Manipulating Consumer Offsets](./16-manipulating-consumer-offsets)  | learn how to use the `kafka-consumer-groups` CLI for manipulating consumer offsets
-
+20 | [Using Confluent REST APIs (REST Proxy)](./20-using-rest-proxy)  | use Confluent REST Proxy 

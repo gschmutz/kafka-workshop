@@ -791,7 +791,7 @@
       #
       # ===== Redis ========
       #
-      REDIS_enable: false
+      REDIS_enable: true
       REDIS_replicasets: 0
       REDIS_allow_empty_password: yes
       REDIS_disable_commands:
@@ -805,7 +805,7 @@
       #
       # ===== Redis Commander ========
       #
-      REDIS_COMMANDER_enable: false
+      REDIS_COMMANDER_enable: true
       #
       # ===== Apache Casandra ========
       #
