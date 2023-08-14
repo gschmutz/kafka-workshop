@@ -726,6 +726,12 @@ By default you will end-up on the topics overview page
 
 ![Alt Image Text](./images/akhq-homepage.png "AKHQ Homepage")
 
+Navigate to **Nodes** in the menu on the left to see the Kafka cluster with its 3 brokers.
+
+![Alt Image Text](./images/akhq-nodes.png "Kafka Manager Add Cluster")
+
+To see again the topics, click on **Topics** in the menu.
+
 Currently there is only one topic shown, due to the default setting of hiding internal topics. 
 
 You can select **Show all topics** in the drop down to also view the internal topics, such as `__consumer_offsets`. 
@@ -750,9 +756,13 @@ Click on the **magnifying glass** icon and the data will be shown as it arrives 
 
 ![Alt Image Text](./images/akhq-live-tail2.png "Kafka Manager Add Cluster")
 
-Navigate to **Nodes** in the menu on the left to see the Kafka cluster with its 3 brokers.
+If you want to empty a topic, then navigate to **Topics** in the menu, select a topic by clicking on the **magnifying glass** icon on the right side
 
-![Alt Image Text](./images/akhq-nodes.png "Kafka Manager Add Cluster")
+![Alt Image Text](./images/akhq-empty-topic.png "Kafka Manager Add Cluster")
+
+and click **Empty Topic**.
+
+AKHQ can also be used to 
 
 ## Using CMAK (Cluster Manager for Apache Apache Kafka)
 
