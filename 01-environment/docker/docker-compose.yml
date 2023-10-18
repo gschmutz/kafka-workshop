@@ -481,6 +481,34 @@ services:
       - |
         while [ 1 -eq 1 ];do sleep 60;done
     restart: unless-stopped
+  #  ================================== Jikkou ========================================== #
+  jikkou:
+    image: streamthoughts/jikkou:latest
+    container_name: jikkou
+    hostname: jikkou
+    labels:
+      com.platys.name: jikkou
+    environment:
+      JIKKOU_DEFAULT_KAFKA_BOOTSTRAP_SERVERS: kafka-1:19092,kafka-2:19093,kafka-3:19094
+      JIKKOU_DEFAULT_SCHEMA_REGISTRY_URL: ''
+      JIKKOU_KAFKA_BROKERS_WAIT_FOR_MIN_AVAILABLE: 3
+      JIKKOU_KAFKA_BROKERS_WAIT_FOR_ENABLED: 'true'
+      JIKKOU_KAFKA_BROKERS_WAIT_FOR_RETRY_BACKOFF_MS: 10000
+      JIKKOU_KAFKA_BROKERS_WAIT_FOR_TIMEOUT_MS: 120000
+      VALIDATION_DEFAULT_TOPIC_NAME_REGEX: '[a-zA-Z0-9\._\-]+'
+      VALIDATION_DEFAULT_TOPIC_MIN_NUM_PARTITIONS: 1
+      VALIDATION_DEFAULT_TOPIC_MIN_REPLICATION_FACTOR: 1
+    volumes:
+      - ./data-transfer:/data-transfer
+      - ./scripts/jikkou/:/jikkou
+      - ./conf/jikkou/application.conf:/root/.jikkou/application.conf
+      - ./conf/jikkou/config:/etc/jikkou/config
+    command:
+      - apply
+      - --files
+      - /jikkou/
+      - --file-name
+      - '**/*.yml'
   #  ================================== Kafka Connect UI ========================================== #
   kafka-connect-ui:
     image: landoop/kafka-connect-ui:latest
