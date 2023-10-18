@@ -54,7 +54,6 @@
       # ===== Apache Kafka ========
       #
       KAFKA_enable: true
-      CONFLUENT_PLATFORM_version: 7.2.2
       # one of enterprise, community
       KAFKA_edition: 'community'
       KAFKA_volume_map_data: false
