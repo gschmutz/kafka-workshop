@@ -74,6 +74,7 @@ Container Port(s) | Internal Port(s)           | Service (alternatives) |
 5002 | 5000 | amundsenmetadata |
 5010 | 5000 | marquez |
 5011 | 5001 | marquez |
+5020 | 5000 | docker-registry |
 5050 | 5050 | zeppelin |
 5500 | 5500 | oracledb-ee |
 5501 | 5500 | oracledb-xe |
@@ -104,6 +105,7 @@ Container Port(s) | Internal Port(s)           | Service (alternatives) |
 6382 | 6379 | redis-replica-1 |
 6385 | 6379 | redash-redis |
 6386 | 6379 | tyk-redis |
+6570 | 6570 | hserver-1 |
 6831 | 6831 | jaeger (udp) |
 6749 | 6749 | curity |
 6832 | 6832 | jaeger (udp) |
@@ -283,6 +285,7 @@ Container Port(s) | Internal Port(s)           | Service (alternatives) |
 19632 | 19630 | streamsets-transformer-1 |
 19999 | 9999 | influxdb2 |
 21000 | 21000 | atlas |
+24224 | 24224 | fluentd |
 26500 | 26500 | zeebe-1 |
 27017 | 27017 | mongodb-1 |
 27018 | 27017 | mongodb-2 |
@@ -292,7 +295,6 @@ Container Port(s) | Internal Port(s)           | Service (alternatives) |
 28081 | 8080 | presto-1 |
 28082 | 8080 | trino-1 |
 28083 | 8443 | trino-1 (tls) |
-28085 | 8080 | azkarra-worker-1 |
 28888 | 8888 | jupyter |
 28889 | 8888 | anaconda |
 29042 | 9042 | cassandra-1 |
@@ -336,7 +338,7 @@ Container Port(s) | Internal Port(s)           | Service (alternatives) |
 28105 | 9000 | cmak (dc2) |
 28106 | 8080 | kadmin     |
 28107 | 8080 | akhq (dc1)    |
-28107 | 8080 | akhq (dc2)     |
+28108 | 8080 | akhq (dc2)     |
 28110 | 9020 | kafdrop     |
 28111 | 28111 | spark-worker-1 |
 28112 | 28112 | spark-worker-2 |
@@ -410,7 +412,7 @@ Container Port(s) | Internal Port(s)           | Service (alternatives) |
 28202 | 5683 | thingsbaord (coap) |
 28203 | 8080 | microcks |
 28204 | 8080 | keycloak |
-28205 | 10000 | dataiku-dss |
+28205 | 8443 | keycloak (https) |
 28206 | 3000 | postgrest |
 28207 | 8080 | operate |
 28208 | 9000 | zeeqs |
@@ -504,6 +506,21 @@ Container Port(s) | Internal Port(s)           | Service (alternatives) |
 28304 | 8080 | spark-master |
 28305 | 3000 | sqlchat |
 28306 | 8080 | minio-web |
+28307 | 80 | docker-registry-ui |
+28308 | 8000 | splunk |
+28309 | 9097 | klaw-core |
+28310 | 9343 | klaw-cluster-api |
+28311 | 3000 | raneto |
+28312 | 3000 | markdown-madness |
+28313 | 80 | kadeck |
+28314 | 8080 | watchtower |
+28315 | 10000 | dataiku-dss |
+28316 | 1080 | maildev |
+28317 | 25 | maildev |
+28318 | 8025 | mailpit |
+28319 | 25 | mailpit |
+28320 | 25 | akhq (dc1) |
+28321 | 25 | akhq (dc1) |
 
 ## Ports > 28500
 

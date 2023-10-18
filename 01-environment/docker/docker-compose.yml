@@ -28,6 +28,7 @@ services:
       ZOOKEEPER_SYNC_LIMIT: 2
     volumes:
       - ./data-transfer:/data-transfer
+      - ./security/zookeeper/zookeeper.sasl.jaas.config:/etc/kafka/zookeeper_server_jaas.conf
     restart: unless-stopped
 #  ================================== Kafka ========================================== #
   kafka-1:
@@ -47,11 +48,11 @@ services:
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_BROKER_RACK: rack1
-      KAFKA_INTER_BROKER_LISTENER_NAME: LISTENER_INTERNAL
+      KAFKA_INTER_BROKER_LISTENER_NAME: BROKER
       KAFKA_ZOOKEEPER_CONNECT: zookeeper-1:2181
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: LISTENER_INTERNAL:PLAINTEXT,LISTENER_LOCAL:PLAINTEXT,LISTENER_DOCKERHOST:PLAINTEXT,LISTENER_EXTERNAL:PLAINTEXT
-      KAFKA_LISTENERS: LISTENER_INTERNAL://kafka-1:19092,LISTENER_LOCAL://kafka-1:39092,LISTENER_DOCKERHOST://kafka-1:29092,LISTENER_EXTERNAL://kafka-1:9092
-      KAFKA_ADVERTISED_LISTENERS: LISTENER_INTERNAL://kafka-1:19092,LISTENER_LOCAL://localhost:39092,LISTENER_DOCKERHOST://${DOCKER_HOST_IP:-127.0.0.1}:29092,LISTENER_EXTERNAL://${PUBLIC_IP:-127.0.0.1}:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: BROKER:PLAINTEXT,LOCAL:PLAINTEXT,DOCKERHOST:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_LISTENERS: BROKER://kafka-1:19092,LOCAL://kafka-1:39092,DOCKERHOST://kafka-1:29092,EXTERNAL://kafka-1:9092
+      KAFKA_ADVERTISED_LISTENERS: BROKER://kafka-1:19092,LOCAL://localhost:39092,DOCKERHOST://${DOCKER_HOST_IP:-127.0.0.1}:29092,EXTERNAL://${PUBLIC_IP:-127.0.0.1}:9092
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
@@ -85,11 +86,11 @@ services:
     environment:
       KAFKA_BROKER_ID: 2
       KAFKA_BROKER_RACK: rack1
-      KAFKA_INTER_BROKER_LISTENER_NAME: LISTENER_INTERNAL
+      KAFKA_INTER_BROKER_LISTENER_NAME: BROKER
       KAFKA_ZOOKEEPER_CONNECT: zookeeper-1:2181
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: LISTENER_INTERNAL:PLAINTEXT,LISTENER_LOCAL:PLAINTEXT,LISTENER_DOCKERHOST:PLAINTEXT,LISTENER_EXTERNAL:PLAINTEXT
-      KAFKA_LISTENERS: LISTENER_INTERNAL://kafka-2:19093,LISTENER_LOCAL://kafka-2:39093,LISTENER_DOCKERHOST://kafka-2:29093,LISTENER_EXTERNAL://kafka-2:9093
-      KAFKA_ADVERTISED_LISTENERS: LISTENER_INTERNAL://kafka-2:19093,LISTENER_LOCAL://localhost:39093,LISTENER_DOCKERHOST://${DOCKER_HOST_IP:-127.0.0.1}:29093,LISTENER_EXTERNAL://${PUBLIC_IP:-127.0.0.1}:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: BROKER:PLAINTEXT,LOCAL:PLAINTEXT,DOCKERHOST:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_LISTENERS: BROKER://kafka-2:19093,LOCAL://kafka-2:39093,DOCKERHOST://kafka-2:29093,EXTERNAL://kafka-2:9093
+      KAFKA_ADVERTISED_LISTENERS: BROKER://kafka-2:19093,LOCAL://localhost:39093,DOCKERHOST://${DOCKER_HOST_IP:-127.0.0.1}:29093,EXTERNAL://${PUBLIC_IP:-127.0.0.1}:9093
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
@@ -123,11 +124,11 @@ services:
     environment:
       KAFKA_BROKER_ID: 3
       KAFKA_BROKER_RACK: rack1
-      KAFKA_INTER_BROKER_LISTENER_NAME: LISTENER_INTERNAL
+      KAFKA_INTER_BROKER_LISTENER_NAME: BROKER
       KAFKA_ZOOKEEPER_CONNECT: zookeeper-1:2181
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: LISTENER_INTERNAL:PLAINTEXT,LISTENER_LOCAL:PLAINTEXT,LISTENER_DOCKERHOST:PLAINTEXT,LISTENER_EXTERNAL:PLAINTEXT
-      KAFKA_LISTENERS: LISTENER_INTERNAL://kafka-3:19094,LISTENER_LOCAL://kafka-3:39094,LISTENER_DOCKERHOST://kafka-3:29094,LISTENER_EXTERNAL://kafka-3:9094
-      KAFKA_ADVERTISED_LISTENERS: LISTENER_INTERNAL://kafka-3:19094,LISTENER_LOCAL://localhost:39094,LISTENER_DOCKERHOST://${DOCKER_HOST_IP:-127.0.0.1}:29094,LISTENER_EXTERNAL://${PUBLIC_IP:-127.0.0.1}:9094
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: BROKER:PLAINTEXT,LOCAL:PLAINTEXT,DOCKERHOST:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_LISTENERS: BROKER://kafka-3:19094,LOCAL://kafka-3:39094,DOCKERHOST://kafka-3:29094,EXTERNAL://kafka-3:9094
+      KAFKA_ADVERTISED_LISTENERS: BROKER://kafka-3:19094,LOCAL://localhost:39094,DOCKERHOST://${DOCKER_HOST_IP:-127.0.0.1}:29094,EXTERNAL://${PUBLIC_IP:-127.0.0.1}:9094
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
@@ -152,7 +153,7 @@ services:
     labels:
       com.platys.name: kafka-connect
       com.platys.restapi.title: Kafka Connect REST API
-      com.platys.restapi.url: http://${PUBLIC_IP}:8083
+      com.platys.restapi.url: http://dataplatform:8083
     ports:
       - 8083:8083
     environment:
@@ -218,7 +219,7 @@ services:
     labels:
       com.platys.name: kafka-connect
       com.platys.restapi.title: Kafka Connect REST API
-      com.platys.restapi.url: http://${PUBLIC_IP}:8084
+      com.platys.restapi.url: http://dataplatform:8084
     ports:
       - 8084:8084
     environment:
@@ -285,7 +286,7 @@ services:
     labels:
       com.platys.name: ksqldb
       com.platys.restapi.title: ksqlDB Server REST API
-      com.platys.restapi.url: http://${PUBLIC_IP}:8088
+      com.platys.restapi.url: http://dataplatform:8088
     ports:
       - 8088:8088
       - 1095:1095
@@ -338,7 +339,7 @@ services:
     labels:
       com.platys.name: ksqldb
       com.platys.restapi.title: ksqlDB Server REST API
-      com.platys.restapi.url: http://${PUBLIC_IP}:8089
+      com.platys.restapi.url: http://dataplatform:8089
     ports:
       - 8089:8088
       - 1096:1095
@@ -407,7 +408,7 @@ services:
     labels:
       com.platys.name: kafka-rest
       com.platys.restapi.title: Kafka REST Proxy
-      com.platys.restapi.url: http://${PUBLIC_IP}:18086
+      com.platys.restapi.url: http://dataplatform:18086
     ports:
       - 18086:8086
     environment:
@@ -429,14 +430,13 @@ services:
     labels:
       com.platys.name: schema-registry
       com.platys.restapi.title: Schema Registry REST API
-      com.platys.restapi.url: http://${PUBLIC_IP}:8081
+      com.platys.restapi.url: http://dataplatform:8081
     ports:
       - 8081:8081
     environment:
       SCHEMA_REGISTRY_HOST_NAME: schema-registry-1
       SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
       SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: kafka-1:19092,kafka-2:19093,kafka-3:19094
-      SCHEMA_REGISTRY_KAFKASTORE_SECURITY_PROTOCOL: PLAINTEXT
       SCHEMA_REGISTRY_GROUP_ID: schema-registry
       SCHEMA_REGISTRY_LEADER_ELIGIBILITY: 'True'
       SCHEMA_REGISTRY_MODE_MUTABILITY: 'True'
@@ -458,7 +458,7 @@ services:
     labels:
       com.platys.name: schema-registry-ui
       com.platys.webui.title: Confluent Schema Registry UI
-      com.platys.webui.url: http://${PUBLIC_IP}:28102
+      com.platys.webui.url: http://dataplatform:28102
     ports:
       - 28102:8000
     environment:
@@ -490,7 +490,7 @@ services:
     labels:
       com.platys.name: kafka-connect-ui
       com.platys.webui.title: Kafka Connect UI
-      com.platys.webui.url: http://${PUBLIC_IP}:28103
+      com.platys.webui.url: http://dataplatform:28103
     ports:
       - 28103:8000
     environment:
@@ -508,7 +508,7 @@ services:
     labels:
       com.platys.name: cmak
       com.platys.webui.title: Cluster Manager for Apache Kafka UI
-      com.platys.webui.url: http://${PUBLIC_IP}:28104
+      com.platys.webui.url: http://dataplatform:28104
     ports:
       - 28104:9000
     environment:
@@ -527,13 +527,28 @@ services:
     hostname: akhq
     labels:
       com.platys.name: akhq
-      com.platys.webui.title: Apache Kafka AQ UI
-      com.platys.webui.url: http://${PUBLIC_IP}:28107
+      com.platys.webui.title: AKHQ UI
+      com.platys.webui.url: http://dataplatform:28107
+      com.platys.restapi.title: AKHQ API
+      com.platys.restapi.url: http://dataplatform:28107/api
     ports:
       - 28107:8080
+      - 28320:28081
     environment:
       AKHQ_CONFIGURATION: |
         akhq:
+          security:
+            enabled: true
+            default-group: no-roles
+            basic-auth:
+              - username: admin
+                password: "033b83d92431548e13424903c235a9922af56dd34d53c9b72b37cf158489213e"
+                groups:
+                - admin
+              - username: reader
+                password: "033b83d92431548e13424903c235a9922af56dd34d53c9b72b37cf158489213e"
+                groups:
+                - reader
           pagination.page-size: 25
           topic-data:
             size: 50
@@ -573,7 +588,7 @@ services:
     labels:
       com.platys.name: conduktor-platform
       com.platys.webui.title: Conduktor Platform UI
-      com.platys.webui.url: http://${PUBLIC_IP}:28285
+      com.platys.webui.url: http://dataplatform:28285
     ports:
       - 28285:8080
     environment:
@@ -605,9 +620,9 @@ services:
     labels:
       com.platys.name: streamsets
       com.platys.webui.title: StreamSets Data Collector UI
-      com.platys.webui.url: http://${PUBLIC_IP}:18630
+      com.platys.webui.url: http://dataplatform:18630
       com.platys.restapi.title: StreamSets Data Collector REST API
-      com.platys.restapi.url: http://${PUBLIC_IP}:18630/collector/restapi
+      com.platys.restapi.url: http://dataplatform:18630/collector/restapi
     ports:
       - 18630:18630
     environment:
@@ -639,13 +654,13 @@ services:
     restart: unless-stopped
   #  ================================== NiFi ========================================== #
   nifi-1:
-    image: apache/nifi:1.22.0
+    image: apache/nifi:1.23.2
     container_name: nifi-1
     hostname: nifi-1
     labels:
       com.platys.name: nifi
       com.platys.webui.title: Apache NiFi UI Node 18080
-      com.platys.webui.url: https://${PUBLIC_IP}:18080/nifi
+      com.platys.webui.url: https://dataplatform:18080/nifi
     ports:
       # HTTP
       - 18080:18080
@@ -698,7 +713,7 @@ services:
     labels:
       com.platys.name: zeppelin
       com.platys.webui.title: Apache Zeppelin UI
-      com.platys.webui.url: http://${PUBLIC_IP}:28080
+      com.platys.webui.url: http://dataplatform:28080
     ports:
       - 28080:8080
       - 6060:6060
@@ -756,7 +771,7 @@ services:
     labels:
       com.platys.name: jupyter
       com.platys.webui.title: Jupyter UI
-      com.platys.webui.url: http://${PUBLIC_IP}:28888
+      com.platys.webui.url: http://dataplatform:28888
     ports:
       - 28888:8888
       - 14040-14044:4040-4044
@@ -795,6 +810,41 @@ services:
       - |
         start-notebook.sh
     restart: unless-stopped
+  #  ================================== Redis ========================================== #
+  redis-1:
+    image: bitnami/redis:7.0
+    hostname: redis-1
+    container_name: redis-1
+    labels:
+      com.platys.name: redis
+    ports:
+      - 6379:6379
+    environment:
+      - REDIS_REPLICATION_MODE=master
+      - ALLOW_EMPTY_PASSWORD=yes
+      - REDIS_PASSWORD=abc123!
+      - REDIS_AOF_ENABLED=no
+    volumes:
+      - ./data-transfer:/data-transfer
+    restart: unless-stopped
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: redis-commander
+    hostname: redis-commander
+    labels:
+      com.platys.name: redis-commander
+      com.platys.webui.title: Redis Commander UI
+      com.platys.webui.url: http://dataplatform:28119
+    ports:
+      - 28119:8081
+    environment:
+      - REDIS_HOST=redis-1
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD='abc123!'
+      - REDIS_DB=0
+    volumes:
+      - ./data-transfer:/data-transfer
+    restart: unless-stopped
   #  ================================== PostgreSQL ========================================== #
   postgresql:
     image: postgres:15
@@ -826,7 +876,7 @@ services:
     labels:
       com.platys.name: adminer
       com.platys.webui.title: Adminer UI
-      com.platys.webui.url: http://${PUBLIC_IP}:28131
+      com.platys.webui.url: http://dataplatform:28131
     ports:
       - 28131:8080
     volumes:
@@ -841,7 +891,7 @@ services:
     labels:
       com.platys.name: nuclio
       com.platys.webui.title: Nuclio Dashboard UI
-      com.platys.webui.url: http://${PUBLIC_IP}:8070
+      com.platys.webui.url: http://dataplatform:8070
     ports:
       - 8070:8070
     environment:
@@ -849,18 +899,17 @@ services:
       - NUCLIO_DASHBOARD_DEFAULT_FUNCTION_MOUNT_MODE=volume
     volumes:
       - ./data-transfer:/data-transfer
-      - /tmp:/tmp
       - /var/run/docker.sock:/var/run/docker.sock
     restart: unless-stopped
   #  ================================== Minio ========================================== #
   minio-1:
-    image: minio/minio:RELEASE.2023-06-29T05-12-28Z
+    image: minio/minio:RELEASE.2023-08-16T20-17-30Z
     container_name: minio-1
     hostname: minio-1
     labels:
       com.platys.name: minio
       com.platys.webui.title: MinIO UI
-      com.platys.webui.url: http://${PUBLIC_IP}:9000
+      com.platys.webui.url: http://dataplatform:9000
     ports:
       - 9000:9000
       - 9010:9010
@@ -921,7 +970,7 @@ services:
     labels:
       com.platys.name: hivemq-ui
       com.platys.webui.title: HiveMQ UI
-      com.platys.webui.url: http://${PUBLIC_IP}:28136
+      com.platys.webui.url: http://dataplatform:28136
     ports:
       - 28136:80
     volumes:
@@ -935,7 +984,7 @@ services:
     labels:
       com.platys.name: wetty
       com.platys.webui.title: WeTTY UI
-      com.platys.webui.url: http://${PUBLIC_IP}:3001
+      com.platys.webui.url: http://dataplatform:3001
     ports:
       - 3001:3000
     environment:
@@ -950,18 +999,20 @@ services:
     restart: unless-stopped
   #  ================================== markdown-viewer ========================================== #
   markdown-viewer:
-    image: trivadis/markdown-web:latest
+    image: dannyben/madness:latest
     container_name: markdown-viewer
     hostname: markdown-viewer
     labels:
       com.platys.name: markdown-viewer
       com.platys.webui.title: Markdown Viewer UI
-      com.platys.webui.url: http://${PUBLIC_IP}:80
+      com.platys.webui.url: http://dataplatform:80
     ports:
-      - 80:80
+      - 80:3000
     volumes:
-      - ./artefacts:/home/python/markdown
+      - ./artefacts:/docs
+      - ./conf/markdown-viewer/markdown-madness.yml:/docs/.madness.yml
       - ./data-transfer:/data-transfer
+    command: server
     restart: unless-stopped
   markdown-renderer:
     image: trivadis/jinja2-renderer:latest

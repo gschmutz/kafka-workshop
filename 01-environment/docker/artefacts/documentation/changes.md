@@ -9,22 +9,74 @@ The Modern Data Platform version 1.16.0 contains the following bug fixes and enh
 ### New Services
 
  * Minio Web
+ * ActiveMQ Artemis
+ * HStreamDB
+ * Kafka Init
+ * Docker Registry
+ * Docker Registry UI
+ * Splunk
+ * Klaw
+ * FluentD
+ * Raneto
+ * Markdown Madness
+ * Kadeck
+ * MailDev
+ * Mailpit
+ * Dataverse
+ * CKAN
 
+### Removed Services
+ 
+ * Azkarra Worker
+
+### New/Updated Cookbook Recipes
+
+ * [Collecting Docker Logs with Loki](../cookbooks/recipes/collecting-docker-logs-with-loki/README)
+ * [Kafka SASL/SCRAM Authentication](../cookbooks/recipes/kafka-sasl-scram-authentication/README)
+ * [Serving a static Web application from MinIO](../cookbooks/recipes/serving-static-html-app-from-minio/README)
+
+ 
 ### Version upgrades
 
  * Update `zeebe` to `8.2.5`
  * Update `druid` to `26.0.0`
- * Update `trino` to `422`
- * Update `starbrustdata` to `420-e`
+ * Update `trino` to `427`
+ * Update `starbrustdata` to `426-e`
  * Update `jikkou` to `0.21.0`
- * Update `minio` to `RELEASE.2023-06-29T05-12-28Z`
- * Update `nifi` to `1.22.0`
+ * Update `minio` to `RELEASE.2023-08-16T20-17-30Z`
+ * Update `nifi` to `1.23.2`
  * Update `ksqldb` to `0.29.0`
- * Update `datahub` to `v0.10.5`
+ * Update `datahub` to `v0.11.0`
+ * Update `Confluent Platform` to `7.5.0`
+ * Update `portainer-ce` to `2.18.4-alpine`
+ * Update `activemq-classic` to `5.18.2`
+ * Update `materialize` to `v0.64.0`
+ * Update `grafana` to `10.1.1`
+ * Update `jikkou` to `latest`
+ * Update `keycloak` to `22.0`
+ * Update `marquez` to `0.41.0`
 
 ### Enhancements
 
  * support for configuring Airflow authentication backends via `AIRFLOW_auth_backends` config setting
+ * support ActiveMQ Artemis as an ActiveMQ edition
+ * add support for multiple trino event listener plugins (rename `TRINO_event_listener` to `TRINO_event_listeners`)
+ * support for NEO4J major version 4 and 5 with `NEO4J_major_version` setting
+ * Markdown Viewer implementation has been changed to use `markdown-madness` instead of `markdown-web` (because it supports images and also has a nicer look&feel). This is now the default option, but you can revert back to the previous one by changing the value of the `MARKDOWN_VIEWER_edition` config setting to `markdown-web`.
+ * Watchtower now supports a lot more options and is no longer hardcoded to one single behaviour.
+ * support for Kafka SASL/PLAIN authentication for traditional and KRaft setups
+ * support for Kafka SASL/SCRAM (256 + 512) authentication for traditional and KRaft setups
+ * support for Kafka authorisation for traditional and KRaft setups
+ * support for authentication in AKHQ
+
+### Breaking Changes
+
+ * Remove usage of `$PUBLIC_IP` from the labels section in the `docker-compose.yml` to make it more stable to changing the value of the environment variable with a stack running (`docker compose up -d` will cause less harm)
+ * Rename Trino configuration setting `TRINO_additional_connectors` to `TRINO_additional_plugins`
+ * Keycloak is no longer using the "legacy" version but the new Quarkus-based one 
+ * Dataiku now maps to port `28315` and no longer to `28205`
+ * Change `KAFKA_KSQLDB_xxxxx` to `KSQLDB_xxxxx`
+
 
 ## What's new in 1.16.0
 

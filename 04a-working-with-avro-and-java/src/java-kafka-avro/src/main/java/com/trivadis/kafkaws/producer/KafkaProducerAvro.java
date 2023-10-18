@@ -35,11 +35,6 @@ public class KafkaProducerAvro {
             for (long index = 0; index < sendMessageCount; index++) {
                 Notification notification = new Notification(id, "Hello Kafka " + index);
 
-                Notification n1 = Notification.newBuilder()
-                                    .setId(id)
-                                    .setMessage("Hello Kafka " + index)
-                        .build();
-
                 final ProducerRecord<Long, Notification> record =
                         new ProducerRecord<>(TOPIC, key, notification);
 

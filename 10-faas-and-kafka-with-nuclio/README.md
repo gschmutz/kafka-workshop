@@ -1,6 +1,6 @@
-# Function as a Service (FaaS) with Kafka and Nuclio
+# Function as a Service (FaaS) with Kafka and Nuclio using Java and Python
 
-In this workshop we will learn how to use [Nuclio](https://nuclio.io/) to implement serverless functions to consume from Kafka. We will be using Python to implement the function.
+In this workshop we will learn how to use [Nuclio](https://nuclio.io/) to implement serverless functions to consume from Kafka. We will be using Java and Python to implement the function.
 
 You can find many examples of using Nuclio with various languages [here](https://nuclio.io/docs/latest/examples/).
 
@@ -10,11 +10,9 @@ We will be using the [Streaming Synthetic Sales Data Generator](https://github.c
 
 For the creation of the serverless function, we will use the [Nuclio GUI](http://dataplatform:8070). 
 
-## Setup
+## Create the necessary Kafka Topics
 
-### Creating the necessary Kafka Topics
-
-Let's create the necessary 3 topics, if they no longer exist:
+Let's create the 3 Kafka topics used by the Sales Data Generator, if they no longer exist from workshop [Getting Started with Apache Kafka](https://github.com/gschmutz/kafka-workshop/tree/master/02-working-with-kafka-broker):
 
 ```bash
 docker exec -ti kafka-1 kafka-topics --create --bootstrap-server kafka-1:19092 --topic demo.products --replication-factor 3 --partitions 8
@@ -31,6 +29,10 @@ Let's navigate to the [Nuclio GUI](http://dataplatform:8070). You should see the
 ![](./images/nuclio-homepage.png)
 
 Let's create a new project by clicking **NEW PROJECT**. In the pop-up window, enter `kafka-workshop` for **Project name** and `Kafka Workshop` for the **Description** and click **CREATE**. The new project should appear in the list of projects. 
+
+### Create the Function in Python
+
+We will first use the Python language to implement the functionality of our function.
 
 Navigate into the newly created project and you will see the 3 different options to **Start a new function**:
 
@@ -65,7 +67,7 @@ Now enter `kafka-1:19092` into the **Brokers** field, `demo.purchases` into the 
 
 ![](./images/nuclio-create-function-create-trigger2.png)
 
-Navigate back to **CODE**. As we have used the container name of Kafka to connect to the Kafka broker, we have to make sure, that the Docker container, Nuclio will create for the function is started in the same network as the Kafka cluster. 
+Navigate back to **CODE** by clicking on the tab. As we have used the container name of Kafka to connect to the Kafka broker, we have to make sure, that the Docker container, Nuclio will create for the function is started in the same network as the Kafka cluster. 
 
 We can not control that over the Nuclio GUI, but it is available as an [inline configuration snippet](https://github.com/nuclio/nuclio/blob/master/docs/tasks/deploying-functions.md#providing-configuration-via-inline-configuration) in your functions source code
 
@@ -217,7 +219,9 @@ Refresh the Redis Commander window to see new key/value pairs constantly be adde
 
 ![](./images/redis-commander-2.png)
 
+### Create the Function in Java
 
+We will now implement the same functionality but with using the Java language. 
 
 
 

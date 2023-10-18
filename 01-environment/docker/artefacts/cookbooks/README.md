@@ -14,6 +14,10 @@ Inhere we are documenting cookbooks on how to use the platform:
    * [Querying HDFS data using Trino](./recipes/querying-hdfs-with-presto/README) - `1.11.0`
    * [Trino Security](./recipes/trino-security/README) - `1.16.0`
 
+ * **MinIO**
+   * [Serving a static Web application from MinIO](./recipes/serving-static-html-app-from-minio/README)
+
+
  * **MQTT**
    * [Using Confluent MQTT Proxy](./recipes/using-mqtt-proxy/README)
    * [Using HiveMQ with Kafka Extensions](./recipes/using-hivemq-with-kafka-extension/README) - `1.12.0`
@@ -60,8 +64,9 @@ Inhere we are documenting cookbooks on how to use the platform:
 
  * **Kafka**
    * [Simulated Multi-DC Setup on one machine](./recipes/simulated-multi-dc-setup/README) - `1.14.0`  
-   * [Automate management of Kafka topics on the platform](./recipes/jikkou-automate-kafka-topics-management/README) - `1.14.0`
+   * [Automate management of Kafka topics using Jikkou](./recipes/jikkou-automate-kafka-topics-management/README) - `1.17.0`
    * [Azure Event Hub as external Kafka](./recipes/azure-event-hub-as-external-kafka/README) - `1.16.0`
+   * [SASL/SCRAM Authentication](./recipes/kafka-sasl-scram-authentication/README) - `1.17.0`
 
  * **Confluent Enterprise Platform**
    * [Using Confluent Enterprise Tiered Storage](./recipes/confluent-tiered-storage/README) - `1.13.0`
@@ -78,16 +83,13 @@ Inhere we are documenting cookbooks on how to use the platform:
  * **Apicurio Registry**
    * [Apicurio Registry with SQL Storage (PostgreSQL)](./recipes/apicurio-with-database-storage/README) - `1.14.0`
 
- * **Jikkou**
-   * [Automate management of Kafka topics on the platform](./recipes/jikkou-automate-kafka-topics-management/README)    
-
  * **Oracle RDBMS**
    * [Using private (Trivadis) Oracle EE image](./recipes/using-private-oracle-ee-image/README) - `1.13.0`    
    * [Using public Oracle XE image](./recipes/using-public-oracle-xe-image/README) - `1.16.0`    
 
  * **Neo4J**
-     * [Working with Neo4J](./recipes/working-with-neo4j/README) - `1.15.0`  
-     * [Neo4J and yFiles graphs for Jupyter](./recipes/neo4j-jupyter-yfiles/README) - `1.16.0`   
+   * [Working with Neo4J](./recipes/working-with-neo4j/README) - `1.15.0`  
+   * [Neo4J and yFiles graphs for Jupyter](./recipes/neo4j-jupyter-yfiles/README) - `1.16.0`   
 
  * **Tipboard**
    * [ Working with Tipboard and Kafka](./recipes/tipboard-and-kafka/README) - `1.14.0`    
@@ -101,3 +103,7 @@ Inhere we are documenting cookbooks on how to use the platform:
 
  * **MLflow**
    * [Using MLflow from Jupyter](./recipes/using-mflow-from-jupyter/README) - `1.16.0` 
+
+ * **Docker Logging**
+   * [Collecting Docker Logs with Loki](./recipes/collecting-docker-logs-with-loki/README) - `1.17.0` 
+
