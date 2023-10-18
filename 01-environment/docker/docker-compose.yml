@@ -28,7 +28,6 @@ services:
       ZOOKEEPER_SYNC_LIMIT: 2
     volumes:
       - ./data-transfer:/data-transfer
-      - ./security/zookeeper/zookeeper.sasl.jaas.config:/etc/kafka/zookeeper_server_jaas.conf
     restart: unless-stopped
 #  ================================== Kafka ========================================== #
   kafka-1:
@@ -537,18 +536,6 @@ services:
     environment:
       AKHQ_CONFIGURATION: |
         akhq:
-          security:
-            enabled: true
-            default-group: no-roles
-            basic-auth:
-              - username: admin
-                password: "033b83d92431548e13424903c235a9922af56dd34d53c9b72b37cf158489213e"
-                groups:
-                - admin
-              - username: reader
-                password: "033b83d92431548e13424903c235a9922af56dd34d53c9b72b37cf158489213e"
-                groups:
-                - reader
           pagination.page-size: 25
           topic-data:
             size: 50
