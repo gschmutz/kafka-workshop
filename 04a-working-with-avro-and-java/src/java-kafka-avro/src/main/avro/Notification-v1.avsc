@@ -7,13 +7,6 @@
 	    { "type" : ["long", "null"],
 	      "name" : "id"
 	    },
-    {
-      "name": "subject",
-      "type": [
-        "string",
-        "null"
-      ]
-    },
 	    { "type" : ["string", "null"],
 	      "name" : "message"
 	    }
