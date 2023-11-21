@@ -36,6 +36,9 @@ Container Port(s) | Internal Port(s)           | Service (alternatives) |
 2185 | 2185 | zookeeper-5 |
 2186 | 2186 | zookeeper-6 |
 2222 | 22 | sftp |
+2379 | 2379 | etcd-1 (client req) |
+2380 | 2380 | etcd-1 (peer comm) |
+2381 | 2381 | etcd-1 (metrics) |
 2424 | 2424 | arcadedb |
 2480 | 5432 | arcadedb (postgresql port) |
 2481 | 6379 | arcadedb (redis port) |
@@ -52,6 +55,7 @@ Container Port(s) | Internal Port(s)           | Service (alternatives) |
 3200 | 3200 | tempo |
 3306 | 3306 | mysql |
 3307 | 3306 | datahub-mysql |
+3333 | 3333 | taskcafe |
 3838 | 3838 | shiny-server |
 4000 | 4000 | graphql-mesh |
 4004 | 4004 | log4brains |
@@ -69,6 +73,7 @@ Container Port(s) | Internal Port(s)           | Service (alternatives) |
 4196 | 4196 | benthos-server |
 4317 | 4317 | otel-collector |
 4466 | 4466 | curity |
+4566 | 4566 | risingwave |
 5000 | 5000 | amundsenfrontend |
 5001 | 5000 | amundsensearch |
 5002 | 5000 | amundsenmetadata |
@@ -83,10 +88,13 @@ Container Port(s) | Internal Port(s)           | Service (alternatives) |
 5432 | 5432 | postgresql |
 5433 | 5432 | timescaledb |
 5434 | 5432 | marquez-db |
+5435 | 5432 | dataverse-postgresql |
 5555 | 5555 | airflow-flower |
 5601 | 5601 | kibana |
 5602 | 5601 | datahub-kibana |
 5603 | 5601 | opensearch-dashboards |
+5690 | 5690 | risingwave |
+5691 | 5691 | risingwave |
 5672 | 5672 | activemq |
 5673 | 5672 | rabbitmq (amqp) |
 5701 | 5701 | hazelcast	-1 |
@@ -157,6 +165,7 @@ Container Port(s) | Internal Port(s)           | Service (alternatives) |
 8443 | 8443 | kong (proxy ssl) |
 8444 | 8444 | kong (admin api ssl) |
 8446 | 8443 | curity |
+8761 | 8761 | ioevent-cockpit-api |
 8787 | 8787 | r-studio |
 8812 | 8812 | questdb |
 8888 | 8888 | hue |
@@ -179,6 +188,7 @@ Container Port(s) | Internal Port(s)           | Service (alternatives) |
 9101 | 9001 | mosquitto-1 |
 9102 | 9002 | mosquitto-2 |
 9103 | 9003 | mosquitto-3 |
+9121 | 9121 | redis-exporter |
 9200 | 9200 | elasticsearch-1 |
 9300 | 9300 | elasticsearch-1 |
 9160 | 9160 | cassandra-1 |
@@ -200,6 +210,7 @@ Container Port(s) | Internal Port(s)           | Service (alternatives) |
 9098 | 9098 | kafka-7     |
 9099 | 9099 | kafka-8     |
 9192 | 9192 | lenses-box     |
+9343 | 9343 | klaw-cluster-api |
 9393 | 9393 | spring-dataflow-server |
 9411 | 9411 | zipkin |
 9412 | 9412 | jaeger |
@@ -509,7 +520,7 @@ Container Port(s) | Internal Port(s)           | Service (alternatives) |
 28307 | 80 | docker-registry-ui |
 28308 | 8000 | splunk |
 28309 | 9097 | klaw-core |
-28310 | 9343 | klaw-cluster-api |
+28310 | 8080 | etcd-keeper |
 28311 | 3000 | raneto |
 28312 | 3000 | markdown-madness |
 28313 | 80 | kadeck |
@@ -522,6 +533,11 @@ Container Port(s) | Internal Port(s)           | Service (alternatives) |
 28320 | 25 | akhq (dc1) |
 28321 | 25 | akhq (dc1) |
 28322 | 80 | asyncapi-studio |
+28323 | 80 | taiga |
+28324 | 8000 | focalboard |
+28325 | 8025 | mailhog |
+28326 | 25 | mailhog |
+28327 | 3000 | ioevent-cockpit-ui |
 
 ## Ports > 28500
 

@@ -22,9 +22,18 @@ The Modern Data Platform version 1.16.0 contains the following bug fixes and enh
  * Kadeck
  * MailDev
  * Mailpit
+ * MailHog
  * Dataverse
  * CKAN
  * AsyncAPI Studio
+ * Taiga
+ * Taskcafé
+ * Cetusguard
+ * etcd & etcd-browser
+ * Risingwave
+ * MonitoFi
+ * IOEvent Cockpit
+ * Redis (Metrics) Exporter
 
 ### Removed Services
  
@@ -41,13 +50,13 @@ The Modern Data Platform version 1.16.0 contains the following bug fixes and enh
 
  * Update `zeebe` to `8.2.5`
  * Update `druid` to `26.0.0`
- * Update `trino` to `427`
- * Update `starbrustdata` to `426-e`
+ * Update `trino` to `433`
+ * Update `starbrustdata` to `429-e`
  * Update `jikkou` to `0.21.0`
- * Update `minio` to `RELEASE.2023-08-16T20-17-30Z`
+ * Update `minio` to `RELEASE.2023-11-01T18-37-25Z`
  * Update `nifi` to `1.23.2`
  * Update `ksqldb` to `0.29.0`
- * Update `datahub` to `v0.11.0`
+ * Update `datahub` to `v0.12.0`
  * Update `Confluent Platform` to `7.5.0`
  * Update `portainer-ce` to `2.18.4-alpine`
  * Update `activemq-classic` to `5.18.2`
@@ -56,6 +65,18 @@ The Modern Data Platform version 1.16.0 contains the following bug fixes and enh
  * Update `jikkou` to `latest`
  * Update `keycloak` to `22.0`
  * Update `marquez` to `0.41.0`
+ * Update `flink` to `1.18-scala_2.12-java17`
+ * Update `airflow` to `2.7.2`
+ * Update `zeebe` to `8.3.1`
+ * Update `grafana` to `10.2.0`
+ * Update `prometheus` to `v2.47.2`
+ * Update `redis` to `7.2`
+ * Update `vault` to `1.15`
+ * Update `influxdb` to `1.8` (latest OSS version)
+ * Update `kapacitor` to `1.7`
+ * Update `telegraf` to `1.28`
+ * Update `tile38` to `1.32.0`
+ * Update `hasura` to `v2.35.1`
 
 ### Enhancements
 
@@ -69,6 +90,7 @@ The Modern Data Platform version 1.16.0 contains the following bug fixes and enh
  * support for Kafka SASL/SCRAM (256 + 512) authentication for traditional and KRaft setups
  * support for Kafka authorisation for traditional and KRaft setups
  * support for authentication in AKHQ
+ * removed JAR's from the plugin folder to decrease the size of the docker image
 
 ### Breaking Changes
 
@@ -77,7 +99,8 @@ The Modern Data Platform version 1.16.0 contains the following bug fixes and enh
  * Keycloak is no longer using the "legacy" version but the new Quarkus-based one 
  * Dataiku now maps to port `28315` and no longer to `28205`
  * Change `KAFKA_KSQLDB_xxxxx` to `KSQLDB_xxxxx`
-
+ * Change `FTP_xxxxx` to `PURE_FTPD_xxxxx` to control the Pure FTPd server
+ * Config `ATLAS_install_hive_hook` has been replaced by `ATLAS_hive_hook_enable` and the JARs for the hook are no longer included and need to be downloaded manually  
 
 ## What's new in 1.16.0
 

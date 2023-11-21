@@ -290,7 +290,7 @@ services:
       - 8088:8088
       - 1095:1095
     environment:
-      KSQL_LOG4J_OPTS: -Dlog4j.configuration=file:/opt/app/log4j/log4j.properties
+      KSQL_LOG4J_OPTS: -Dlog4j.configuration=file:/tmp/log4j.properties
       KSQL_LOG4J_LOGGERS: org.apache.kafka.connect.runtime.rest=WARN,org.reflections=ERROR
       KSQL_LOG4J_PROCESSING_LOG_TOPIC: ksql_processing_log
       KSQL_LOG4J_PROCESSING_LOG_BROKERLIST: kafka-1:19092,kafka-2:19093,kafka-3:19094
@@ -326,10 +326,22 @@ services:
     volumes:
       - ./data-transfer:/data-transfer
       - ./plugins/ksqldb:/etc/ksqldb/ext
-      - ./conf/ksqldb/etc/log4j.properties:/opt/app/log4j/log4j.properties
+      - ./conf/ksqldb/etc/log4j.properties:/tmp/log4j.properties.templ
       - ./plugins/kafka-connect/connectors:/etc/kafka-connect/addl-plugins
       - ./plugins/kafka-connect/jars:/etc/kafka-connect/jars
       - ./plugins/opentelemetry/agents:/otel
+    command:
+      # In the command section, $ are replaced with $$ to avoid the error 'Invalid interpolation format for "command" option'
+      - bash
+      - -c
+      - |
+        python -c 'import os,sys; sys.stdout.write(os.path.expandvars(sys.stdin.read()))' < /tmp/log4j.properties.templ > /tmp/log4j.properties
+        #
+        echo "Launching ksqlDB server"
+        #/etc/confluent/docker/run &
+        /usr/bin/docker/run &
+        #
+        sleep infinity
     restart: unless-stopped
   ksqldb-server-2:
     image: confluentinc/ksqldb-server:0.29.0
@@ -343,7 +355,7 @@ services:
       - 8089:8088
       - 1096:1095
     environment:
-      KSQL_LOG4J_OPTS: -Dlog4j.configuration=file:/opt/app/log4j/log4j.properties
+      KSQL_LOG4J_OPTS: -Dlog4j.configuration=file:/tmp/log4j.properties
       KSQL_LOG4J_LOGGERS: org.apache.kafka.connect.runtime.rest=WARN,org.reflections=ERROR
       KSQL_LOG4J_PROCESSING_LOG_TOPIC: ksql_processing_log
       KSQL_LOG4J_PROCESSING_LOG_BROKERLIST: kafka-1:19092,kafka-2:19093,kafka-3:19094
@@ -379,10 +391,22 @@ services:
     volumes:
       - ./data-transfer:/data-transfer
       - ./plugins/ksqldb:/etc/ksqldb/ext
-      - ./conf/ksqldb/etc/log4j.properties:/opt/app/log4j/log4j.properties
+      - ./conf/ksqldb/etc/log4j.properties:/tmp/log4j.properties.templ
       - ./plugins/kafka-connect/connectors:/etc/kafka-connect/addl-plugins
       - ./plugins/kafka-connect/jars:/etc/kafka-connect/jars
       - ./plugins/opentelemetry/agents:/otel
+    command:
+      # In the command section, $ are replaced with $$ to avoid the error 'Invalid interpolation format for "command" option'
+      - bash
+      - -c
+      - |
+        python -c 'import os,sys; sys.stdout.write(os.path.expandvars(sys.stdin.read()))' < /tmp/log4j.properties.templ > /tmp/log4j.properties
+        #
+        echo "Launching ksqlDB server"
+        #/etc/confluent/docker/run &
+        /usr/bin/docker/run &
+        #
+        sleep infinity
     restart: unless-stopped
   # Access the cli by running:
   # > docker exec -it ksqldb-cli ksql http://ksqldb-server-1:8088
@@ -676,6 +700,8 @@ services:
       com.platys.name: nifi
       com.platys.webui.title: Apache NiFi UI Node 18080
       com.platys.webui.url: https://dataplatform:18080/nifi
+      com.platys.restapi.title: Apche NiFi REST API
+      com.platys.restapi.url: https://dataplatform:18080/nifi-api
     ports:
       # HTTP
       - 18080:18080
@@ -717,7 +743,7 @@ services:
       - bash
       - -c
       - |
-        eval "echo \"$(cat /tmp/s3-credentials.properties.templ)\"" >> s3-credentials.properties
+        eval "echo \"$$(cat /tmp/s3-credentials.properties.templ)\"" >> s3-credentials.properties
         ../scripts/start.sh
     restart: unless-stopped
   #  ================================== Zeppelin ========================================== #
@@ -814,20 +840,22 @@ services:
       AWS_DEFAULT_REGION: us-east-1
     volumes:
       - ./data-transfer:/data-transfer
-      - ./plugins/jupyter/aws-java-sdk-bundle-1.11.375.jar:/usr/local/spark/jars/aws-java-sdk-bundle-1.11.375.jar
-      - ./plugins/jupyter/hadoop-aws-3.2.1.jar:/usr/local/spark/jars/hadoop-aws-3.2.1.jar
-      - ./plugins/jupyter/guava-27.1-jre.jar:/usr/local/spark/jars/guava-14.0.1.jar
-    # - ./custom-conf/jupyter/spark-defaults.conf:/usr/local/spark-3.1.1-bin-hadoop3.2/conf/spark-defaults.conf
+      - ./scripts/docker/docker-maven-download.sh:/maven-download.sh
+#    #      - ./plugins/jupyter/aws-java-sdk-bundle-1.11.375.jar:/usr/local/spark/jars/aws-java-sdk-bundle-1.11.375.jar
+#      - ./plugins/jupyter/hadoop-aws-3.2.1.jar:/usr/local/spark/jars/hadoop-aws-3.2.1.jar
+#      - ./plugins/jupyter/guava-27.1-jre.jar:/usr/local/spark/jars/guava-14.0.1.jar
+#        # - ./custom-conf/jupyter/spark-defaults.conf:/usr/local/spark-3.1.1-bin-hadoop3.2/conf/spark-defaults.conf
     command:
       # In the command section, $ are replaced with $$ to avoid the error 'Invalid interpolation format for "command" option'
       - bash
       - -c
       - |
+        /maven-download.sh central ${JUPYTER_download_jars} /usr/local/spark/jars
         start-notebook.sh
     restart: unless-stopped
   #  ================================== Redis ========================================== #
   redis-1:
-    image: bitnami/redis:7.0
+    image: bitnami/redis:7.2
     hostname: redis-1
     container_name: redis-1
     labels:
@@ -835,13 +863,19 @@ services:
     ports:
       - 6379:6379
     environment:
-      - REDIS_REPLICATION_MODE=master
+      - REDIS_PORT_NUMBER=6379
       - ALLOW_EMPTY_PASSWORD=yes
-      - REDIS_PASSWORD=abc123!
-      - REDIS_AOF_ENABLED=no
+      - REDIS_AOF_ENABLED=yes
+      - REDIS_RDB_POLICY_DISABLED=yes
     volumes:
       - ./data-transfer:/data-transfer
+    command: /opt/bitnami/scripts/redis/run.sh --loglevel notice
     restart: unless-stopped
+    healthcheck:
+      test: [CMD-SHELL, redis-cli --no-auth-warning ping | grep PONG]
+      interval: 5s
+      timeout: 3s
+      retries: 5
   redis-commander:
     image: rediscommander/redis-commander:latest
     container_name: redis-commander
@@ -918,7 +952,7 @@ services:
     restart: unless-stopped
   #  ================================== Minio ========================================== #
   minio-1:
-    image: minio/minio:RELEASE.2023-08-16T20-17-30Z
+    image: minio/minio:RELEASE.2023-11-01T18-37-25Z
     container_name: minio-1
     hostname: minio-1
     labels:
@@ -934,10 +968,19 @@ services:
       MINIO_REGION_NAME: us-east-1
       MINIO_DOMAIN: minio
       MINIO_SERVER_URL: http://${PUBLIC_IP}:9000
+      MINIO_PROMETHEUS_AUTH_TYPE: public
+      MINIO_PROMETHEUS_URL: http://prometheus-1:9090
     volumes:
       - ./data-transfer:/data-transfer
     command: server /data --console-address ":9010"
     restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - bash -c 'printf \"GET / HTTP/1.1\n\n\" > /dev/tcp/127.0.0.1/9000; exit $$?;'
+      interval: 1s
+      timeout: 5s
+      retries: 5
   #  ================================== Minio MC ========================================== #
   minio-mc:
     image: minio/mc:latest
@@ -956,9 +999,9 @@ services:
         /usr/src/app/wait-for-it.sh -t 180 minio-1:9000
         mc alias set minio-1 http://minio-1:9000 V42FCGRVMK24JJ8DHUYG bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza
         mc mb --ignore-existing minio-1/admin-bucket
-           for i in $$(echo "" | sed "s/,/ /g")
+           for bucket in $$(tr ',' '\n' <<< "")
         do
-          mc mb --ignore-existing minio-1/$$i
+          mc mb --ignore-existing minio-1/$$bucket
         done
         #
         while [ 1 -eq 1 ];do sleep 60;done

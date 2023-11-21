@@ -1,11 +1,11 @@
 @namespace("com.trivadis.kafkaws.avro.v1")
 protocol NotificationProtocol {
+	@tags(["event"])
 	record Notification {
 		union {null, long} id;
 
 		/** @deprecated should no longer be used */
-		union {null, string}  message;
+		union {null, @tags(["type"]) string} @tags(["pii"]) message;
 		timestamp_ms createdAt;
-
 	}
 }
