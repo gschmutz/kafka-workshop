@@ -3,7 +3,6 @@ protocol NotificationProtocol {
 	/**
     Notification structure defining a message to be sent as a notification.
     Will be used to notify users of a problem.
-    deprecated
     */
 	record Notification {
 			/**
@@ -12,7 +11,9 @@ protocol NotificationProtocol {
 			union {null, long}  id;		// optional, should be changed in the future to mandatory
 
 			/** This is the message of the notification
+				@deprecated use message2
  			*/
-			union {null, string}  message;
+			union {null, string} message;
+
 	}
 }
