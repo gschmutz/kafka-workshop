@@ -61,7 +61,7 @@
       KAFKA_datacenters: 1
       KAFKA_broker_nodes: 3
       KAFKA_broker_first_port: 9092
-      KAFKA_use_kraft_mode: false
+      KAFKA_use_kraft_mode: true
       KAFKA_internal_replication_factor: 3
       KAFKA_delete_topic_enable: true
       KAFKA_auto_create_topics_enable: false
