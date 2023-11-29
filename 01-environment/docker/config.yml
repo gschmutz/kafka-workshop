@@ -325,6 +325,15 @@
       CONDUKTOR_PLATFORM_postgres_username: postgres
       CONDUKTOR_PLATFORM_postgres_password: abc123!
       #
+      # ===== Kadeck ========
+      #
+      KADECK_enable: true
+      # either `free` or `enterprise`
+      KADECK_edition: 'free'
+      KADECK_free_email_address: 'kafka@gmail.com'
+      KADECK_ee_team_id: ''
+      KADECK_ee_secret: ''
+      #
       # ===== kafka connector board ========
       #
       KAFKA_CONNECTOR_BOARD_enable: false

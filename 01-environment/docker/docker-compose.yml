@@ -640,6 +640,23 @@ services:
       - ./data-transfer:/data-transfer
       - ./conf/conduktor-platform/platform-config.yaml:/etc/platform-config.yaml
     restart: unless-stopped
+  #  ================================== kadeck ========================================== #
+  kadeck:
+    image: xeotek/kadeck:latest
+    container_name: kadeck
+    hostname: kadeck
+    labels:
+      com.platys.name: kadeck
+      com.platys.webui.title: Kadeck UI
+      com.platys.webui.url: http://dataplatform:28313
+    ports:
+      - 28313:80
+    environment:
+      - xeotek_kadeck_port=80
+      - xeotek_kadeck_free=kafka@gmail.com
+    volumes:
+      - ./data-transfer:/data-transfer
+    restart: unless-stopped
   #  ================================== StreamSets DataCollector ========================================== #
   streamsets-1:
     image: streamsets/datacollector:3.22.2
