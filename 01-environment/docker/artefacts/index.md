@@ -1,8 +1,8 @@
 # kafka-workshop
 
-| Platform Stack | Platform Stack Version | Public IP | Docker-Host IP
-|-------------- |------|------------|------------
-| [ trivadis/platys-modern-data-platform ](https://hub.docker.com/repository/docker/trivadis/platys-modern-data-platform) | 1.16.0-preview | 172.26.121.207 | 172.26.121.207
+| Platform Stack | Platform Stack Version | Public IP | Docker-Host IP | Additional Documentation
+|-------------- |------|------------|------------|------------
+| [ trivadis/platys-modern-data-platform ](https://hub.docker.com/repository/docker/trivadis/platys-modern-data-platform) | 1.17.0-preview | 198.19.249.242 | localhost | None
 
 This environment has been generated using the [Platys](http://github.com/trivadispf/platys) toolkit.
 
