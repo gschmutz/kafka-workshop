@@ -261,13 +261,13 @@ mvn exec:java@producer -Dexec.args="1000 100 0"
 if you don't have `kafkacat` or `kcat` available, you can use it as a docker container. To simplify using `kcat`, you can use the following alias:
 
 ```bash
-alias kcat='docker run --tty --network host edenhill/kcat:1.7.0 kcat'
+alias kcat='docker run --tty --network host --add-host dataplatform:127.0.0.1 edenhill/kcat:1.7.0 kcat'
 ```
 
 Use `kafkacat` or `kafka-console-consumer` to consume the messages from the topic `test-java-topic`.
 
 ```bash
-kcat -b kafka-1:19092 -t test-java-topic -f 'Part-%p => %k:%s\n'
+kcat -b dataplatform:9092 -t test-java-topic -f 'Part-%p => %k:%s\n'
 ```
 
 ```bash
