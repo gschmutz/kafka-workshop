@@ -409,7 +409,7 @@ docker run --tty --network kafka-workshop edenhill/kcat:1.7.1 kcat
 By setting an alias, we can work with the dockerized version of `kcat` as it would be a local command. All further examples assume that this is the case. 
 
 ```bash
-alias kcat='docker run --tty --network kafka-workshop edenhill/kcat:1.7.0 kcat'
+alias kcat='docker run --tty --network host --add-host dataplatform:127.0.0.1 edenhill/kcat:1.7.0 kcat'
 ```
 
 Check the [Running in Docker](https://github.com/edenhill/kcat#running-in-docker) to see more options for using `kcat` with Docker. 
@@ -611,8 +611,6 @@ Now let's use it to Produce and Consume messages.
 ### Consuming messages using `kcat`
 
 All the examples below are shown using `kcat`. If you are still on the older version (before `1.7` replace `kcat` with `kafkacat` or specify an alias as shown above). 
-
-**Note:** Replace `dataplatform` by `kafka-1:19092` if you are using the dockerized version of `kcat` in all of the samples below (i.e. `kafka-1:19092`).
 
 The simplest way to consume a topic is just specifying the broker and the topic. By default all messages from the beginning of the topic will be shown. 
 
