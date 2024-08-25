@@ -116,6 +116,7 @@
 							<goal>run</goal>
 						</goals>
 						<configuration>
+							<includeMavenTypes>direct</includeMavenTypes>
 							<inputDirectories>
 								<include>${project.basedir}/src/main/protobuf</include>
 							</inputDirectories>
