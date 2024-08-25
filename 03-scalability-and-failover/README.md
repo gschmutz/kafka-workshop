@@ -47,7 +47,7 @@ or if using docker
 docker run --tty --network kafka-workshop edenhill/kcat:1.7.1 kcat -b kafka-1 -t demo.purchases -o end
 ```
 
-## Start the simulator
+### Start the Producer using the Sales simulator
 
 Let's start the simulator to produce messages to the `demo.purchases` topic using one of the alternatives:
 
@@ -75,7 +75,7 @@ similar as shown below
 
 ![](./images/simulator-with-one-consumer.png)
 
-## Now Start two more consumers
+### Start two more consumers
 
 Start two more consumers each in their own terminal window using the same `kcat` command
 
@@ -83,7 +83,7 @@ Start two more consumers each in their own terminal window using the same `kcat`
 kcat -b dataplatform -t  demo.purchases -o end -q -f 'Part-%p => %k:%s\n'
 ```
 
-### Consumer Console 2nd
+#### Consumer Console 2nd
 
 ```bash
 cas@cas ~> kcat -b dataplatform -t  demo.purchases -o end -q -f 'Part-%p => %k:%s\n'
@@ -92,7 +92,7 @@ Part-2 => SC02:{"transaction_time": "2024-08-25 13:26:26.139792", "transaction_i
 Part-2 => SF06:{"transaction_time": "2024-08-25 13:26:28.153049", "transaction_id": "175454525355031747", "product_id": "SF06", "price": 5.99, "quantity": 3, "is_member": true, "member_discount": 0.1, "add_supplements": false, "supplement_price": 0.0, "total_purchase": 16.17}
 ```
 
-### Consumer Console 3rd
+#### Consumer Console 3rd
 
 ```bash
 cas@cas ~> kcat -b dataplatform -t  demo.purchases -o end -q -f 'Part-%p => %k:%s\n'
@@ -107,7 +107,7 @@ You should now have one terminal where the simulator is running and 3 other term
 
 Notice that the **same messages** go to all of the 3 consumers, because `kcat` is using the low level consumer without group coordination when using the `-C` consumer option (the default with `kcat`, if not specified), so there is no `group.id` used!
 
-## Change the consumers to all be in one consumer group
+### Change the consumers to all be in one consumer group
 
 Stop all the 3 `kcat` consumers started above and let's start them using the `-G` option.
 
@@ -116,25 +116,25 @@ This will have the effect that they use the same consumer group. This way the co
 Let's start each of the 3 consumers using the adapted `kcat` command:
 
 ```bash
-kcat -b dataplatform -o end -f 'Part-%p => %k:%s\n' -G purchases-group demo.purchases
+kcat -b dataplatform:9092,dataplatform:9093 -o end -f 'Part-%p => %k:%s\n' -G purchases-group demo.purchases
 ```
 
-We are no longer using the `-q` option to see the log messages for the group re-balancing.
+We are no longer using the `-q` option to see the log messages for the group re-balancing. Additionally we specify two brokers in the broker list (to prepare for the broker failover test). 
 
-### Consumer Console 1st
+#### Consumer Console 1st
 
 ```bash
-cas@cas ~> kcat -b dataplatform -o end -f 'Part-%p => %k:%s\n' -G purchases-group demo.purchases
+cas@cas ~> kcat -b dataplatform:9092,dataplatform:9093 -o end -f 'Part-%p => %k:%s\n' -G purchases-group demo.purchases
 % Waiting for group rebalance
 % Group purchases-group rebalanced (memberid rdkafka-5ba45abf-5fa3-49a0-bf9b-ac5b0031d9d3): assigned: demo.purchases [0], demo.purchases [1], demo.purchases [2], demo.purchases [3], demo.purchases [4], demo.purchases [5]
 Part-4 => SC01:{"transaction_time": "2024-08-25 14:15:49.757828", "transaction_id": "9098637002779815851", "product_id": "SC01", "price": 5.99, "quantity": 1, "is_member": false, "member_discount": 0.0, "add_supplements": true, "supplement_price": 1.99, "total_purchase": 7.98}
 Part-5 => CS02:{"transaction_time": "2024-08-25 14:15:49.757828", "transaction_id": "9098637002779815851", "product_id": "CS02", "price": 4.99, "quantity": 1, "is_member": false, "member_discount": 0.0, "add_supplements": fals
 ```
 
-### Consumer Console 2nd
+#### Consumer Console 2nd
 
 ```bash
-cas@cas ~> kcat -b dataplatform -o end -f 'Part-%p => %k:%s\n' -G purchases-group demo.purchases
+cas@cas ~> kcat -b dataplatform:9092,dataplatform:9093 -o end -f 'Part-%p => %k:%s\n' -G purchases-group demo.purchases
 % Waiting for group rebalance
 % Group purchases-group rebalanced (memberid rdkafka-68ffa649-1e72-4da0-9bdd-f71407a4aee5): assigned: demo.purchases [2], demo.purchases [3]
 % Reached end of topic demo.purchases [3] at offset 295
@@ -143,10 +143,10 @@ Part-2 => SF06:{"transaction_time": "2024-08-25 14:15:55.814680", "transaction_i
 Part-2 => SF05:{"transaction_time": "2024-08-25 14:15:56.642312", "transaction_id": "4756564421762224560", "product_id": "SF05", "price": 5.99, "quantity": 1, "is_member": true, "member_discount": 0.1, "add_supplements": false, "supplement_price": 0.0, "total_purchase": 5.39}
 ```
 
-### Consumer Console 3rd
+#### Consumer Console 3rd
 
 ```bash
-cas@cas ~> kcat -b dataplatform -o end -q -f 'Part-%p => %k:%s\n' -G purchases-group demo.purchases
+cas@cas ~> kcat -b dataplatform:9092,dataplatform:9093 -o end -q -f 'Part-%p => %k:%s\n' -G purchases-group demo.purchases
 % Waiting for group rebalance
 % Group purchases-group rebalanced (memberid rdkafka-d195775c-43cd-49cb-8448-617b9b91dcb1): assigned: demo.purchases [4], demo.purchases [5]
 % Reached end of topic demo.purchases [5] at offset 951
@@ -175,7 +175,7 @@ We can confirm that partition `0` and `1` is assigned to one member, `2` and `3`
 
 This demonstrated the scalability on the consumer side. By starting more consumers in the same group, each consumer is getting only part of the messages (roughly one third in our case).
 
-## Now Start two more producers (simulator instances)
+### Now Start two more producers (simulator instances)
 
 Now let's scale the producer side by starting two additional simulator instances in two new terminal windows.
 
