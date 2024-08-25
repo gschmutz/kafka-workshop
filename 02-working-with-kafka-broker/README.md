@@ -682,7 +682,7 @@ curl -s "https://api.mockaroo.com/api/d5a195e0?count=20&key=ff7856d0"| kcat -b d
 
 ## Publishing a "real" data stream to Kafka
 
-Next we will see a more realistic example using the [Streaming Synthetic Sales Data Generator](https://github.com/garystafford/streaming-sales-generator). It is available as a [Docker Image](https://hub.docker.com/repository/docker/trivadis/sales-data-generator).
+Next we will see a more realistic example using the [Streaming Synthetic Sales Data Simulator](https://github.com/TrivadisPF/various-bigdata-prototypes/tree/master/streaming-sources/sales-simulator). It is available as a [Docker Image](https://hub.docker.com/repository/docker/trivadis/sales-simulator).
 
 We can use it to stream simulated sales data into Kafka topics. By no longer manually producing data, we can see unbounded data "in action". 
 
@@ -696,16 +696,24 @@ docker exec -ti kafka-1 kafka-topics --create --bootstrap-server kafka-1:19092 -
 docker exec -ti kafka-1 kafka-topics --create --bootstrap-server kafka-1:19092 --topic demo.inventories --replication-factor 3 --partitions 6
 ```
 
-The default configuration assumes that the container runs in the same network as the Kafka cluster, therefore we have to pass the name of the network when running the container. 
+The default configuration assumes that the container runs in the same network as the Kafka cluster, therefore we have to pass the name of the network when running the container. You can list the various docker networks with the following command:
 
 ```bash
 docker network list
 ```
 
-For the Kafka workshop environment, it should be `kafka-workshop`. If you are using the workshop with another dataplatform, then you have to adapt the `--network` option in following  statement: 
+For the Kafka workshop environment, it should be `kafka-workshop`. If you are using the workshop with another environment, then you have to adapt the `--network` option in following  statement: 
 
 ```bash
-docker run -ti --network kafka-workshop trivadis/sales-data-generator:latest
+docker run -ti --network kafka-workshop -e KAFKA_BOOTSTRAP_SERVERS=kafka-1:19092,kafka-2:19093 trivadis/sales-simulator:latest
+```
+
+Because we connect to the network of the docker compose stack, we can use the service names (`kafka-1`) on port `19092` to connect to a kafka broker. We do that using the `KAFKA_BOOTSRAP_SERVERS` variable to override the default settings of the simulator.
+
+Alternatively you can also connect from "outside" to the docker compose stack, for example if you want to run the simulator locally and connect against a docker stack running remotely. The `dataplatform` alias needs to refer to the docker compose stack. 
+
+```bash
+docker run -ti -e KAFKA_BOOTSTRAP_SERVERS=dataplatform:9092,dataplatform:9093 trivadis/sales-simulator:latest
 ```
 
 Now use `kcat` to see the data streaming into the `demo.purchases` topic.
@@ -760,7 +768,9 @@ If you want to empty a topic, then navigate to **Topics** in the menu, select a 
 
 and click **Empty Topic**.
 
-AKHQ can also be used to 
+AKHQ can also be used to copy data from one topic to another (**Copy Topic** button) and produce single messages to a topic (**Produce to topic** button).
+
+Other options in the menu allow to view the **Schema Registry**, Kafka Connect clusters (**connect-1**) and KSQLDB clusters (**ksqldb**).
 
 ## Using CMAK (Cluster Manager for Apache Apache Kafka)
 
