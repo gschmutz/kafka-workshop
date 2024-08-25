@@ -409,7 +409,7 @@ docker run --tty --network kafka-workshop edenhill/kcat:1.7.1 kcat
 By setting an alias, we can work with the dockerized version of `kcat` as it would be a local command. All further examples assume that this is the case. 
 
 ```bash
-alias kcat='docker run --tty --network host --add-host dataplatform:127.0.0.1 edenhill/kcat:1.7.0 kcat'
+alias kcat='docker run --tty --network host --add-host dataplatform:127.0.0.1 edenhill/kcat:1.7.1 kcat'
 ```
 
 Check the [Running in Docker](https://github.com/edenhill/kcat#running-in-docker) to see more options for using `kcat` with Docker. 
@@ -689,11 +689,11 @@ We can use it to stream simulated sales data into Kafka topics. By no longer man
 First let's create the necessary 3 topics:
 
 ```bash
-docker exec -ti kafka-1 kafka-topics --create --bootstrap-server kafka-1:19092 --topic demo.products --replication-factor 3 --partitions 6
+docker exec -ti kafka-1 kafka-topics --create --bootstrap-server kafka-1:19092 --topic demo.products --replication-factor 3 --partitions 6 --if-not-exists
 
-docker exec -ti kafka-1 kafka-topics --create --bootstrap-server kafka-1:19092 --topic demo.purchases --replication-factor 3 --partitions 6
+docker exec -ti kafka-1 kafka-topics --create --bootstrap-server kafka-1:19092 --topic demo.purchases --replication-factor 3 --partitions 6 --if-not-exists
 
-docker exec -ti kafka-1 kafka-topics --create --bootstrap-server kafka-1:19092 --topic demo.inventories --replication-factor 3 --partitions 6
+docker exec -ti kafka-1 kafka-topics --create --bootstrap-server kafka-1:19092 --topic demo.inventories --replication-factor 3 --partitions 6 --if-not-exists
 ```
 
 The default configuration assumes that the container runs in the same network as the Kafka cluster, therefore we have to pass the name of the network when running the container. You can list the various docker networks with the following command:
@@ -705,7 +705,7 @@ docker network list
 For the Kafka workshop environment, it should be `kafka-workshop`. If you are using the workshop with another environment, then you have to adapt the `--network` option in following  statement: 
 
 ```bash
-docker run -ti --network kafka-workshop -e KAFKA_BOOTSTRAP_SERVERS=kafka-1:19092,kafka-2:19093 trivadis/sales-simulator:latest
+docker run -ti --rm --network kafka-workshop -e KAFKA_BOOTSTRAP_SERVERS=kafka-1:19092,kafka-2:19093 trivadis/sales-simulator:latest
 ```
 
 Because we connect to the network of the docker compose stack, we can use the service names (`kafka-1`) on port `19092` to connect to a kafka broker. We do that using the `KAFKA_BOOTSRAP_SERVERS` variable to override the default settings of the simulator.
@@ -713,13 +713,13 @@ Because we connect to the network of the docker compose stack, we can use the se
 Alternatively you can also connect from "outside" to the docker compose stack, for example if you want to run the simulator locally and connect against a docker stack running remotely. The `dataplatform` alias needs to refer to the docker compose stack. 
 
 ```bash
-docker run -ti -e KAFKA_BOOTSTRAP_SERVERS=dataplatform:9092,dataplatform:9093 trivadis/sales-simulator:latest
+docker run -ti --rm -e KAFKA_BOOTSTRAP_SERVERS=dataplatform:9092,dataplatform:9093 trivadis/sales-simulator:latest
 ```
 
 Now use `kcat` to see the data streaming into the `demo.purchases` topic.
 
 ```bash
-kcat -b dataplatform -t demo.purchases
+kcat -b dataplatform -t demo.purchases -q -f 'Part-%p => %k:%s\n'
 ```
 
 You can also use the **Live Tail** option of **AKHQ** (see next section).
