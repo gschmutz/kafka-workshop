@@ -1,7 +1,7 @@
 # =======================================================================
 # Platform Name            kafka-workshop
 # Platform Stack:          trivadis/platys-modern-data-platform
-# Platform Stack Version:  1.17.0-preview
+# Platform Stack Version:  develop
 # =======================================================================
 version: '3.5'
 networks:
@@ -23,6 +23,7 @@ services:
       - 29092:29092
       - 39092:39092
       - 9992:9992
+      - 1234:1234
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_BROKER_RACK: rack1
@@ -51,6 +52,11 @@ services:
     volumes:
       - ./data-transfer:/data-transfer
     restart: unless-stopped
+    healthcheck:
+      test: curl -u superUser:superUser -fail --silent --insecure https://kafka-1:9092/kafka/v3/clusters/ --output /dev/null || exit 1
+      interval: 10s
+      retries: 25
+      start_period: 20s
   kafka-2:
     image: confluentinc/cp-kafka:7.5.0
     container_name: kafka-2
@@ -63,6 +69,7 @@ services:
       - 29093:29093
       - 39093:39093
       - 9993:9993
+      - 1235:1234
     environment:
       KAFKA_BROKER_ID: 2
       KAFKA_BROKER_RACK: rack1
@@ -91,6 +98,11 @@ services:
     volumes:
       - ./data-transfer:/data-transfer
     restart: unless-stopped
+    healthcheck:
+      test: curl -u superUser:superUser -fail --silent --insecure https://kafka-2:9093/kafka/v3/clusters/ --output /dev/null || exit 1
+      interval: 10s
+      retries: 25
+      start_period: 20s
   kafka-3:
     image: confluentinc/cp-kafka:7.5.0
     container_name: kafka-3
@@ -103,6 +115,7 @@ services:
       - 29094:29094
       - 39094:39094
       - 9994:9994
+      - 1236:1234
     environment:
       KAFKA_BROKER_ID: 3
       KAFKA_BROKER_RACK: rack1
@@ -131,6 +144,11 @@ services:
     volumes:
       - ./data-transfer:/data-transfer
     restart: unless-stopped
+    healthcheck:
+      test: curl -u superUser:superUser -fail --silent --insecure https://kafka-3:9094/kafka/v3/clusters/ --output /dev/null || exit 1
+      interval: 10s
+      retries: 25
+      start_period: 20s
   #  ================================== Kafka Connect ========================================== #
   kafka-connect-1:
     image: confluentinc/cp-kafka-connect:7.5.0
@@ -169,6 +187,7 @@ services:
       CONNECT_LOG4J_APPENDER_STDOUT_LAYOUT_CONVERSIONPATTERN: '[%d] %p %X{connector.context}%m (%c:%L)%n'
       CONNECT_PLUGIN_PATH: /usr/share/java,/etc/kafka-connect/addl-plugins,/etc/kafka-connect/cflthub-plugins
       CONNECT_CONNECTOR_CLIENT_CONFIG_OVERRIDE_POLICY: All
+      CONNECT_SECURITY_PROTOCOL: PLAINTEXT
       #CLASSPATH: /usr/share/java/monitoring-interceptors/monitoring-interceptors-4.0.0.jar
       AWS_ACCESS_KEY_ID: V42FCGRVMK24JJ8DHUYG
       AWS_SECRET_ACCESS_KEY: bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza
@@ -198,6 +217,10 @@ services:
         #
         sleep infinity
     restart: unless-stopped
+    healthcheck:
+      interval: 10s
+      retries: 20
+      test: curl --user connectAdmin:connectAdmin --fail --silent --insecure https://kafka-connect-1:8083/ --output /dev/null || exit 1
   kafka-connect-2:
     image: confluentinc/cp-kafka-connect:7.5.0
     container_name: kafka-connect-2
@@ -235,6 +258,7 @@ services:
       CONNECT_LOG4J_APPENDER_STDOUT_LAYOUT_CONVERSIONPATTERN: '[%d] %p %X{connector.context}%m (%c:%L)%n'
       CONNECT_PLUGIN_PATH: /usr/share/java,/etc/kafka-connect/addl-plugins,/etc/kafka-connect/cflthub-plugins
       CONNECT_CONNECTOR_CLIENT_CONFIG_OVERRIDE_POLICY: All
+      CONNECT_SECURITY_PROTOCOL: PLAINTEXT
       #CLASSPATH: /usr/share/java/monitoring-interceptors/monitoring-interceptors-4.0.0.jar
       AWS_ACCESS_KEY_ID: V42FCGRVMK24JJ8DHUYG
       AWS_SECRET_ACCESS_KEY: bKhWxVF3kQoLY9kFmt91l+tDrEoZjqnWXzY9Eza
@@ -264,6 +288,10 @@ services:
         #
         sleep infinity
     restart: unless-stopped
+    healthcheck:
+      interval: 10s
+      retries: 20
+      test: curl --user connectAdmin:connectAdmin --fail --silent --insecure https://kafka-connect-2:8084/ --output /dev/null || exit 1
   #  ================================== ksqlDB ========================================== #
   ksqldb-server-1:
     image: confluentinc/ksqldb-server:0.29.0
@@ -331,6 +359,11 @@ services:
         #
         sleep infinity
     restart: unless-stopped
+    healthcheck:
+      start_period: 10s
+      interval: 10s
+      retries: 20
+      test: curl --user ksqlDBUser:ksqlDBUser -fail --silent http://ksqldb-server-1:8088/info | grep RUNNING 1>/dev/null || exit 1
   ksqldb-server-2:
     image: confluentinc/ksqldb-server:0.29.0
     hostname: ksqldb-server-2
@@ -397,6 +430,11 @@ services:
         #
         sleep infinity
     restart: unless-stopped
+    healthcheck:
+      start_period: 10s
+      interval: 10s
+      retries: 20
+      test: curl --user ksqlDBUser:ksqlDBUser -fail --silent http://ksqldb-server-2:8088/info | grep RUNNING 1>/dev/null || exit 1
   # Access the cli by running:
   # > docker exec -it ksqldb-cli ksql http://ksqldb-server-1:8088
   ksqldb-cli:
@@ -458,10 +496,16 @@ services:
       SCHEMA_REGISTRY_ACCESS_CONTROL_ALLOW_METHODS: GET,POST,PUT,OPTIONS
       SCHEMA_REGISTRY_LOG4J_ROOT_LOGLEVEL: info
       SCHEMA_REGISTRY_DEBUG: 'False'
+      SCHEMA_REGISTRY_KAFKASTORE_SECURITY_PROTOCOL: PLAINTEXT
     volumes:
       - ./data-transfer:/data-transfer
       - ./plugins/opentelemetry/agents:/otel
     restart: unless-stopped
+    healthcheck:
+      start_period: 10s
+      interval: 10s
+      retries: 20
+      test: curl --user superUser:superUser --fail --silent --insecure https://schema-registry-1:8081/subjects --output /dev/null || exit 1
   #  ================================== Schema Registry UI ========================================== #
   schema-registry-ui:
     image: landoop/schema-registry-ui:latest
@@ -699,7 +743,7 @@ services:
     restart: unless-stopped
   #  ================================== NiFi ========================================== #
   nifi-1:
-    image: apache/nifi:1.23.2
+    image: apache/nifi:1.24.0
     container_name: nifi-1
     hostname: nifi-1
     labels:
@@ -713,6 +757,8 @@ services:
       - 18080:18080
       # Remote Input Socket
       - 10005:10005/tcp
+      # Prometheus Port
+      - 1270:1234
     environment:
       NIFI_WEB_HTTPS_PORT: '18080'
       NIFI_WEB_HTTPS_HOST: nifi-1
@@ -721,6 +767,7 @@ services:
       KEYSTORE_PATH: /opt/certs/keystore.jks
       KEYSTORE_TYPE: JKS
       KEYSTORE_PASSWORD: BWt7eLC4R53N4bIxdZEVPhAdkYlQ0Le8Tw0erGXpvI0
+      KEY_PASSWORD: BWt7eLC4R53N4bIxdZEVPhAdkYlQ0Le8Tw0erGXpvI0
       TRUSTSTORE_PATH: /opt/certs/truststore.jks
       TRUSTSTORE_TYPE: JKS
       TRUSTSTORE_PASSWORD: PkhvPAirou5R/K9HQxVk99uT+hehM7SRURyFSbxTlTQ
@@ -741,8 +788,8 @@ services:
       - ./data-transfer:/data-transfer
       - ./plugins/nifi/jars/:/extra-jars/
       - ./plugins/nifi/nars/:/opt/nifi/nifi-current/extensions
-      - ./security/nifi/keystore.jks:/opt/certs/keystore.jks
-      - ./security/nifi/truststore.jks:/opt/certs/truststore.jks
+      - ./security/nifi/nifi-1/keystore.jks:/opt/certs/keystore.jks
+      - ./security/nifi/nifi-1/truststore.jks:/opt/certs/truststore.jks
       - ./security/nifi/s3-credentials.properties:/tmp/s3-credentials.properties.templ
     entrypoint:
       # We override the entrypoint from the docker image and therefore have to run ../scripts/start.sh from the NiFi docker image
@@ -856,7 +903,7 @@ services:
       - bash
       - -c
       - |
-        /maven-download.sh central ${JUPYTER_download_jars} /usr/local/spark/jars
+        /maven-download.sh central com.amazonaws:aws-java-sdk-bundle:1.11.375,org.apache.hadoop:hadoop-aws:3.2.1,com.google.guava:guava:14.0.1 /usr/local/spark/jars
         start-notebook.sh
     restart: unless-stopped
   #  ================================== Redis ========================================== #
@@ -1078,6 +1125,12 @@ services:
       - ./data-transfer:/data-transfer
     command: server
     restart: unless-stopped
+    healthcheck:
+      test: [CMD, curl, -f, http://dataplatform:80]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+      start_period: 1m
   markdown-renderer:
     image: trivadis/jinja2-renderer:latest
     container_name: markdown-renderer
@@ -1091,7 +1144,7 @@ services:
       DATAPLATFORM_HOME: ${DATAPLATFORM_HOME}
       PLATYS_PLATFORM_NAME: kafka-workshop
       PLATYS_PLATFORM_STACK: trivadis/platys-modern-data-platform
-      PLATYS_PLATFORM_STACK_VERSION: 1.17.0-preview
+      PLATYS_PLATFORM_STACK_VERSION: develop
       PLATYS_COPY_COOKBOOK_DATA: 'True'
     volumes:
       - ./artefacts/templates:/templates

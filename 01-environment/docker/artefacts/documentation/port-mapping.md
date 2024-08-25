@@ -8,6 +8,21 @@ Container Port(s) | Internal Port(s)           | Service (alternatives) |
 --------------------|------------------|-----------------------|
 21 | 21 | ftp |
 80 | 80 | markdown-viewer or firefox |
+1222 | 1222 | risingwave | 
+1234 | 1234 | kafka-1 (prometheus exporter) | 
+1235 | 1234 | kafka-2 (prometheus exporter) | 
+1236 | 1234 | kafka-3 (prometheus exporter) | 
+1237 | 1234 | kafka-4 (prometheus exporter) | 
+1238 | 1234 | kafka-5 (prometheus exporter) | 
+1239 | 1234 | kafka-6 (prometheus exporter) | 
+1240 | 1234 | zookeeper-1 (prometheus exporter) | 
+1241 | 1234 | zookeeper-2 (prometheus exporter) | 
+1242 | 1234 | zookeeper-3 (prometheus exporter) | 
+1250 | 1250 | risingwave | 
+1260 | 1260 | risingwave | 
+1270 | 1234 | nifi-1 (prometheus exporter) | 
+1271 | 1234 | nifi-2 (prometheus exporter) | 
+1272 | 1234 | nifi-3 (prometheus exporter) | 
 1337 | 1337 | konga | 
 1433 | 1433 | sqlserver |
 1521 | 1521 | oracledb-ee |
@@ -71,6 +86,7 @@ Container Port(s) | Internal Port(s)           | Service (alternatives) |
 4054 | 4054 | zeppelin (spark ui) |
 4195 | 4195 | benthos-1 |
 4196 | 4196 | benthos-server |
+4200 | 4200 | cribl-master |
 4317 | 4317 | otel-collector |
 4466 | 4466 | curity |
 4566 | 4566 | risingwave |
@@ -210,6 +226,7 @@ Container Port(s) | Internal Port(s)           | Service (alternatives) |
 9098 | 9098 | kafka-7     |
 9099 | 9099 | kafka-8     |
 9192 | 9192 | lenses-box     |
+9292 | 9292 | pact-broker     |
 9343 | 9343 | klaw-cluster-api |
 9393 | 9393 | spring-dataflow-server |
 9411 | 9411 | zipkin |
@@ -240,6 +257,7 @@ Container Port(s) | Internal Port(s)           | Service (alternatives) |
 10007 | 10000 | nifi-3 |
 11211 | 11211 | memcached |
 11212 | 11211 | ignite-1 |
+12222 | 2222 | risingwave |s
 13133 | 13133 | otel-collector |
 14250 | 14250 | jaeger (model.proto port)
 14271 | 14271 | jaeger (admin port) |
@@ -538,6 +556,12 @@ Container Port(s) | Internal Port(s)           | Service (alternatives) |
 28325 | 8025 | mailhog |
 28326 | 25 | mailhog |
 28327 | 3000 | ioevent-cockpit-ui |
+28328 | 9093 | prometheus-alertmanager |
+28329 | 9000 | cribl-master |
+28330 | 9420 | cribl-edge |
+28331 | 8080 | blaze-fhir |
+28332 | 8181 | opa |
+28333 | 8181 | styra-eopa |
 
 ## Ports > 28500
 

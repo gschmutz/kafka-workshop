@@ -34,6 +34,15 @@ The Modern Data Platform version 1.16.0 contains the following bug fixes and enh
  * MonitoFi
  * IOEvent Cockpit
  * Redis (Metrics) Exporter
+ * S3FS
+ * Prometheus Alertmanager
+ * Pact Broker
+ * Cribl Stream
+ * Cribl Edge
+ * Blaze (FHIR Server)
+ * FileBeat
+ * Open Policy Agent (OPA)
+ * Styra Enterprise OPA
 
 ### Removed Services
  
@@ -50,26 +59,27 @@ The Modern Data Platform version 1.16.0 contains the following bug fixes and enh
 
  * Update `zeebe` to `8.2.5`
  * Update `druid` to `26.0.0`
- * Update `trino` to `433`
+ * Update `trino` to `434`
  * Update `starbrustdata` to `429-e`
  * Update `jikkou` to `0.21.0`
  * Update `minio` to `RELEASE.2023-11-01T18-37-25Z`
- * Update `nifi` to `1.23.2`
+ * Update `nifi` to `1.24.0`
  * Update `ksqldb` to `0.29.0`
  * Update `datahub` to `v0.12.0`
  * Update `Confluent Platform` to `7.5.0`
  * Update `portainer-ce` to `2.18.4-alpine`
  * Update `activemq-classic` to `5.18.2`
  * Update `materialize` to `v0.64.0`
- * Update `grafana` to `10.1.1`
  * Update `jikkou` to `latest`
  * Update `keycloak` to `22.0`
  * Update `marquez` to `0.41.0`
  * Update `flink` to `1.18-scala_2.12-java17`
- * Update `airflow` to `2.7.2`
+ * Update `airflow` to `2.7.3`
  * Update `zeebe` to `8.3.1`
  * Update `grafana` to `10.2.0`
- * Update `prometheus` to `v2.47.2`
+ * Update `prometheus` to `v2.28.1`
+ * Update `prometheus-pushgateway` to `v1.6.2`
+ * Update `prometheus-nodeexporter` to `v1.7.0`
  * Update `redis` to `7.2`
  * Update `vault` to `1.15`
  * Update `influxdb` to `1.8` (latest OSS version)
@@ -78,6 +88,10 @@ The Modern Data Platform version 1.16.0 contains the following bug fixes and enh
  * Update `tile38` to `1.32.0`
  * Update `hasura` to `v2.35.1`
  * Update `materialize` to `v0.77.1`
+ * Update `cadvisor` to `v0.47.2`
+ * Update `portainer` to `2.19.4-alpine`
+ * Update `elasticsearch` to `8.11.3`
+ * Update `kibana` to `8.11.3`
 
 ### Enhancements
 
@@ -92,6 +106,8 @@ The Modern Data Platform version 1.16.0 contains the following bug fixes and enh
  * support for Kafka authorisation for traditional and KRaft setups
  * support for authentication in AKHQ
  * removed JAR's from the plugin folder to decrease the size of the docker image
+ * added multi-arch docker build to also build the docker image of the generator as an arm64 type
+ * the "preview" version is no longer tagged as `1.nn.nn-preview` but as `develop`, so to get the development version, just use `platys init -n demo-platform --stack trivadis/platys-modern-data-platform --stack-version develop --structure flat`
 
 ### Breaking Changes
 
@@ -102,6 +118,7 @@ The Modern Data Platform version 1.16.0 contains the following bug fixes and enh
  * Change `KAFKA_KSQLDB_xxxxx` to `KSQLDB_xxxxx`
  * Change `FTP_xxxxx` to `PURE_FTPD_xxxxx` to control the Pure FTPd server
  * Config `ATLAS_install_hive_hook` has been replaced by `ATLAS_hive_hook_enable` and the JARs for the hook are no longer included and need to be downloaded manually  
+ * Config `KAFKA_jmx_monitoring_prometheus_enable` replaced by global configuration property `jmx_monitoring_with_prometheus_enable` as it doesn't apply to just the Kafka cluster
 
 ## What's new in 1.16.0
 

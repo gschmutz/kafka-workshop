@@ -4,7 +4,7 @@
       platys:
           platform-name: 'kafka-workshop'
           platform-stack: 'trivadis/platys-modern-data-platform'
-          platform-stack-version: '1.17.0-preview'
+          platform-stack-version: 'develop'
           structure: 'flat'
       # ========================================================================
       # Global configuration, valid for all or a group of services
