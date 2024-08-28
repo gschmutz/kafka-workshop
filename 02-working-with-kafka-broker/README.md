@@ -689,12 +689,14 @@ We can use it to stream simulated sales data into Kafka topics. By no longer man
 First let's create the necessary 3 topics:
 
 ```bash
-docker exec -ti kafka-1 kafka-topics --create --bootstrap-server kafka-1:19092 --topic demo.products --replication-factor 3 --partitions 6 --if-not-exists
+docker exec -ti kafka-1 kafka-topics --create --bootstrap-server kafka-1:19092 --topic demo.products --replication-factor 3 --partitions 6 --config cleanup.policy=compact --config segment.ms=100 --config delete.retention.ms=100 --config min.cleanable.dirty.ratio=0.001 --if-not-exists --if-not-exists
 
 docker exec -ti kafka-1 kafka-topics --create --bootstrap-server kafka-1:19092 --topic demo.purchases --replication-factor 3 --partitions 6 --if-not-exists
 
 docker exec -ti kafka-1 kafka-topics --create --bootstrap-server kafka-1:19092 --topic demo.inventories --replication-factor 3 --partitions 6 --if-not-exists
 ```
+
+The two topics `demo.purchases` and `demo.inventories` are created using the default retention time of 7 days, where as the topic `demo.products` is created using Kafka's log compaction feature with very frequent log compaction settings (for aggressively compacting logs, which increases resource compaction, but is good for demoing).
 
 The default configuration assumes that the container runs in the same network as the Kafka cluster, therefore we have to pass the name of the network when running the container. You can list the various docker networks with the following command:
 

@@ -12,6 +12,9 @@ We will also again be using the [Streaming Synthetic Sales Data Simulator](https
 
 First let's (re-)create the topics we will use throughout this workshop. We will first delete the ones from the previous workshop (if they exist) and then create them:
 
+docker exec -it kafka-1 kafka-topics --bootstrap-server kafka-1:19092 --create --topic logisticsdb_driver --partitions 8 --replication-factor 3 --config cleanup.policy=compact --config segment.ms=100 --config delete.retention.ms=100 --config min.cleanable.dirty.ratio=0.001
+
+
 ```bash
 docker exec -ti kafka-1 kafka-topics --delete --bootstrap-server kafka-1:19092 --topic demo.products --if-exists
 
@@ -20,7 +23,7 @@ docker exec -ti kafka-1 kafka-topics --delete --bootstrap-server kafka-1:19092 -
 docker exec -ti kafka-1 kafka-topics --delete --bootstrap-server kafka-1:19092 --topic demo.inventories --if-exists
 
 
-docker exec -ti kafka-1 kafka-topics --create --bootstrap-server kafka-1:19092 --topic demo.products --replication-factor 3 --partitions 6 --if-not-exists
+docker exec -ti kafka-1 kafka-topics --create --bootstrap-server kafka-1:19092 --topic demo.products --replication-factor 3 --partitions 6 --config cleanup.policy=compact --config segment.ms=100 --config delete.retention.ms=100 --config min.cleanable.dirty.ratio=0.001 --if-not-exists
 
 docker exec -ti kafka-1 kafka-topics --create --bootstrap-server kafka-1:19092 --topic demo.purchases --replication-factor 3 --partitions 6 --if-not-exists
 
