@@ -29,19 +29,30 @@ pip install confluent-kafka
 To install support for Avro, also perform the following step:
 
 ```bash
-pip install confluent-kafka[avro]
+pip install fastavro
 ``` 
 
 You can work with scripts and store each code block in a file. You can then execute it using `python script-name.py`. Or you can use the Apache Zeppelin notebook-based environment and just add each code block as a paragraph into a notebook and execute it from there.
 
 ## Working with Text Messages
 
-Now lets write a simple program in Python which produces a message to the Kafka topic test-topic. This topic has been created in [Getting started with Apache Kafka](../02-working-with-kafka-broker/README.md).
+Now let's write a simple program in Python which produces a message to the Kafka topic test-topic. This topic has been created in [Getting started with Apache Kafka](../02-working-with-kafka-broker/README.md).
+
+In order to separate the Avro tests from the other tests, lets create a new topic:
+
+```bash
+kafka-topics --create \
+             --if-not-exists \
+             --bootstrap-server kafka-1:19092 \
+             --topic test-python-topic  \
+             --partitions 8 \
+             --replication-factor 3
+```
 
 First we will produce messages. In order to see the results, run `kafkacat` in a separate terminal window and print the partition, key and value of each message:
 
 ```bash
-kafkacat -b dataplatform -t test-topic -f "P-%p: %k=%s\n" -Z 
+kafkacat -b dataplatform -t test-python-topic -f "P-%p: %k=%s\n" -Z 
 ``` 
 
 The following code segments assume that they are run inside the Zeppelin docker container. If you want to run them from the Docker Host, you have to replace broker-1 and broker-2 by the IP Address of the Docker Host.
@@ -83,7 +94,7 @@ p.flush()
 To also produce a key, you have to also use the parameter `key` together with the parameter `value`.
 
 ```python
-    p.produce('test-topic'
+    p.produce('test-python-topic'
              , key="1"
              , value = data.encode('utf-8')
              , callback=delivery_report)
@@ -104,7 +115,7 @@ c = Consumer({
     }
 })
 
-c.subscribe(['test-topic'])
+c.subscribe(['test-python-topic'])
 
 go_on = True
 while go_on:
@@ -129,14 +140,12 @@ c.close()
 When started, this code block will consume messages in an endless loop, so if you use it in the same Zeppelin notebook, you will have to run the producer externally, i.e. using Kafkacat in order to see some messages. 
 
 ```bash
-kafkacat -P -b dataplatform -t test-topic
+kafkacat -P -b dataplatform -t test-python-topic
 ```
 
 ## Working with Avro Messages
 
 The Confluent Python client also supports working with Avro formatted messages. It works together with the [Confluent Schema Registry](https://docs.confluent.io/current/schema-registry/docs/index.html). 
-
-## Produce Avro Messages
 
 In order to separate the Avro tests from the other tests, lets create a new topic:
 
@@ -144,7 +153,7 @@ In order to separate the Avro tests from the other tests, lets create a new topi
 kafka-topics --create \
              --if-not-exists \
              --bootstrap-server kafka-1:19092 \
-             --topic test-avro-topic \
+             --topic test-python-avro-topic \
              --partitions 8 \
              --replication-factor 3
 ```
@@ -152,16 +161,29 @@ kafka-topics --create \
 Make sure that you change the **kafkacat** command to consume from the new topic.
 
 ```bash
-kafkacat -b dataplatform -t test-avro-topic -f "P-%p: %k=%s\n" -Z 
+kafkacat -b dataplatform -t test-python-avro-topic -f "P-%p: %k=%s\n" -Z 
 ``` 
 
-The following Python code produces an Avro message 
+### Register Avro Schema
+
+First lets register the Avro schema in the registry, using Python as well
 
 ```python
-from confluent_kafka import avro
-from confluent_kafka.avro import AvroProducer
+from confluent_kafka.schema_registry import SchemaRegistryClient
 
-value_schema_str = """
+def register_schema(schema_registry_url, schema_registry_subject, schema_str):
+    sr = SchemaRegistryClient({'url': schema_registry_url})
+    schema = Schema(schema_str, schema_type="AVRO")
+    schema_id = sr.register_schema(subject_name=schema_registry_subject, schema=schema)
+
+    return schema_id
+    
+schema_registry_url = 'http://schema-registry-1:8081'
+
+schema_registry_conf = {'url': schema_registry_url}
+schema_registry_client = SchemaRegistryClient(schema_registry_conf)
+
+schema_str = """
 {
    "namespace": "my.test",
    "name": "Person",
@@ -183,38 +205,13 @@ value_schema_str = """
 }
 """
 
-key_schema_str = """
-{
-   "namespace": "my.test",
-   "name": "PersonKey",
-   "type": "record",
-   "fields" : [
-     {
-       "name" : "id",
-       "type" : "string"
-     }
-   ]
-}
-"""
+topic = "test-avro-topic"
+schema_registry_subject = topic + "-value"
 
-value_schema = avro.loads(value_schema_str)
-key_schema = avro.loads(key_schema_str)
-value = {"id":"1001", "firstName": "Peter", "lastName": "Muster"}
-key = {"id": "1001"}
-
-avroProducer = AvroProducer({
-    'bootstrap.servers': 'dataplatform:9092,dataplatform:9093',
-    'schema.registry.url': 'http://dataplatform:8081',
-    'compression.codec': 'snappy'
-    }, default_key_schema=key_schema, default_value_schema=value_schema)
-
-avroProducer.produce(topic='test-avro-topic', value=value, key=key)
-avroProducer.flush()
+schema_id = register_schema(schema_registry_url, schema_registry_subject, schema_str)
+print(schema_id)    
 ```
 
-When producing an Avro message, the library will check if the Avro Schema for the key and the value part is already registered and if it is, it checks if the one provided has a change and if yes, if this change is compatible. 
-
-If a schema does not exist at all, then it is registered. You can check the registry through the REST API or the Schema Registry UI. 
 
 ### View schemas using REST API
 
@@ -270,6 +267,119 @@ To browse the Schema Registry using the browser-based [Landoop Schema Registry U
 You should see the two schemas registered. If you click on one of them, the Avro Schema will be displayed on the right side:
 
 ![Alt Image Text](./images/schema-registry-ui-1.png "Schema Registry UI")
+
+### Produce a single Avro Message
+
+The following Python code produces an Avro message 
+
+```python
+from uuid import uuid4
+
+from confluent_kafka import Producer
+from confluent_kafka.serialization import StringSerializer, SerializationContext, MessageField
+from confluent_kafka.schema_registry import SchemaRegistryClient
+from confluent_kafka.schema_registry.avro import AvroSerializer
+
+def get_schema_from_schema_registry(schema_registry_url, schema_registry_subject):
+    sr = SchemaRegistryClient({'url': schema_registry_url})
+    latest_version = sr.get_latest_version(schema_registry_subject)
+
+    return sr, latest_version
+    
+bootstrap_servers = "kafka-1:19092,kafka-2:19093"
+topic = "test-avro-topic"
+schema_registry_subject = topic + "-value"
+
+schema_registry_url = 'http://schema-registry-1:8081'
+
+schema_registry_conf = {'url': schema_registry_url}
+schema_registry_client = SchemaRegistryClient(schema_registry_conf)
+
+sr, latest_version = get_schema_from_schema_registry(schema_registry_url, schema_registry_subject)
+schema_str = latest_version.schema.schema_str
+
+def delivery_report(err, msg):
+    """ Called once for each message produced to indicate delivery result.
+        Triggered by poll() or flush(). """
+    if err is not None:
+        print('Message delivery failed: {}'.format(err))
+    else:
+        print('Message delivered to {} [{}]'.format(msg.topic(), msg.partition()))
+        
+person = {"id":"1001", "firstName": "Peter", "lastName": "Muster"}
+
+value_avro_serializer = AvroSerializer(schema_registry_client,
+                                         schema_str,                                        
+                                )
+
+string_serializer = StringSerializer('utf_8')
+
+producer_conf = {'bootstrap.servers': bootstrap_servers}
+
+producer = Producer(producer_conf)
+
+producer.produce(topic=topic,
+                key=string_serializer(str(uuid4())),
+                value=value_avro_serializer(person, SerializationContext(topic, MessageField.VALUE)),
+                on_delivery=delivery_report)
+
+producer.flush()                        
+```
+
+### Consuming Avro Messages
+
+The following Python code produces an Avro message 
+
+```python
+from uuid import uuid4
+
+from confluent_kafka import Consumer
+from confluent_kafka.serialization import StringDeserializer, SerializationContext, MessageField
+from confluent_kafka.schema_registry import SchemaRegistryClient
+from confluent_kafka.schema_registry.avro import AvroDeserializer
+
+def get_schema_from_schema_registry(schema_registry_url, schema_registry_subject):
+    sr = SchemaRegistryClient({'url': schema_registry_url})
+    latest_version = sr.get_latest_version(schema_registry_subject)
+
+    return sr, latest_version
+
+bootstrap_servers = "kafka-1:19092,kafka-2:19093"
+topic = "test-avro-topic"
+schema_registry_subject = topic + "-value"
+
+schema_registry_url = 'http://schema-registry-1:8081'
+
+schema_registry_conf = {'url': schema_registry_url}
+schema_registry_client = SchemaRegistryClient(schema_registry_conf)
+
+sr, latest_version = get_schema_from_schema_registry(schema_registry_url, schema_registry_subject)
+schema_str = latest_version.schema.schema_str
+
+avro_deserializer = AvroDeserializer(schema_registry_client,
+                                         schema_str)
+
+consumer_conf = {'bootstrap.servers': bootstrap_servers,
+                     'group.id': 'python-cg',
+                     'auto.offset.reset': "earliest"}
+
+consumer = Consumer(consumer_conf)
+consumer.subscribe([topic])
+
+while True:
+    try:
+        # SIGINT can't be handled when polling, limit timeout to 1 second.
+        msg = consumer.poll(1.0)
+        if msg is None:
+            continue
+
+        person = avro_deserializer(msg.value(), SerializationContext(msg.topic(), MessageField.VALUE))
+        if person is not None: 
+            print (person)
+    except KeyboardInterrupt: 
+        break        
+consumer.close() 
+```
 
 ### Consuming Avro Messages using Kafkacat 
 
