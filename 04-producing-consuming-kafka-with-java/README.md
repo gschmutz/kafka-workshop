@@ -1060,10 +1060,11 @@ We show a shortcut version here, instead of first "connecting" to the container 
 
 ```bash
 docker exec -ti kafka-1 kafka-topics --create \
+    --if-not-exists \
+    --bootstrap-server kafka-1:19092,kafka-2:19093 \
     --replication-factor 3 \
     --partitions 8 \
-    --topic test-java-topic \
-    --zookeeper zookeeper-1:2181
+    --topic test-java-json-topic \
 ```
 
 ### Testing the JsonProducer
@@ -1096,7 +1097,7 @@ Use `kafkacat` to consume the messages from the topic `test-java-json-topic`.
 kafkacat -b dataplatform -t test-java-json-topic -q
 ```
 
-you can see the messages are all formated as JSON documents
+you can see the messages are all formatted as JSON documents
 
 ```bash
 {"id":0,"message":"[0] Hello Kafka 750","createdAt":"2021-08-06T18:38:10.679026"}
