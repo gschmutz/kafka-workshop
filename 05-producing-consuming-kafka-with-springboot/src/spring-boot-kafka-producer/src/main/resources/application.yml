@@ -9,3 +9,6 @@ spring:
     producer:
       key-serializer: org.apache.kafka.common.serialization.LongSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    properties:
+      linger.ms: 0
+      #partitioner.class: org.apache.kafka.clients.producer.RoundRobinPartitioner
