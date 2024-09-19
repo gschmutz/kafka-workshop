@@ -12,6 +12,9 @@ spring:
     properties:
       #partitioner.class: org.apache.kafka.clients.producer.internals.DefaultPartitioner
       #partitioner.class: org.apache.kafka.clients.producer.UniformStickyPartitioner
-      #linger.ms: 100   # Time in milliseconds to wait before sending a batch
+      linger.ms: 0  # Time in milliseconds to wait before sending a batch
       #batch.size: 16384  # Batch size in bytes
-      #partitioner.adaptive.partitioning.enable: true
+      partitioner.adaptive.partitioning.enable: false
+      partitioner.availability.timeout.ms: 0    # default 0
+      partitioner.ignore.keys: false
+      batch.size: 1000
