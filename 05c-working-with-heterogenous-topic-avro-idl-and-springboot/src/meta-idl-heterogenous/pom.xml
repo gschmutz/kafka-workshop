@@ -49,7 +49,7 @@
             <plugin>
                 <groupId>com.trivadis.plugins</groupId>
                 <artifactId>avdl2avsc-maven-plugin</artifactId>
-                <version>1.0.1-SNAPSHOT</version>
+                <version>${avro.version}</version>
                 <executions>
                     <execution>
                         <phase>generate-sources</phase>
@@ -92,8 +92,8 @@
             <url>https://packages.confluent.io/maven/</url>
         </pluginRepository>
         <pluginRepository>
-            <id>Avdl2Avsc Maven Repo</id>
-            <url>https://github.com/TrivadisPF/avdl2avsc-maven-plugin/raw/mvn-repo/</url>
+            <id>github</id>
+            <url>https://maven.pkg.github.com/TrivadisPF/avdl2avsc-maven-plugin</url>
             <snapshots>
                 <enabled>true</enabled>
                 <updatePolicy>always</updatePolicy>
