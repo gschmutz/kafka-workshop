@@ -1,0 +1,8 @@
+@namespace("com.trivadis.kafkaws.customer.avro.v1")
+protocol CustomerStateEventProtocol {
+	import idl "Customer.avdl";
+
+	record CustomerStateEvent {
+		Customer customer;
+	}
+}

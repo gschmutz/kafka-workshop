@@ -1,0 +1,8 @@
+@namespace("com.trivadis.kafkaws.order.avro.v1")
+protocol OrderStateEventProtocol {
+	import idl "Order.avdl";
+
+	record OrderStateEvent {
+		Order order;
+	}
+}

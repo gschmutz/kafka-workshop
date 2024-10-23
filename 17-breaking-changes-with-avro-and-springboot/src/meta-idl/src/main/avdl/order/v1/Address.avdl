@@ -1,0 +1,9 @@
+@namespace("com.trivadis.kafkaws.order.avro.v1")
+protocol AddressProtocol  {
+
+	record Address {
+		string street;
+		string city;
+		string zipCode;
+	}
+}

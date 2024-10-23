@@ -1,0 +1,13 @@
+@namespace("com.trivadis.kafkaws.customer.avro.v1")
+protocol CustomerProtocol  {
+	import idl "Address.avdl";
+
+	record Customer {
+		long id;
+
+		union { null, string } firstName = null;
+		string name;
+
+		Address address;
+	}
+}

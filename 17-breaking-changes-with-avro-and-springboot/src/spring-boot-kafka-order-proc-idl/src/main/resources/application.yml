@@ -1,0 +1,25 @@
+topic:
+  v1:
+    name: orderproc.order.state.v1-value
+    replication-factor: 3
+    partitions: 8
+  v2:
+    name: orderproc.order.state.v2-value
+    replication-factor: 3
+    partitions: 8
+
+spring:
+  kafka:
+    bootstrap-servers:
+      - ${DATAPLATFORM_IP}:9092
+      - ${DATAPLATFORM_IP}:9093
+      - ${DATAPLATFORM_IP}:9094
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.LongSerializer
+      value-serializer: io.confluent.kafka.serializers.KafkaAvroSerializer
+      properties:
+        auto.register.schemas: false
+        #use.latest.version: true
+    properties:
+      schema.registry.url: http://${DATAPLATFORM_IP}:8081
+      avro.remove.java.properties: true
