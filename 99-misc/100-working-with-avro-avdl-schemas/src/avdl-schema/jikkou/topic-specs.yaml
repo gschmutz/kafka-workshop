@@ -1,0 +1,11 @@
+apiVersion: "kafka.jikkou.io/v1beta2"
+kind: "KafkaTopicList"
+metadata: {}
+items:
+  - metadata:
+      name: 'customer.state.v1'
+    spec:
+      partitions: 8
+      replicas: 3
+      configs:
+        cleanup.policy: compact

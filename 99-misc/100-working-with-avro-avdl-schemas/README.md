@@ -361,3 +361,84 @@ docker run -it --rm \
   apply --files /app/yaml
 ```
 
+and the schema should get registered successfully as shown in the log
+
+```
+guido.schmutz@AMAXDKFVW0HYY ~/D/G/g/k/9/1/s/a/jikkou (master)> docker run -it --rm \
+                                                                     --net host \
+                                                                     -v $(pwd)/../target:/target \
+                                                                     -v $(pwd):/app/yaml \
+                                                                     -v $(pwd)/application.conf:/appuser/.jikkou/application.conf \
+                                                                     -v $(pwd)/config:/etc/jikkou/config \
+                                                                     -e JIKKOU_DEFAULT_KAFKA_BOOTSTRAP_SERVERS=$DATAPLATFORM_IP:9092 \
+                                                                     -e JIKKOU_DEFAULT_SCHEMA_REGISTRY_URL=http://$DATAPLATFORM_IP:8081 \
+                                                                     streamthoughts/jikkou:main \
+                                                                     apply --files /app/yaml
+TASK [CREATE] Create subject 'customer.state.v1-value' (type=CREATE, compatibilityLevel=FULL_TRANSITIVE) - CHANGED 
+{
+  "end" : "2025-08-30T17:33:35.604173Z",
+  "status" : "CHANGED",
+  "description" : "Create subject 'customer.state.v1-value' (type=CREATE, compatibilityLevel=FULL_TRANSITIVE)",
+  "change" : {
+    "apiVersion" : "schemaregistry.jikkou.io/v1beta2",
+    "kind" : "SchemaRegistrySubjectChange",
+    "metadata" : {
+      "name" : "customer.state.v1-value",
+      "labels" : { },
+      "annotations" : {
+        "schemaregistry.jikkou.io/normalize-schema" : true,
+        "jikkou.io/items-count" : 1
+      }
+    },
+    "spec" : {
+      "changes" : [ {
+        "name" : "schema",
+        "op" : "CREATE",
+        "after" : "{\"fields\":[{\"name\":\"customer\",\"type\":{\"fields\":[{\"name\":\"number\",\"type\":\"string\"},{\"name\":\"firstName\",\"type\":\"string\"},{\"name\":\"lastName\",\"type\":\"string\"},{\"name\":\"address\",\"type\":{\"fields\":[{\"name\":\"id\",\"type\":\"long\"},{\"name\":\"street\",\"type\":\"string\"},{\"name\":\"postalCode\",\"type\":\"string\"},{\"name\":\"city\",\"type\":\"string\"},{\"name\":\"gln\",\"type\":\"string\"}],\"name\":\"Address\",\"type\":\"record\"}}],\"name\":\"Customer\",\"type\":\"record\"}}],\"name\":\"CustomerState\",\"namespace\":\"com.acme.customer.avro\",\"type\":\"record\"}"
+      }, {
+        "name" : "schemaType",
+        "op" : "CREATE",
+        "after" : "AVRO"
+      }, {
+        "name" : "references",
+        "op" : "CREATE",
+        "after" : [ ]
+      }, {
+        "name" : "compatibilityLevel",
+        "op" : "CREATE",
+        "after" : "FULL_TRANSITIVE"
+      } ],
+      "op" : "CREATE",
+      "data" : {
+        "normalizeSchema" : true,
+        "permanentDelete" : false
+      }
+    }
+  },
+  "changed" : true,
+  "failed" : false
+}
+EXECUTION in 815ms 
+ok : 0, created : 1, altered : 0, deleted : 0 failed : 0
+```
+
+You can also create the Kafka topics using Jikkou. For that create a new file `jikkou/topics-specs.yaml` folder (the file name can be anything, as long as the extension is yaml)
+
+```yaml
+apiVersion: "kafka.jikkou.io/v1beta2"
+kind: "KafkaTopicList"
+metadata: {}
+items:
+  - metadata:
+      name: 'customer.state.v1'
+    spec:
+      partitions: 8
+      replicas: 3
+      configs:
+        cleanup.policy: compact
+```
+
+No rerun `jikkou` and the topic(s) will be created as well. 
+
+
+
