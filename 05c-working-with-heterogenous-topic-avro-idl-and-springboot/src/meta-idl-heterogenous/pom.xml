@@ -31,16 +31,18 @@
                 <version>${avro.version}</version>
                 <executions>
                     <execution>
+                        <id>schemas</id>
                         <phase>generate-sources</phase>
                         <goals>
                             <goal>schema</goal>
-                            <goal>protocol</goal>
                             <goal>idl-protocol</goal>
                         </goals>
                         <configuration>
-                            <stringType>String</stringType>
-                            <fieldVisibility>private</fieldVisibility>
+                            <excludes>
+                                <exclude>**/mapred/tether/**</exclude>
+                            </excludes>
                             <sourceDirectory>${project.basedir}/src/main/avdl/</sourceDirectory>
+                            <testSourceDirectory>${project.basedir}/src/test/avro/</testSourceDirectory>
                         </configuration>
                     </execution>
                 </executions>
