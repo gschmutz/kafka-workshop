@@ -5,6 +5,7 @@ protocol NotificationProtocol {
 		union {null, long} id;
 
 		/** @deprecated should no longer be used */
-		union {null, @tags(["type"]) string} @tags(["pii"]) message;
+		union {null, string} message;
+
 	}
 }

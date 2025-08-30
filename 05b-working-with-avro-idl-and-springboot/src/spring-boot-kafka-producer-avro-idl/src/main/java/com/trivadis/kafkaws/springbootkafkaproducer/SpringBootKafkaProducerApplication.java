@@ -44,8 +44,7 @@ public class SpringBootKafkaProducerApplication implements CommandLineRunner {
 					.setNotification(
 							Notification.newBuilder()
 									.setId(id)
-									.setMessage("[" + id + "] Hello Kafka " + index)
-									.setCreatedAt(Instant.now()).build()
+									.setMessage("[" + id + "] Hello Kafka " + index).build()
 					).build();
 
 			kafkaEventProducer.produce(index, key, notificationSentEvent);

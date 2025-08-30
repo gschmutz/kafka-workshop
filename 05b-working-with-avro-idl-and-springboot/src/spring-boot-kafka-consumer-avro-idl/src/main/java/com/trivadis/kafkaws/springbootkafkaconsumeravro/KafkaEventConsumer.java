@@ -15,6 +15,7 @@ public class KafkaEventConsumer {
     @KafkaListener(topics = "${topic.name}", groupId = "simple-consumer-group")
     public void receive(ConsumerRecord<Long, NotificationSentEvent> consumerRecord) {
         NotificationSentEvent value = consumerRecord.value();
+
         Long key = consumerRecord.key();
         LOGGER.info("received key = '{}' with payload='{}'", key, value);
     }
