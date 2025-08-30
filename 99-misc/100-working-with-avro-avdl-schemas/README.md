@@ -110,7 +110,7 @@ protocol CustomerProtocol {
 create a file `src/main/avdl/customer/CustomerState-v1.avdl` and add
 
 ```
-@namespace("international.mio.customer.avro")
+@namespace("com.acme.customer.avro")
 protocol CustomerStateProtocol {
 	import idl "Customer.avdl";
 
@@ -120,15 +120,19 @@ protocol CustomerStateProtocol {
 }
 ```
 
+Now let's run the convert from AVDL to AVSC and the generation of the Java classes.
+
 ```bash
 mvn clean package
 ```
+
+You should find the generated artefacts in the `target/generated-sources/avro` folder.
  
 ## Register schemas to Schema registry
  
 ### Using Maven
  
-Add the confluent registry to the plugin registry in the `pom.xml`
+Add the confluent registry to the plugin repositories in the `pom.xml`
  
 ```xml
          <pluginRepository>
@@ -143,7 +147,7 @@ Add `kafka-schema-registry-maven-plugin` to the `pom.xml`
              <plugin>
                 <groupId>io.confluent</groupId>
                 <artifactId>kafka-schema-registry-maven-plugin</artifactId>
-                <version>8.0.0</version>
+                <version>${confluent.version}</version>
                 <configuration>
                     <schemaRegistryUrls>
                         <param>http://${env.DATAPLATFORM_IP}:8081</param>
@@ -161,13 +165,50 @@ Add `kafka-schema-registry-maven-plugin` to the `pom.xml`
 
 Adapt the above plugin definition to specify the schemas to register in the `<subjects>` section.
 
+ 
+```xml
+     <properties>
+        ...
+        <confluent.version>8.0.0</confluent.version>
+    </properties>
+```         
+
 Make sure the set the environment variable `DATAPLATFORM_IP` to the ip address of the node which hosts the Confluent schema registry. 
+
+Now run the register goal
+
+```
+mvn schema-registry:register
+```
+
+and the schema should get registered as you can see in the log
+
+```
+...
+[INFO] 
+[INFO] ----------------------< org.example:avdl-schema >-----------------------
+[INFO] Building avdl-schema 1.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- schema-registry:8.0.0:register (default-cli) @ avdl-schema ---
+[INFO] Registered subject(customer.state.v1-value) with id 2 version 1
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.609 s
+[INFO] Finished at: 2025-08-30T19:27:08+02:00
+[INFO] ------------------------------------------------------------------------
+guido.schmutz@AMAXDKFVW0HYY ~/D/G/g/k/9/1/s/avdl-schema (master)> 
+```
 
 ### Using Jikkou
 
 [Jikkou](https://www.jikkou.io/) is a powerful, flexible open-source framework that enables self-serve resource provisioning. It allows developers and DevOps teams to easily manage, automate, and provision all the resources needed for their Apache Kafka platform.
 
-Create a file named `config` and add
+First let's create a folder `jikkou` in the project root, where the jikkou definitions will be stored. 
+
+Create a file named `./jikkou/config` and add
 
 ```
 {
@@ -178,10 +219,9 @@ Create a file named `config` and add
     }
   }
 }
-
 ```
 
-Create a file named `application.conf` and add
+Create a file named `./jikkou/application.conf` and add
 
 ```
 jikkou {
@@ -280,10 +320,9 @@ jikkou {
         }
   ]
 }
-
 ```
 
-Create a file `schema-specs.yaml` and add a metadata section for each schema to register
+Create a file `./jikkou/schema-specs.yaml` and add a metadata section for each schema to register. Here we only have one schema:
 
 ```yaml
 ---
@@ -305,7 +344,9 @@ items:
         $ref: /target/generated-sources/avro/schema/customer/state/CustomerState.avsc
 ```
 
-Now we can run `jikkou` using the Docker image (make sure that you set the `DATAPLATFORM_IP` environment variable first)
+Now we can run `jikkou` using the Docker image (make sure that you set the `DATAPLATFORM_IP` environment variable first).
+
+In a terminal window, navigate into the `jikkou` folder and run
 
 ```bash
 docker run -it --rm \

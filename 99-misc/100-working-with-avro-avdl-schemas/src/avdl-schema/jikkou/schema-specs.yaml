@@ -1,0 +1,17 @@
+---
+apiVersion: "schemaregistry.jikkou.io/v1beta2"
+kind: "SchemaRegistrySubjectList"
+metadata: {}
+items:
+  - metadata:
+      name: "customer.state.v1-value"
+      labels: { }
+      annotations:
+        schemaregistry.jikkou.io/normalize-schema: true
+    spec:
+      schemaRegistry:
+        vendor: Confluent
+      compatibilityLevel: "FULL_TRANSITIVE"
+      schemaType: "AVRO"
+      schema:
+        $ref: /target/generated-sources/avro/schema/customer/CustomerState.avsc

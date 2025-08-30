@@ -1,0 +1,18 @@
+@namespace("com.acme.customer.avro")
+protocol CustomerProtocol {
+
+	record Address {
+		long id;
+		string street;
+		string postalCode;
+		string city;
+		string gln;
+	}
+
+	record Customer {
+		string number;
+		string firstName;
+		string lastName;
+		Address address;
+	}
+}
