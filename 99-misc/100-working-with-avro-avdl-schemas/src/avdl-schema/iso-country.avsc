@@ -1,0 +1,28 @@
+{
+  "type": "record",
+  "name": "CountryCodeStateEvent",
+  "namespace": "com.acme.reference.country",
+  "doc": "Event representing the state of an ISO Country Code entry",
+  "fields": [
+    {
+      "name": "country_code_alpha2",
+      "type": "string",
+      "doc": "ISO 3166-1 alpha-2 country code, e.g., 'US'"
+    },
+    {
+      "name": "country_code_alpha3",
+      "type": "string",
+      "doc": "ISO 3166-1 alpha-3 country code, e.g., 'USA'"
+    },
+    {
+      "name": "country_numeric",
+      "type": "string",
+      "doc": "ISO 3166-1 numeric code, zero-padded, e.g., '840'"
+    },
+    {
+      "name": "country_name",
+      "type": "string",
+      "doc": "Official short English name of the country"
+    }
+  ]
+}

@@ -42,7 +42,7 @@
                         <configuration>
                             <stringType>String</stringType>
                             <fieldVisibility>private</fieldVisibility>
-                            <sourceDirectory>${project.basedir}/src/main/avdl/</sourceDirectory>
+                            <sourceDirectory>src/main/schema</sourceDirectory>
                         </configuration>
                     </execution>
                 </executions>
@@ -59,30 +59,34 @@
                             <goal>genschema</goal>
                         </goals>
                         <configuration>
-                            <inputAvdlDirectory>${basedir}/src/main/avdl</inputAvdlDirectory>
+                            <inputAvdlDirectory>src/main/schema/avdl</inputAvdlDirectory>
                             <outputSchemaDirectory>${basedir}/target/generated-sources/avro/schema
                             </outputSchemaDirectory>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
+
             <plugin>
                 <groupId>io.confluent</groupId>
                 <artifactId>kafka-schema-registry-maven-plugin</artifactId>
-                <version>${confluent.version}</version>
+                <version>8.0.0</version>
                 <configuration>
                     <schemaRegistryUrls>
-                        <param>http://${env.DATAPLATFORM_IP}:8081</param>
+                        <param>http://${DATAPLATFORM_IP}:8081</param>
                     </schemaRegistryUrls>
-                    <subjects>
-                        <customer.state.v1-value>target/generated-sources/avro/schema/customer/CustomerState.avsc</customer.state.v1-value>
-                    </subjects>
+
+                    <outputDirectory>${project.basedir}/src/main/schema/avro</outputDirectory>
+                    <subjectPatterns>
+                        <param>iso-country.state.v1-value</param>
+                    </subjectPatterns>
+                    <versions>
+                        <param>latest</param>
+                    </versions>
                 </configuration>
-                <goals>
-                    <goal>register</goal>
-                    <goal>test-compatibility</goal>
-                </goals>
             </plugin>
+
+
         </plugins>
     </build>
 

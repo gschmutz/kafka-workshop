@@ -35,7 +35,7 @@ add the `avro-maven-plugin` and `avdl2avsc-maven-plugin` to the `plugins` sectio
                         <configuration>
                             <stringType>String</stringType>
                             <fieldVisibility>private</fieldVisibility>
-                            <sourceDirectory>${project.basedir}/src/main/avdl/</sourceDirectory>
+                            <sourceDirectory>${project.basedir}/src/main/schema</sourceDirectory>
                         </configuration>
                     </execution>
                 </executions>
@@ -52,7 +52,7 @@ add the `avro-maven-plugin` and `avdl2avsc-maven-plugin` to the `plugins` sectio
                             <goal>genschema</goal>
                         </goals>
                         <configuration>
-                            <inputAvdlDirectory>${basedir}/src/main/avdl</inputAvdlDirectory>
+                            <inputAvdlDirectory>${basedir}/src/main/schema/avdl</inputAvdlDirectory>
                             <outputSchemaDirectory>${basedir}/target/generated-sources/avro/schema
                             </outputSchemaDirectory>
                         </configuration>
@@ -80,11 +80,11 @@ and add the property to define the Avro version to use
     </properties>
 ```         
  
-Create the folder `src/main/avdl` where the AVDL files will be stored. 
+Create the folder `src/main/schema/avdl` where the AVDL files will be stored. 
 
 ## Create the schema in AVDL
 
-Create a file `src/main/avdl/customer/Customer.avdl` and add
+Create a file `src/main/schema/avdl/customer/Customer.avdl` and add
 
 ```avdl
 @namespace("com.acme.customer.avro")
@@ -107,7 +107,7 @@ protocol CustomerProtocol {
 }
 ```
 
-create a file `src/main/avdl/customer/CustomerState-v1.avdl` and add
+create a file `src/main/schema/avdl/customer/CustomerState-v1.avdl` and add
 
 ```
 @namespace("com.acme.customer.avro")
@@ -440,5 +440,168 @@ items:
 
 No rerun `jikkou` and the topic(s) will be created as well. 
 
+## Download schema from Schema Registry
 
+If you are not the owner of the schema but want to consume from a topic where messages are schema-based, then you can download the schemas to your project from the schema registry using the `kafka-schema-registry-maven-plugin`.
 
+Let's simulate it by registering a schema in the schema registry from another domain
+
+```bash
+cat > iso-country.avsc << 'EOF'
+{
+  "type": "record",
+  "name": "CountryCodeStateEvent",
+  "namespace": "com.acme.reference.country",
+  "doc": "Event representing the state of an ISO Country Code entry",
+  "fields": [
+    {
+      "name": "country_code_alpha2",
+      "type": "string",
+      "doc": "ISO 3166-1 alpha-2 country code, e.g., 'US'"
+    },
+    {
+      "name": "country_code_alpha3",
+      "type": "string",
+      "doc": "ISO 3166-1 alpha-3 country code, e.g., 'USA'"
+    },
+    {
+      "name": "country_numeric",
+      "type": "string",
+      "doc": "ISO 3166-1 numeric code, zero-padded, e.g., '840'"
+    },
+    {
+      "name": "country_name",
+      "type": "string",
+      "doc": "Official short English name of the country"
+    }
+  ]
+}
+EOF
+```
+
+```bash
+curl -X POST http://localhost:8081/subjects/iso-country.state.v1-value/versions \
+  -H "Content-Type: application/vnd.schemaregistry.v1+json" \
+  -d @<(jq -n --arg schema "$(cat iso-country.avsc | jq -c .)" '{schema: $schema}')
+```
+
+To use it, add the confluent registry to the plugin repositories in the `pom.xml`
+ 
+```xml
+         <pluginRepository>
+            <id>confluent</id>
+            <url>https://packages.confluent.io/maven/</url>
+        </pluginRepository>
+```       
+ 
+Add `kafka-schema-registry-maven-plugin` to the `pom.xml`
+ 
+```xml
+            <plugin>
+                <groupId>io.confluent</groupId>
+                <artifactId>kafka-schema-registry-maven-plugin</artifactId>
+                <version>8.0.0</version>
+                <configuration>
+                    <schemaRegistryUrls>
+                        <param>http://${DATAPLATFORM_IP}:8081</param>
+                    </schemaRegistryUrls>
+
+                    <outputDirectory>${project.basedir}/src/main/schema/avro</outputDirectory>
+                    <subjectPatterns>
+                        <param>iso-country.state.v1-value</param>
+                    </subjectPatterns>
+                    <versions>
+                        <param>latest</param>
+                    <versions>
+                </configuration>
+            </plugin>
+```
+
+See next section for using it with both `register` and `download`. 
+
+Adapt the above plugin definition to specify the schemas to register in the `<subjects>` section.
+
+ 
+```xml
+     <properties>
+        ...
+        <confluent.version>8.0.0</confluent.version>
+    </properties>
+```         
+
+Make sure the set the environment variable `DATAPLATFORM_IP` to the ip address of the node which hosts the Confluent schema registry. 
+
+Now run the register goal
+
+```
+mvn schema-registry:download
+```
+
+and run  
+
+```bash
+mvn package
+```
+
+to generate the Java classes.
+
+### Using `kafka-schema-registry-maven-plugin` for register and download
+
+To use the plugin for both `register` my schemas and `download` of other schemas, you can figure it as follows:
+
+```xml
+            <plugin>
+                <groupId>io.confluent</groupId>
+                <artifactId>kafka-schema-registry-maven-plugin</artifactId>
+                <version>8.0.0</version>
+                <configuration>
+                    <schemaRegistryUrls>
+                        <param>http://${DATAPLATFORM_IP}:8081</param>
+                    </schemaRegistryUrls>
+                </configuration>
+                <executions>
+
+                    <!-- ✅ Register schemas -->
+                    <execution>
+                        <id>register</id>
+                        <goals>
+                            <goal>register</goal>
+                        </goals>
+                        <configuration>
+                            <subjects>
+                                <pub.order.purchaseOrder.state.v1-value>target/generated-sources/avro/schema/purchaseorder/state/PurchaseOrderState.avsc</pub.order.purchaseOrder.state.v1-value>
+                            </subjects>
+                            <schemaTypes>
+                                <Flights-value>AVRO</Flights-value>
+                            </schemaTypes>
+                        </configuration>
+                    </execution>
+
+                    <!-- ✅ Download schemas -->
+                    <execution>
+                        <id>download</id>
+                        <goals>
+                            <goal>download</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.basedir}/src/main/schema/avro</outputDirectory>
+                            <subjectPatterns>
+                                <param>pub.warehouse.orderItemsDispatched.delta.v1-value</param>
+                            </subjectPatterns>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+```
+
+To run `register` perform
+
+```bash
+mvn schema-registry:register@register
+```
+
+and to run `download` perform
+
+```bash
+mvn schema-registry:download@download
+```
