@@ -48,7 +48,7 @@ The Maven `avro-maven-plugin` generates `com.example.orders.avro.OrderCreated` d
 
 ## CloudEvents Binary Content Mode
 
-All implementations use the [CloudEvents Kafka Protocol Binding](https://github.com/cloudevents/spec/blob/v1.0.2/cloudevents/bindings/kafka-protocol-binding.md) in **binary content mode**: CE attributes are Kafka message headers and the Avro payload is the Kafka message value.
+All implementations use the [CloudEvents Kafka Protocol Binding](https://github.com/cloudevents/spec/blob/v1.0.2/cloudevents/bindings/kafka-protocol-binding.md) in **binary content mode**: CE attributes are Kafka message headers and the Avro payload is the Kafka message value, using the Confluent Schema Registry compatible serialization (magic byte + schema ID prefix).
 
 Required headers:
 
@@ -75,7 +75,7 @@ Optional headers used in this workshop:
 
 **Project:** `src/spring-boot-cloudevents-kafka-producer-kafka-native`
 
-The simplest approach. CloudEvents headers are built manually using a `CloudEventHeaders` constants class and added to the Kafka `ProducerRecord`. The Avro payload is serialized by `KafkaAvroSerializer` (Confluent wire format with Schema Registry magic bytes).
+The simplest approach. CloudEvents headers are built manually using a `CloudEventHeaders` constants class and added to the Kafka `ProducerRecord`. The Avro payload is serialized by `KafkaAvroSerializer` (Confluent standard wire format with Schema Registry magic bytes).
 
 ### Architecture
 
@@ -100,6 +100,8 @@ POST /api/orders
 
 ### Key code — building CE headers
 
+`buildCeHeaders` constructs the CE mandatory attributes (`specversion`, `id`, `type`, `source`, `time`, `content-type`) as raw UTF-8 Kafka headers using the `CloudEventHeaders` constants. The optional `ce_dataschema` header is added only when a Schema Registry subject name is provided.
+
 ```java
 private RecordHeaders buildCeHeaders(String eventType, String subjectName) {
     RecordHeaders headers = new RecordHeaders();
@@ -114,6 +116,38 @@ private RecordHeaders buildCeHeaders(String eventType, String subjectName) {
             utf8(schemaRegistryBaseUrl + "/subjects/" + subjectName + "/versions/latest"));
     }
     return headers;
+}
+```
+
+### Key code — publish() method
+
+`publish` calls `buildCeHeaders` to assemble the CE headers and then sends a `ProducerRecord` via `KafkaTemplate`. The Avro `payload` is passed directly as the record value — `KafkaAvroSerializer` (configured in `KafkaProducerConfig`) handles the Confluent wire-format serialization transparently. The returned `CompletableFuture` logs success or failure asynchronously.
+
+```java
+public <T extends SpecificRecord> CompletableFuture<SendResult<String, Object>> publish(
+        String topic,
+        String key,
+        T payload,
+        String eventType,
+        String subjectName) {
+
+    RecordHeaders headers = buildCeHeaders(eventType, subjectName);
+
+    ProducerRecord<String, Object> record =
+        new ProducerRecord<>(topic, null, key, payload, headers);
+
+    return kafkaTemplate.send(record)
+        .whenComplete((result, ex) -> {
+            if (ex != null) {
+                log.error("Failed to publish CE [type={}, key={}]: {}",
+                    eventType, key, ex.getMessage(), ex);
+            } else {
+                log.info("Published CE [type={}, key={}, partition={}, offset={}]",
+                    eventType, key,
+                    result.getRecordMetadata().partition(),
+                    result.getRecordMetadata().offset());
+            }
+        });
 }
 ```
 
@@ -150,28 +184,61 @@ Kafka topic: outbox.Order
 
 ### Key code — reading CE headers
 
-```java
-@KafkaListener(topics = "${app.kafka.topics.orders}", ...)
-public void onOrderCreated(ConsumerRecord<String, OrderCreated> record) {
-    String ceSpecVersion  = header(record, CloudEventHeaders.SPEC_VERSION);
-    String ceId           = header(record, CloudEventHeaders.ID);
-    String ceType         = header(record, CloudEventHeaders.TYPE);
-    String ceSource       = header(record, CloudEventHeaders.SOURCE);
-    String ceTime         = header(record, CloudEventHeaders.TIME);
-    String ceDataSchema   = header(record, CloudEventHeaders.DATA_SCHEMA);
-    String ceSubject      = header(record, CloudEventHeaders.SUBJECT);
-    String cePartitionKey = header(record, CloudEventHeaders.PARTITION_KEY);
-    String contentType    = header(record, CloudEventHeaders.CONTENT_TYPE);
-    OrderCreated order    = record.value();
-    // process order ...
-}
+`onOrderCreated` receives a `ConsumerRecord` whose value is already deserialized to `OrderCreated` by `KafkaAvroDeserializer`. All CE metadata is read from the Kafka message headers using the `CloudEventHeaders` constants and a small `header()` helper that decodes the raw bytes as UTF-8.
 
+```java
 private String header(ConsumerRecord<?, ?> record, String key) {
     return Optional.ofNullable(record.headers().lastHeader(key))
         .map(Header::value)
         .map(v -> new String(v, StandardCharsets.UTF_8))
         .orElse(null);
 }
+```
+
+```java
+    @KafkaListener(
+        topics     = "${app.kafka.topics.orders}",
+        groupId    = "${spring.kafka.consumer.group-id}",
+        containerFactory = "kafkaListenerContainerFactory"
+    )
+    public void onOrderCreated(ConsumerRecord<String, OrderCreated> record) {
+
+        // --- CE metadata from headers ---
+        String ceSpecVersion    = header(record, CloudEventHeaders.SPEC_VERSION);
+        String ceId             = header(record, CloudEventHeaders.ID);
+        String ceType           = header(record, CloudEventHeaders.TYPE);
+        String ceSource         = header(record, CloudEventHeaders.SOURCE);
+        String ceTime           = header(record, CloudEventHeaders.TIME);
+        String ceDataSchema     = header(record, CloudEventHeaders.DATA_SCHEMA);
+        String ceSubject        = header(record, CloudEventHeaders.SUBJECT);
+        String cePartitionKey   = header(record, CloudEventHeaders.PARTITION_KEY);
+        String contentType      = header(record, CloudEventHeaders.CONTENT_TYPE);
+
+        // --- Business payload from Avro-deserialized value ---
+        OrderCreated order = record.value();
+
+        log.info("""
+            CloudEvent received:
+              ce_specversion    = {}
+              ce_id             = {}
+              ce_type           = {}
+              ce_source         = {}
+              ce_time           = {}
+              ce_dataschema     = {}
+              ce_subject        = {}
+              ce_partitionkey   = {}
+              content-type      = {}
+              orderId           = {}
+              customer          = {}
+              amount            = {} {}
+            """,
+            ceSpecVersion, ceId, ceType, ceSource, ceTime, ceDataSchema, ceSubject, cePartitionKey, contentType,
+            order.getOrderId(), order.getCustomerId(),
+            order.getAmount(), order.getCurrency()
+        );
+
+        // business logic here...
+    }
 ```
 
 ### Run
@@ -217,26 +284,58 @@ POST /api/orders
 
 ### Key code — building and sending the CloudEvent
 
+`publish` pre-serializes the Avro record to Confluent wire-format bytes via `toAvroBytesSR`, then builds a `CloudEvent` with `CloudEventBuilder.v1()`. The SDK validates all required CE attributes at build time and `CloudEventSerializer` writes them as Kafka headers automatically. Note that `.withExtension("partitionkey", key)` writes the `ce_partitionkey` header only — the Kafka message key must be set explicitly on the `ProducerRecord`.
+
 ```java
-String subjectName = kafkaTopic + "-value";
+public <T extends SpecificRecord> CompletableFuture<SendResult<String, CloudEvent>> publish(
+        String topic, String key, T payload, String eventType) {
 
-CloudEvent event = CloudEventBuilder.v1()
-    .withId(UUID.randomUUID().toString())
-    .withType(eventType)
-    .withSource(URI.create(defaultSource))
-    .withTime(OffsetDateTime.now())
-    .withDataContentType("avro/binary")
-    .withDataSchema(URI.create(schemaRegistryUrl + "/subjects/" + subjectName + "/versions/latest"))
-    .withSubject(subjectName)
-    .withExtension("partitionkey", key)
-    .withData(toAvroBytesSR(payload))
-    .build();
+    String subjectName = kafkaTopic + "-value";
 
-// Derive Kafka message key from the CE extension rather than the local variable
-String messageKey = (String) event.getExtension("partitionkey");
-ProducerRecord<String, CloudEvent> record =
-    new ProducerRecord<>(topic, messageKey, event);
-kafkaTemplate.send(record);
+    CloudEvent event = CloudEventBuilder.v1()
+        .withId(UUID.randomUUID().toString())
+        .withSource(URI.create(defaultSource))
+        .withType(eventType)
+        .withTime(OffsetDateTime.now())
+        .withDataContentType("avro/binary")
+        .withDataSchema(URI.create(schemaRegistryUrl + "/subjects/" + subjectName + "/versions/latest"))
+        .withSubject(subjectName)
+        .withExtension("partitionkey", key)
+        .withData(toAvroBytesSR(payload))
+        .build();
+
+    // withExtension("partitionkey", ...) writes the ce_partitionkey *header* only;
+    // it does NOT set the Kafka message key — pass key to ProducerRecord explicitly.
+    ProducerRecord<String, CloudEvent> record = new ProducerRecord<>(topic, key, event);
+
+    return kafkaTemplate.send(record)
+        .whenComplete((result, ex) -> {
+            if (ex != null) {
+                log.error("Failed to publish CE [type={}, key={}]: {}", eventType, key, ex.getMessage(), ex);
+            } else {
+                log.info("Published CE [type={}, key={}, partition={}, offset={}]",
+                    eventType, key,
+                    result.getRecordMetadata().partition(),
+                    result.getRecordMetadata().offset());
+            }
+        });
+}
+```
+
+### Key code — toAvroBytesSR helper
+
+Because `CloudEventSerializer` owns the Kafka value slot, the Avro record cannot be serialized by `KafkaAvroSerializer` as the value serializer. Instead, `toAvroBytesSR` manually invokes `KafkaAvroSerializer` to produce Confluent wire-format bytes (magic byte + schema ID + Avro binary), which are then set as the `CloudEvent` data payload.
+
+```java
+private <T extends SpecificRecord> byte[] toAvroBytesSR(T record) {
+    SchemaRegistryClient schemaRegistryClient =
+        new CachedSchemaRegistryClient(schemaRegistryUrl, 10);
+    Map<String, Object> props = new HashMap<>();
+    props.put(KafkaAvroSerializerConfig.AVRO_REMOVE_JAVA_PROPS_CONFIG, true);
+    props.put("schema.registry.url", schemaRegistryUrl);
+    KafkaAvroSerializer ser = new KafkaAvroSerializer(schemaRegistryClient, props);
+    return ser.serialize(kafkaTopic, record);
+}
 ```
 
 ### Run
@@ -292,7 +391,7 @@ POST /api/orders
 
 ### Internal event — OutboxEvent POJO
 
-The `OrderEventProducer` builds a plain `OutboxEvent` POJO and fires it as a Spring application event. `EventService` listens for it and writes the `OutboxDO` row.
+The `OrderEventProducer` builds a plain `OutboxEvent` POJO and fires it as a Spring application event.
 
 ```java
 OutboxEvent event = OutboxEvent.builder()
@@ -307,11 +406,84 @@ OutboxEvent event = OutboxEvent.builder()
 eventPublisher.fire(event);
 ```
 
+ `EventService` listens for it and writes the `OutboxDO` row.
+
+### Key code — EventService.handleOutboxEvent
+
+`handleOutboxEvent` maps each field from the `OutboxEvent` POJO onto an `OutboxDO` entity and saves it to the database. Debezium then picks up the INSERT from the PostgreSQL WAL and publishes the row as a CloudEvent to Kafka. `ce_dataschema` and `ce_subject` are set to `null` in this project — the kafka-native outbox does not carry Schema Registry metadata in dedicated columns.
+
+```java
+@EventListener
+public void handleOutboxEvent(OutboxEvent event) {
+    OutboxDO entity = OutboxDO.builder()
+        .ceId(UUID.fromString(event.getCeId()))
+        .aggregateType(event.getAggregateType())
+        .ceType(event.getEventType())
+        .cePartitionKey(event.getEventKey())
+        .payload(event.getPayload())
+        .ceSource(event.getCeSource())
+        .ceTime(event.getCeTime().toString())
+        .ceSpecVersion("1.0")
+        .ceDataContentType("avro/binary")
+        .ceDataSchema(null)
+        .ceSubject(null)
+        .build();
+    outboxRepository.save(entity);
+}
+```
+
 ### Transactional guarantee
 
 `OrderService.placeOrder()` is `@Transactional`. `EventService.handleOutboxEvent()` uses a plain `@EventListener` (not `@TransactionalEventListener`), so it fires **synchronously within the same transaction**. Both the `customer_order` and `outbox` rows commit atomically — no lost events, no phantom messages.
 
 ### Debezium connector
+
+The connector uses the `EventRouter` SMT to route outbox rows to Kafka. Key settings:
+- `table.field.event.id` / `key` / `type` point to the dedicated CE columns instead of Debezium defaults
+- `route.topic.replacement` routes to `outbox.{aggregate_type}` (e.g. `outbox.Order`)
+- `table.fields.additional.placement` maps every CE column to its corresponding Kafka header
+- `value.converter: ByteArrayConverter` passes the Confluent Avro bytes through unmodified
+
+```bash
+curl -X PUT \
+  "http://${DATAPLATFORM_IP}:8083/connectors/order-outbox-connector/config" \
+  -H 'Content-Type: application/json' \
+  -H 'Accept: application/json' \
+  -d '{
+  "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
+  "tasks.max": "1",
+
+  "database.hostname": "postgresql",
+  "database.port": "5432",
+  "database.user": "postgres",
+  "database.password": "abc123!",
+  "database.dbname": "postgres",
+  "topic.prefix": "debezium",
+  "schema.include.list": "public",
+  "table.include.list": "public.outbox",
+  "plugin.name": "pgoutput",
+  "publication.name": "debezium",
+  "slot.name": "debezium",
+  "tombstones.on.delete": "false",
+
+  "transforms": "outbox",
+  "transforms.outbox.type": "io.debezium.transforms.outbox.EventRouter",
+  "transforms.outbox.table.field.event.id": "ce_id",
+  "transforms.outbox.table.field.event.key": "ce_partitionkey",
+  "transforms.outbox.table.field.event.type": "ce_type",
+  "transforms.outbox.table.field.event.payload": "payload",
+  "transforms.outbox.route.by.field": "aggregate_type",
+  "transforms.outbox.route.topic.replacement": "outbox.${routedByValue}",
+  "transforms.outbox.table.fields.additional.placement": "ce_id:header:ce_id,ce_source:header:ce_source,ce_time:header:ce_time,ce_type:header:ce_type,ce_specversion:header:ce_specversion,ce_datacontenttype:header:content-type,ce_dataschema:header:ce_dataschema,ce_subject:header:ce_subject,ce_partitionkey:header:ce_partitionkey",
+
+  "key.converter": "org.apache.kafka.connect.storage.StringConverter",
+  "value.converter": "org.apache.kafka.connect.converters.ByteArrayConverter",
+  "topic.creation.default.replication.factor": 1,
+  "topic.creation.default.partitions": 8
+}'
+```
+
+> **Note:** If you add new columns to the `outbox` table after the connector was first created, you must drop and recreate the Debezium replication slot and publication — the slot caches the table schema at creation time.
 
 ```bash
 cd src/spring-boot-cloudevents-kafka-outbox-kafka-native
@@ -407,29 +579,54 @@ public void handleOutboxEvent(CloudEvent event) {
 | `ce_dataschema` | `varchar` | `ce_dataschema` header |
 | `ce_subject` | `varchar` | `ce_subject` header |
 
-### Debezium setup notes
 
-After adding new columns to the outbox table, the replication slot must be recreated to pick up the new schema:
-
-```sql
-ALTER TABLE public.outbox REPLICA IDENTITY FULL;
-DROP PUBLICATION IF EXISTS debezium;
-CREATE PUBLICATION debezium FOR TABLE public.outbox;
-SELECT pg_drop_replication_slot('debezium');  -- if slot still exists
-```
-
-Then recreate the connector:
+Then create the connector:
 
 ```bash
 curl -X DELETE http://localhost:8083/connectors/order-outbox-connector
-bash src/main/resources/connector/create-connector.sh
 ```
 
 ### Debezium connector
 
+The connector configuration is identical to the kafka-native outbox — the same CE columns and `additional.placement` mapping are used. `value.converter: ByteArrayConverter` passes the Confluent Avro bytes through unmodified.
+
 ```bash
-cd src/spring-boot-cloudevents-kafka-outbox-ce-native
-bash src/main/resources/connector/create-connector.sh
+curl -X PUT \
+  "http://${DATAPLATFORM_IP}:8083/connectors/order-outbox-connector/config" \
+  -H 'Content-Type: application/json' \
+  -H 'Accept: application/json' \
+  -d '{
+  "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
+  "tasks.max": "1",
+
+  "database.hostname": "postgresql",
+  "database.port": "5432",
+  "database.user": "postgres",
+  "database.password": "abc123!",
+  "database.dbname": "postgres",
+  "topic.prefix": "debezium",
+  "schema.include.list": "public",
+  "table.include.list": "public.outbox",
+  "plugin.name": "pgoutput",
+  "publication.name": "debezium",
+  "slot.name": "debezium",
+  "tombstones.on.delete": "false",
+
+  "transforms": "outbox",
+  "transforms.outbox.type": "io.debezium.transforms.outbox.EventRouter",
+  "transforms.outbox.table.field.event.id": "ce_id",
+  "transforms.outbox.table.field.event.key": "ce_partitionkey",
+  "transforms.outbox.table.field.event.type": "ce_type",
+  "transforms.outbox.table.field.event.payload": "payload",
+  "transforms.outbox.route.by.field": "aggregate_type",
+  "transforms.outbox.route.topic.replacement": "outbox.${routedByValue}",
+  "transforms.outbox.table.fields.additional.placement": "ce_id:header:ce_id,ce_source:header:ce_source,ce_time:header:ce_time,ce_type:header:ce_type,ce_specversion:header:ce_specversion,ce_datacontenttype:header:content-type,ce_dataschema:header:ce_dataschema,ce_subject:header:ce_subject,ce_partitionkey:header:ce_partitionkey",
+
+  "key.converter": "org.apache.kafka.connect.storage.StringConverter",
+  "value.converter": "org.apache.kafka.connect.converters.ByteArrayConverter",
+  "topic.creation.default.replication.factor": 1,
+  "topic.creation.default.partitions": 8
+}'
 ```
 
 ### Run
@@ -481,6 +678,35 @@ def _build_ce_headers(self, event_type, subject_name=None):
         headers.append(("ce_dataschema",
             f"{self._schema_registry_url}/subjects/{subject_name}/versions/latest"))
     return headers
+```
+
+### Key code — publish() method
+
+`publish` serializes the payload dict to Confluent Avro wire-format bytes using `AvroSerializer`, builds the CE headers with `_build_ce_headers`, and produces the record via `confluent_kafka.Producer`. `poll(0)` triggers delivery callbacks without blocking.
+
+```python
+def publish(
+    self,
+    topic: str,
+    key: str,
+    payload: dict,
+    schema_str: str,
+    event_type: str,
+    subject_name: str | None = None,
+) -> None:
+    serializer = self._get_serializer(schema_str)
+    value_bytes = serializer(payload, SerializationContext(topic, MessageField.VALUE))
+
+    headers = self._build_ce_headers(event_type, subject_name)
+
+    self._producer.produce(
+        topic=topic,
+        key=key,
+        value=value_bytes,
+        headers=headers,
+        on_delivery=_delivery_callback,
+    )
+    self._producer.poll(0)
 ```
 
 ### Setup and run
@@ -548,33 +774,15 @@ pip install -r requirements.txt
 python3 main.py
 ```
 
-### Dependencies (`requirements.txt`)
+## Pros and Cons
 
-```
-cloudevents>=2.0.0
-confluent-kafka>=2.3.0
-fastavro>=1.9.0
-certifi>=2024.0.0
-httpx>=0.27.0
-authlib>=1.3.0
-cachetools>=5.3.0
-attrs>=23.0.0
-jsonschema>=4.22.0
-referencing>=0.35.0
-protobuf>=5.27.0
-```
+| Project | Pros | Cons |
+|---|---|---|
+| `producer-kafka-native` | No extra dependencies; full control over every header; easiest to debug | Error-prone (header name typos, missing headers); no SDK validation; verbose boilerplate |
+| `consumer-kafka-native` | No extra dependencies; works with any producer regardless of SDK | Raw byte parsing; no type safety; must know header name strings |
+| `producer-ce-native` | `CloudEventBuilder` validates required attributes; cleaner code; `partitionkey` and `dataschema` are first-class | Avro must be pre-serialized manually (SDK owns the value slot); extra `cloudevents-kafka` dependency |
+| `outbox-kafka-native` | Atomic dual-write (order + outbox in one transaction); app never touches Kafka; simple `OutboxEvent` POJO | Requires Debezium + PostgreSQL WAL setup; POJO doesn't enforce CE spec; `ce_id` reuses business key |
+| `outbox-ce-native` | Atomic dual-write; `CloudEventBuilder` validates the internal event; all CE attributes flow naturally from the SDK object | Most complex setup; Debezium + PostgreSQL WAL required; replication slot must be recreated when columns are added |
+| `python-kafka-native` | Simple; only `confluent-kafka` needed; straightforward list of tuples | Manual header construction; no validation; transitive dependency list must be maintained explicitly |
+| `python-ce-native` | `CloudEvent` object centralises attribute construction; `to_binary()` eliminates manual header tuples | `cloudevents` 2.x API is under `v1.*` namespace (breaking change); binary data requires custom `data_marshaller` workaround |
 
-> Note: `confluent-kafka` 2.15+ has undeclared transitive dependencies. All required packages are explicitly listed above.
-> Note: `cloudevents` 2.x moved all bindings under `cloudevents.v1.*` — use `cloudevents.v1.http` and `cloudevents.v1.kafka`, not `cloudevents.http`/`cloudevents.kafka`.
-
----
-
-## Prerequisites
-
-- Java 21
-- Maven 3.8+
-- Python 3.11+ (for the Python projects)
-- Running Kafka cluster at `localhost:9092`
-- Confluent Schema Registry at `http://localhost:8081`
-- PostgreSQL at `localhost:5432/postgres` (for the outbox projects)
-- Debezium Kafka Connect plugin (for the outbox projects)
