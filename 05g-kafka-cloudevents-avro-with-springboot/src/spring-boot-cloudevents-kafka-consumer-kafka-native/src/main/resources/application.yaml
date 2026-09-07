@@ -1,0 +1,20 @@
+spring:
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: orders-consumer-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      # value deserializer set programmatically
+      properties:
+        specific.avro.reader: true  # use generated classes, not GenericRecord
+
+app:
+  kafka:
+    schema-registry-url: http://localhost:8081
+    topics:
+      orders: outbox.Order
+
+cloudevents:
+  source: /services/order-service
+  schema-registry-base-url: http://localhost:8081

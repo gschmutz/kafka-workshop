@@ -1,0 +1,13 @@
+{
+  "type": "record",
+  "name": "OrderCreated",
+  "namespace": "com.example.orders.avro",
+  "doc": "Fired when a new order is successfully placed",
+  "fields": [
+    { "name": "orderId",    "type": "string" },
+    { "name": "customerId", "type": "string" },
+    { "name": "amount",     "type": "double" },
+    { "name": "currency",   "type": "string" },
+    { "name": "createdAt",  "type": "string", "doc": "ISO-8601 timestamp" }
+  ]
+}

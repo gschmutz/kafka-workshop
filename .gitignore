@@ -21,3 +21,5 @@ org.springframework.ide.eclipse.boot.dash:Cloud Foundry.prefs
 01-environment/.DS_Store
 01-environment/.DS_Store
 01-environment/.DS_Store
+/05g-kafka-cloudevents-avro-with-springboot/src/python-cloudevents-kafka-producer-kafka-native/__pycache__
+/05g-kafka-cloudevents-avro-with-springboot/src/python-cloudevents-kafka-producer-ce-native/__pycache__

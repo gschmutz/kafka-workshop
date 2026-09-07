@@ -1,0 +1,30 @@
+server:
+  port: 8082
+
+spring:
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      # value serializer is set programmatically (Confluent KafkaAvroSerializer)
+      acks: all
+      retries: 3
+      properties:
+        enable.idempotence: true
+    consumer:
+      group-id: orders-consumer-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      # value deserializer set programmatically
+      properties:
+        specific.avro.reader: true  # use generated classes, not GenericRecord
+
+app:
+  kafka:
+    schema-registry-url: http://localhost:8081
+    topics:
+      orders: outbox.Order
+
+cloudevents:
+  source: /services/order-service
+  schema-registry-base-url: http://localhost:8081
