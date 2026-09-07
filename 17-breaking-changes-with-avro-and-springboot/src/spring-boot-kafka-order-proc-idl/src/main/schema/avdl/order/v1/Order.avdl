@@ -1,0 +1,18 @@
+@namespace("com.trivadis.kafkaws.order.avro.v1")
+protocol OrderProtocol  {
+	import idl "Address.avdl";
+
+	record Order {
+		long id;
+
+		long productId;
+		string productName;
+
+		int quantity;
+		long userId;
+		union { null, string } firstName = null;
+		string name;
+
+		Address address;
+	}
+}

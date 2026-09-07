@@ -15,7 +15,8 @@
 	<description>Kafka Consumer with Avro project for Spring Boot</description>
 	<properties>
 		<java.version>11</java.version>
-		<confluent.version>7.2.0</confluent.version>
+		<confluent.version>8.0.0</confluent.version>
+		<avro.version>1.12.0</avro.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -33,10 +34,11 @@
 			<version>${confluent.version}</version>
 		</dependency>
 
+		<!-- https://mvnrepository.com/artifact/org.apache.avro/avro -->
 		<dependency>
-			<groupId>com.trivadis.kafkaws.meta</groupId>
-			<artifactId>meta-idl</artifactId>
-			<version>1.0-SNAPSHOT</version>
+			<groupId>org.apache.avro</groupId>
+			<artifactId>avro</artifactId>
+			<version>${avro.version}</version>
 		</dependency>
 
 		<dependency>
@@ -57,6 +59,93 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
+			<plugin>
+				<groupId>org.apache.avro</groupId>
+				<artifactId>avro-maven-plugin</artifactId>
+				<version>${avro.version}</version>
+				<executions>
+					<execution>
+						<id>schemas</id>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>schema</goal>
+							<goal>idl-protocol</goal>
+						</goals>
+						<configuration>
+							<stringType>String</stringType>
+							<enableDecimalLogicalType>true</enableDecimalLogicalType>
+							<createSetters>false</createSetters>
+							<createOptionalGetters>true</createOptionalGetters>
+							<fieldVisibility>private</fieldVisibility>
+							<optionalGettersForNullableFieldsOnly>true</optionalGettersForNullableFieldsOnly>
+							<excludes>
+								<exclude>**/mapred/tether/**</exclude>
+							</excludes>
+							<sourceDirectory>src/main/schema/</sourceDirectory>
+							<testSourceDirectory>${project.basedir}/src/test/avro/</testSourceDirectory>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>io.confluent</groupId>
+				<artifactId>kafka-schema-registry-maven-plugin</artifactId>
+				<version>8.0.0</version>
+				<configuration>
+					<schemaRegistryUrls>
+						<param>http://${DATAPLATFORM_IP}:8081</param>
+					</schemaRegistryUrls>
+				</configuration>
+				<executions>
+
+					<!-- ✅ Register schemas -->
+					<execution>
+						<id>register</id>
+						<goals>
+							<goal>register</goal>
+						</goals>
+						<configuration>
+							<subjects>
+							</subjects>
+							<schemaTypes>
+							</schemaTypes>
+						</configuration>
+					</execution>
+
+					<!-- ✅ Download schemas -->
+					<execution>
+						<id>download</id>
+						<goals>
+							<goal>download</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.basedir}/src/main/schema/avro</outputDirectory>
+							<subjectPatterns>
+								<param>pub.orderproc.order.state.v1-value</param>
+							</subjectPatterns>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>com.trivadis.plugins</groupId>
+				<artifactId>avdl2avsc-maven-plugin</artifactId>
+				<version>1.0.1-SNAPSHOT</version>
+				<executions>
+					<execution>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>genschema</goal>
+						</goals>
+						<configuration>
+							<inputAvdlDirectory>src/main/schema/avdl</inputAvdlDirectory>
+							<outputSchemaDirectory>${basedir}/target/generated-sources/avro/schema
+							</outputSchemaDirectory>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 	<repositories>
@@ -65,4 +154,19 @@
 			<url>https://packages.confluent.io/maven/</url>
 		</repository>
 	</repositories>
+
+	<pluginRepositories>
+		<pluginRepository>
+			<id>confluent</id>
+			<url>https://packages.confluent.io/maven/</url>
+		</pluginRepository>
+		<pluginRepository>
+			<id>Trivadis Maven Repo</id>
+			<url>https://github.com/TrivadisPF/avdl2avsc-maven-plugin/raw/mvn-repo/</url>
+			<snapshots>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
+			</snapshots>
+		</pluginRepository>
+	</pluginRepositories>
 </project>

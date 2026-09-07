@@ -1,5 +1,5 @@
 topic:
-  name: test-spring-avro-idl-topic
+  name: pub.orderproc.order.state.v1
 
 spring:
   kafka:

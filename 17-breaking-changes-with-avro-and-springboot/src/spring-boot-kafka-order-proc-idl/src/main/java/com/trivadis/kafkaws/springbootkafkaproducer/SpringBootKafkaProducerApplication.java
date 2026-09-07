@@ -60,6 +60,7 @@ public class SpringBootKafkaProducerApplication implements CommandLineRunner {
 											.build())
 									.setProductId(1000L)
 									.setProductName("Some Product")
+									.setQuantity(1)
 									.build()
 					).build();
 
@@ -82,6 +83,7 @@ public class SpringBootKafkaProducerApplication implements CommandLineRunner {
 									.setUserId(10L)
 									.setProductId(1000L)
 									.setProductName("Some Product")
+									.setQuantity(1)
 									.build()
 					).build();
 

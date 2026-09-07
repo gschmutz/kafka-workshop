@@ -1,10 +1,10 @@
 topic:
   v1:
-    name: orderproc.order.state.v1-value
+    name: pub.orderproc.order.state.v1
     replication-factor: 3
     partitions: 8
   v2:
-    name: orderproc.order.state.v2-value
+    name: pub.orderproc.order.state.v2
     replication-factor: 3
     partitions: 8
 

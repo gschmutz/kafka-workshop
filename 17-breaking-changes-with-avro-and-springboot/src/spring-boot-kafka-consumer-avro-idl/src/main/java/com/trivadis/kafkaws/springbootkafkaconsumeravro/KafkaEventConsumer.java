@@ -1,7 +1,6 @@
 package com.trivadis.kafkaws.springbootkafkaconsumeravro;
 
-import com.trivadis.kafkaws.avro.v1.Notification;
-import com.trivadis.kafkaws.avro.v1.NotificationSentEvent;
+import com.trivadis.kafkaws.order.avro.v1.OrderStateEvent;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,8 +12,8 @@ public class KafkaEventConsumer {
     private static final Logger LOGGER = LoggerFactory.getLogger(KafkaEventConsumer.class);
 
     @KafkaListener(topics = "${topic.name}", groupId = "simple-consumer-group")
-    public void receive(ConsumerRecord<Long, NotificationSentEvent> consumerRecord) {
-        NotificationSentEvent value = consumerRecord.value();
+    public void receive(ConsumerRecord<Long, OrderStateEvent> consumerRecord) {
+        OrderStateEvent value = consumerRecord.value();
         Long key = consumerRecord.key();
         LOGGER.info("received key = '{}' with payload='{}'", key, value);
     }

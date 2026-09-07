@@ -7,18 +7,18 @@ import org.springframework.kafka.config.TopicBuilder;
 import org.springframework.stereotype.Component;
 
 @Component
-public class TopicCreator {
-    @Value(value = "${topic.name}")
+public class OrderStateTopicV2Creator {
+    @Value(value = "${topic.v2.name}")
     private String testTopic;
 
-    @Value(value = "${topic.partitions}")
+    @Value(value = "${topic.v2.partitions}")
     private Integer testTopicPartitions;
 
-    @Value(value = "${topic.replication-factor}")
+    @Value(value = "${topic.v2.replication-factor}")
     private short testTopicReplicationFactor;
 
     @Bean
-    public NewTopic testTopic() {
+    public NewTopic orderStateV2Topic() {
         return TopicBuilder.name(testTopic)
                         .partitions(testTopicPartitions)
                         .replicas(testTopicReplicationFactor)
