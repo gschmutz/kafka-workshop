@@ -28,7 +28,6 @@ Six producer implementations are covered, progressing from a manual approach to 
 
 All projects share the same Avro schema and Kafka topic (`outbox.Order`).
 
-
 ---
 
 ## Avro Schema
@@ -52,6 +51,30 @@ All projects use the following schema (`order-created.avsc`):
 ```
 
 The Maven `avro-maven-plugin` generates `com.example.orders.avro.OrderCreated` during `mvn generate-sources`.
+
+---
+
+## Kafka topic
+
+All projects publish to and consume from the `outbox.Order` topic. Create it once before starting any producer or consumer:
+
+```bash
+docker exec -it kafka-1 kafka-topics \
+  --bootstrap-server kafka-1:19092 \
+  --create \
+  --topic outbox.Order \
+  --partitions 8 \
+  --replication-factor 3
+```
+
+Verify it was created:
+
+```bash
+docker exec -it kafka-1 kafka-topics \
+  --bootstrap-server kafka-1:19092 \
+  --describe \
+  --topic outbox.Order
+```
 
 ---
 
