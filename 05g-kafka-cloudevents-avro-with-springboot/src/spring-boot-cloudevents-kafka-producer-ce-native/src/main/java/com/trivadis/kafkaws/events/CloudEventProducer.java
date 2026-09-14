@@ -103,8 +103,8 @@ public class CloudEventProducer {
         SchemaRegistryClient schemaRegistryClient = new CachedSchemaRegistryClient(schemaRegistryUrl, 10);
         Map<String, Object> props = new HashMap<>();
         // send correct schemas to the registry, without "avro.java.string"
+        props.put(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, schemaRegistryUrl);
         props.put(KafkaAvroSerializerConfig.AVRO_REMOVE_JAVA_PROPS_CONFIG, true);
-        props.put("schema.registry.url", schemaRegistryUrl);
         KafkaAvroSerializer ser = new KafkaAvroSerializer(schemaRegistryClient, props);
         return ser.serialize(kafkaTopic, record);
     }    

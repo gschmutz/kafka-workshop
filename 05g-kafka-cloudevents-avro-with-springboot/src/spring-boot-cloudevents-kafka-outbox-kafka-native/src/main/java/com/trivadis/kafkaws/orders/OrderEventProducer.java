@@ -63,8 +63,8 @@ public class OrderEventProducer {
     private byte[] serializeAvro(OrderCreated record) {
         SchemaRegistryClient client = new CachedSchemaRegistryClient(schemaRegistryUrl, 10);
         Map<String, Object> props = new HashMap<>();
+        props.put(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, schemaRegistryUrl);
         props.put(KafkaAvroSerializerConfig.AVRO_REMOVE_JAVA_PROPS_CONFIG, true);
-        props.put("schema.registry.url", schemaRegistryUrl);
         KafkaAvroSerializer serializer = new KafkaAvroSerializer(client, props);
         return serializer.serialize(kafkaTopic, record);
     }

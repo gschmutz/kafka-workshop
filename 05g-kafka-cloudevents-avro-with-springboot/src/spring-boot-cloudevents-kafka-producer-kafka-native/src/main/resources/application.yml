@@ -6,22 +6,16 @@ spring:
     bootstrap-servers: localhost:9092
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      # value serializer is set programmatically (Confluent KafkaAvroSerializer)
+      value-serializer: io.confluent.kafka.serializers.KafkaAvroSerializer
       acks: all
       retries: 3
       properties:
         enable.idempotence: true
-    consumer:
-      group-id: orders-consumer-group
-      auto-offset-reset: earliest
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      # value deserializer set programmatically
-      properties:
-        specific.avro.reader: true  # use generated classes, not GenericRecord
-
+    properties:
+      schema.registry.url: http://localhost:8081
+      avro.remove.java.properties: true
 app:
   kafka:
-    schema-registry-url: http://localhost:8081
     topics:
       orders: outbox.Order
 
