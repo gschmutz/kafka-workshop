@@ -105,7 +105,7 @@
       #
       KSQLDB_enable: true
       # either 'cp' or 'oss'
-      KSQLDB_edition: 'oss'
+      KSQLDB_edition: 'cp'
       KSQLDB_nodes: 2
       KSQLDB_internal_replication_factor: 1
       KSQLDB_suppress_enabled: true
@@ -819,11 +819,14 @@
       #
       REDIS_enable: true
       REDIS_replicasets: 0
-      REDIS_allow_empty_password: yes
+      REDIS_volume_map_data: false      
+      REDIS_allow_empty_password: true
       REDIS_disable_commands:
       REDIS_password: abc123!
-      REDIS_aof_enabled: no
-      REDIS_volume_map_data: false
+      REDIS_aof_enable: true
+      REDIS_io_threads:
+      REDIS_io_threads_do_reads_enabled: false      
+
       #
       # ===== Redis Insight ========
       #

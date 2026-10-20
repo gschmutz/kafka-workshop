@@ -50,4 +50,5 @@ ID  | Title   | Description
 13f | [Static Data Ingestion into Kafka](./13f-static-data-ingestion)  | use Kafka Connect to ingest data from relational database (static data) and then join it with a data stream using ksqlDB
 14 | [Working with Kafka Connect and Change Data Capture (CDC)](./14-working-with-kafka-connect-and-cdc)  | uses **Kafka Connect** to demonstrate various way for doing CDC on a set of PostgreSQL tables.
 16 |[Manipulating Consumer Offsets](./16-manipulating-consumer-offsets)  | learn how to use the `kafka-consumer-groups` CLI for manipulating consumer offsets
+17 |[Kafka from Spring Boot with Avro IDL & Schema Registry](./17-breaking-changes-with-avro-and-springboot)  | 
 20 | [Using Confluent REST APIs (REST Proxy)](./20-using-rest-proxy)  | use Confluent REST Proxy 

@@ -1,28 +1,24 @@
-# Platform Stack: `modern-data-platform` - v1.17.0
 
-This Platform Stack defines the set of services for a Modern Data Platform, such as
+<p align="center">
+<img src="./platys.png" alt="Platys Logo" width="200" height="160">
+</p>
 
-* Kafka
-* Spark
-* Hadoop Ecosystem
-* StreamSets & NiFi
-* Zeppelin & Jupyter
-* NoSQL
+## Platform Stack: `modern-data-platform` - v1.18.1
 
-and many others. 
+This platform stack outlines the services included in a Modern Data Platform, which can be generated using the [Platys](http://github.com/trivadispf/platys) platform generator. Ensure that the Platys CLI is [installed](https://github.com/TrivadisPF/platys/blob/master/documentation/install)  before proceeding.
 
-## Which services can I use? 
+### Which services can I use? 
 
-The following services are provisioned as part of the Modern Data Platform: 
+The Modern Data Platform allows for the selective provisioning of the following services: 
 
 ![Alt Image Text](./documentation/images/modern-data-platform-overview.png "Modern Data Platform Overview")
 
 For new services to be added, please either create an [GitHub issue](https://github.com/TrivadisPF/modern-data-analytics-stack/issues/new) or create a Pull Request.
 
-## Changes 
+### Changes 
 See [What's new?](./documentation/changes) for a detailed list of changes.
 
-## Documentation
+### Documentation
 
 * [Getting Started with `platys` and `modern-data-platform` stack](./documentation/getting-started)
 * [Configuration](./documentation/configuration) - all settings configurable in the `config.yml`
@@ -31,7 +27,7 @@ See [What's new?](./documentation/changes) for a detailed list of changes.
 * [Port Mapping](./documentation/port-mapping) - a list of all the ports which are mapped to the outside for the various supported services
 * [Frequently Asked Questions](./documentation/faq)
 * [Troubleshooting](./documentation/troubleshooting)
-* [Adding additional services not supported by a platform stack](https://github.com/TrivadisPF/platys/blob/master/documentation/docker-compose-override)
+* [Adding additional services not supported by a platform stack](./documentation/docker-compose-override)
 * [Creating a new stack in a scripted way](./documentation/start-stack-scripted-way)
 * [How to use a platys-generated stack without Internet](https://github.com/TrivadisPF/platys/blob/master/documentation/docker-compose-without-internet)
 * [Upgrade to a new platform stack version](https://github.com/TrivadisPF/platys/blob/master/documentation/upgrade-platform-stack)

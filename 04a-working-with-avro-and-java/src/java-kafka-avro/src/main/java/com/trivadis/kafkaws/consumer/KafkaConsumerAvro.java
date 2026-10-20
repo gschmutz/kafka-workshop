@@ -33,6 +33,7 @@ public class KafkaConsumerAvro {
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, KafkaAvroDeserializer.class.getName());
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, KafkaAvroDeserializer.class.getName());
         props.put(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, SCHEMA_REGISTRY_URL);   // use constant for "schema.registry.url"
+        props.put(KafkaAvroSerializerConfig.VALUE_SCHEMA_ID_DESERIALIZER, "io.confluent.kafka.serializers.schema.id.DualSchemaIdDeserializer");
 
         // Create the consumer using props.
         final Consumer<Long, Notification> consumer =

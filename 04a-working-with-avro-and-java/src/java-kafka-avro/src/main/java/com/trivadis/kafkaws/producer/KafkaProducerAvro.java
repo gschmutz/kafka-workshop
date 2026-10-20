@@ -22,6 +22,7 @@ public class KafkaProducerAvro {
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, KafkaAvroSerializer.class.getName());
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, KafkaAvroSerializer.class.getName());
         props.put(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, SCHEMA_REGISTRY_URL);   // use constant for "schema.registry.url"
+        props.put(KafkaAvroSerializerConfig.VALUE_SCHEMA_ID_SERIALIZER, "io.confluent.kafka.serializers.schema.id.HeaderSchemaIdSerializer");
 
         return new KafkaProducer<>(props);
     }

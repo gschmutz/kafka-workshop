@@ -1,8 +1,12 @@
-# Modern Data Platform Cookbooks  - v1.16.0
+# Modern Data Platform Cookbooks  - v1.19.0
+
 Inhere we are documenting cookbooks on how to use the platform:
 
  * **Airflow**
    * [Schedule and Run Simple Python Application with Airflow](./recipes/airflow-schedule-python-app/README) - `1.16.0`
+
+ * **Ofelia**
+   * [Schedule and execute commands in Docker containers using Ofelia](./recipes/scheduling-commands-on-docker-containers-with-ofelia/README) - `1.18.0` 
 
  * **Trino (Formerly Presto SQL)**
    * [Trino, Spark and Delta Lake (Spark 2.4.7 & Delta Lake 0.6.1)](./recipes/delta-lake-and-trino-spark2.4/README) - `1.11.0`
@@ -17,6 +21,8 @@ Inhere we are documenting cookbooks on how to use the platform:
  * **MinIO**
    * [Serving a static Web application from MinIO](./recipes/serving-static-html-app-from-minio/README)
 
+ * **LakeFS**
+   * [Git for Data with LakeFS](./recipes/git-for-data-with-lakefs/README)
 
  * **MQTT**
    * [Using Confluent MQTT Proxy](./recipes/using-mqtt-proxy/README)
@@ -66,7 +72,10 @@ Inhere we are documenting cookbooks on how to use the platform:
    * [Simulated Multi-DC Setup on one machine](./recipes/simulated-multi-dc-setup/README) - `1.14.0`  
    * [Automate management of Kafka topics using Jikkou](./recipes/jikkou-automate-kafka-topics-management/README) - `1.17.0`
    * [Azure Event Hub as external Kafka](./recipes/azure-event-hub-as-external-kafka/README) - `1.16.0`
-   * [SASL/SCRAM Authentication](./recipes/kafka-sasl-scram-authentication/README) - `1.17.0`
+   * [SASL/SCRAM Authentication with Zookeeper](./recipes/kafka-sasl-scram-authentication-zk/README) - `1.17.0`
+   * [SASL/SCRAM Authentication with KRaft](./recipes/kafka-sasl-scram-authentication-kraft/README) - `1.17.0`
+   * [SASL/PLAIN Authentication](./recipes/kafka-sasl-plain-authentication/README) - `1.17.0`
+   * [Working with real and synthetic data streams](./recipes/kafka-working-with-real-and-synthetic-streams/README) - `1.19.0`
 
  * **Confluent Enterprise Platform**
    * [Using Confluent Enterprise Tiered Storage](./recipes/confluent-tiered-storage/README) - `1.13.0`
@@ -100,6 +109,9 @@ Inhere we are documenting cookbooks on how to use the platform:
  * **Jupyter**
    * [Using Jupyter notebook with Spark and Avro](./recipes/jupyter-spark/README) - `1.16.0` 
    * [Using JupyterHub](./recipes/using-jupyter-hub/README) - `1.16.0` 
+
+ * **Dataverse**
+   * [Dataverse with Minio (S3) storage](./recipes/dataverse-with-minio/README) - `1.17.0` 
 
  * **MLflow**
    * [Using MLflow from Jupyter](./recipes/using-mflow-from-jupyter/README) - `1.16.0` 
