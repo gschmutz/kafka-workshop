@@ -913,7 +913,7 @@ services:
     restart: unless-stopped
   #  ================================== Redis ========================================== #
   redis-1:
-    image: bitnami/redis:7.4
+    image: soldevelo/redis:7.4
     hostname: redis-1
     container_name: redis-1
     labels:
